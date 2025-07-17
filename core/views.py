@@ -382,13 +382,23 @@ def catalog(request):
 
 
 # @login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.utils import timezone
+from .models import Cart, Product, Order, OrderItem, Coupon
+from django.views.decorators.csrf import csrf_exempt
+
 def order_create(request):
+    # Get cart items
+    items = []
     if request.user.is_authenticated:
-        cart = Cart.objects.get(user=request.user)
-        items = cart.items.all()
+        try:
+            cart = Cart.objects.get(user=request.user)
+            items = list(cart.items.all())  # CartItem objects
+        except Cart.DoesNotExist:
+            items = []
     else:
         session_cart = request.session.get('cart', {})
-        items = []
         for product_id, quantity in session_cart.items():
             try:
                 product = Product.objects.get(id=product_id)
@@ -397,46 +407,231 @@ def order_create(request):
                 continue
 
     if not items:
-        messages.error(request, 'Cart is empty')
-        return redirect('cart')
+        messages.error(request, "Cart is empty")
+        return redirect("cart")
 
+    # Calculate total price for display
+    total_price = 0
+    if request.user.is_authenticated:
+        for item in items:
+            total_price += item.get_total_price()
+    else:
+        for item in items:
+            total_price += item['product'].price * item['quantity']
+
+    # Handle form POST
     if request.method == 'POST':
-        coupon = None
+        # Store address in session
+        request.session['address_data'] = {
+            'full_name': request.POST['full_name'],
+            'phone': request.POST['phone'],
+            'email': request.POST.get('email'),
+            'pincode': request.POST['pincode'],
+            'city': request.POST['city'],
+            'district': request.POST['district'],
+            'state': request.POST['state'],
+            'local_address': request.POST['local_address'],
+            'landmark': request.POST.get('landmark'),
+        }
+
+        # Validate and store coupon
         coupon_code = request.POST.get('coupon_code')
         if coupon_code:
             try:
-                coupon = Coupon.objects.get(code=coupon_code, active=True, valid_from__lte=timezone.now(), valid_until__gte=timezone.now())
+                coupon = Coupon.objects.get(
+                    code=coupon_code, active=True,
+                    valid_from__lte=timezone.now(),
+                    valid_until__gte=timezone.now()
+                )
+                request.session['applied_coupon'] = coupon.code
             except Coupon.DoesNotExist:
                 messages.error(request, 'Invalid or expired coupon')
                 return redirect('order_create')
 
-        # Create order (assign to user if logged in, else anonymous)
-        order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            status='Pending',
-            coupon=coupon
+        return redirect('order_confirm')
+
+    return render(request, 'core/order_create.html', {
+        'cart_items': items,
+        'total_price': total_price
+    })
+
+
+from decimal import Decimal
+from .models import DeliveryAddress, Coupon, Order, OrderItem, Product, Cart
+
+def order_confirm(request):
+    # Load cart again
+    items = []
+    if request.user.is_authenticated:
+        try:
+            cart = Cart.objects.get(user=request.user)
+            items = list(cart.items.all())
+        except Cart.DoesNotExist:
+            items = []
+    else:
+        session_cart = request.session.get('cart', {})
+        for product_id, quantity in session_cart.items():
+            try:
+                product = Product.objects.get(id=product_id)
+                items.append({'product': product, 'quantity': quantity})
+            except Product.DoesNotExist:
+                continue
+
+    if not items:
+        messages.error(request, "Cart is empty")
+        return redirect("cart")
+
+    # Address & coupon from session
+    address_data = request.session.get('address_data')
+    if not address_data:
+        messages.error(request, "Address details are missing.")
+        return redirect("order_create")
+
+    coupon = None
+    coupon_code = request.session.get('applied_coupon')
+    if coupon_code:
+        try:
+            coupon = Coupon.objects.get(code=coupon_code, active=True)
+        except Coupon.DoesNotExist:
+            coupon = None
+
+    # Calculate subtotal
+    subtotal = Decimal(0)
+    order_items = []
+
+    for item in items:
+        if request.user.is_authenticated:
+            product = item.product
+            quantity = item.quantity
+            price = product.price
+        else:
+            product = item['product']
+            quantity = item['quantity']
+            price = product.price
+
+        subtotal += price * quantity
+        order_items.append((product, quantity, price))
+
+    gst = subtotal * Decimal('0.18')
+    delivery = Decimal('50.00')
+    total = subtotal + gst + delivery
+
+    discount = Decimal(0)
+    if coupon:
+        discount = total * Decimal(coupon.discount_percentage / 100)
+        total -= discount
+
+    # Create Order
+    order = Order.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        status='Pending',
+        coupon=coupon,
+        subtotal=subtotal,
+        gst=gst,
+        delivery_charge=delivery,
+        total_amount=total
+    )
+
+    # Create Order Items
+    for product, quantity, price in order_items:
+        OrderItem.objects.create(
+            order=order,
+            product=product,
+            quantity=quantity,
+            price=price
         )
 
-        for item in items:
-            OrderItem.objects.create(
-                order=order,
-                product=item['product'],
-                quantity=item['quantity'],
-                price=item['product'].price
-            )
+    # Save Address
+    DeliveryAddress.objects.create(
+        order=order,
+        full_name=address_data['full_name'],
+        phone=address_data['phone'],
+        email=address_data.get('email'),
+        pincode=address_data['pincode'],
+        city=address_data['city'],
+        district=address_data['district'],
+        state=address_data['state'],
+        local_address=address_data['local_address'],
+        landmark=address_data.get('landmark'),
+        verified=False
+    )
 
-        order.total_amount = order.calculate_total()
-        order.save()
+    # Clear cart
+    if request.user.is_authenticated:
+        cart.items.all().delete()
+    else:
+        request.session['cart'] = {}
 
-        if request.user.is_authenticated:
-            cart.items.all().delete()
+    # Clear session data
+    request.session.pop('address_data', None)
+    request.session.pop('applied_coupon', None)
+
+    return render(request, 'core/order_confirm.html', {
+        'order': order,
+        'address': address_data,
+        'total_breakdown': {
+            'subtotal': subtotal,
+            'gst': gst,
+            'delivery': delivery,
+            'discount': discount,
+            'total': total
+        }
+    })
+from django.shortcuts import render, get_object_or_404
+from .models import Order
+from django.contrib.auth.decorators import login_required
+
+def order_payment(request):
+    if request.user.is_authenticated:
+        # Get the most recent order by the user
+        order = Order.objects.filter(user=request.user).order_by('-created_at').first()
+    else:
+        # For guest checkout, pass order ID via GET/session
+        order_id = request.GET.get('order_id')
+        if not order_id:
+            return render(request, 'core/order_payment.html', {'error': 'Order ID missing'})
+        order = get_object_or_404(Order, id=order_id)
+
+    if not order:
+        return render(request, 'core/order_payment.html', {'error': 'Order not found'})
+
+    return render(request, 'core/order_payment.html', {
+        'order': order,
+        'amount': order.total_amount,
+        'payment_options': ['UPI', 'QR Code', 'Card', 'Cash on Delivery']
+    })
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import random
+
+otp_store = {}  # Ideally use a cache or DB
+
+@csrf_exempt
+def verify_phone(request):
+    if request.method == 'POST':
+        phone = request.POST.get('phone')
+        otp = request.POST.get('otp')
+
+        if otp:
+            # Verify OTP
+            saved_otp = otp_store.get(phone)
+            if saved_otp and otp == saved_otp:
+                del otp_store[phone]
+                return JsonResponse({'status': 'verified'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Invalid OTP'})
         else:
-            request.session['cart'] = {}
+            # Send OTP
+            generated_otp = str(random.randint(100000, 999999))
+            otp_store[phone] = generated_otp
 
-        messages.success(request, 'Order placed successfully')
-        return redirect('homepage')
+            # TODO: Integrate actual SMS sending here
+            print(f"OTP for {phone} is {generated_otp}")  # For testing
 
-    return render(request, 'core/order_create.html', {'cart_items': items})
+            return JsonResponse({'status': 'otp_sent'})
+
+
 
 
 # Existing ViewSets...

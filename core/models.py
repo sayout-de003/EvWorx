@@ -139,6 +139,23 @@ class BulkDiscountTier(models.Model):
     def __str__(self):
         return f"{self.product.title}: {self.discount_percentage}% off from {self.min_quantity}+"
 
+# models.py
+
+class DeliveryAddress(models.Model):
+    order = models.OneToOneField('Order', on_delete=models.CASCADE, related_name='delivery_address')
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField(blank=True, null=True)
+    pincode = models.CharField(max_length=10)
+    city = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    local_address = models.TextField()
+    landmark = models.CharField(max_length=255, blank=True, null=True)
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.full_name} - {self.pincode}"
 
 
 class Coupon(models.Model):
@@ -186,21 +203,53 @@ class CartItem(models.Model):
 
 
 
+from django.db import models
+from decimal import Decimal
+from django.conf import settings
+
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Shipped', 'Shipped'), ('Delivered', 'Delivered')])
-    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=50)  # Default ₹50
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Order {self.id} ({self.user})"
 
     def calculate_total(self):
-        total = sum(item.get_total_price() for item in self.items.all())
+        # Calculate subtotal from order items
+        subtotal = sum(item.get_total_price() for item in self.items.all())
+
+        # GST calculation (18% assumed)
+        gst = subtotal * Decimal('0.18')
+
+        # Delivery charge (keep as-is or use default)
+        delivery = self.delivery_charge or Decimal('50.00')
+
+        # Base total before coupon
+        total = subtotal + gst + delivery
+
+        # Apply coupon discount if available and active
         if self.coupon and self.coupon.active:
-            total = total * (1 - self.coupon.discount_percentage / 100)
-        return total
+            total *= Decimal(1 - self.coupon.discount_percentage / 100)
+
+        # Round and save
+        self.subtotal = subtotal
+        self.gst = gst
+        self.total_amount = total.quantize(Decimal('0.01'))  # round to 2 decimal places
+        self.save()
+        return self.total_amount
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -210,6 +259,8 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product} x{self.quantity} (Order {self.order.id})"
+    def get_total_price(self):
+        return self.price * self.quantity
 
 class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

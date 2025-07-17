@@ -12,9 +12,9 @@ evw/
 .env
 
 # Django specific
-*.sqlite3
-/staticfiles/
-/media/
+__pycache__/
+*.pyc
+
 
 # VSCode
 .vscode/

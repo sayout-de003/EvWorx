@@ -5,7 +5,7 @@ from core.views import (
     ProductViewSet, CartViewSet, OrderViewSet, WishlistViewSet, 
     ReviewViewSet, homepage, about, faq, blog, blog_detail, 
     signup, user_login, user_logout, catalog, garage, cart_view, 
-    wishlist_view, order_create
+    wishlist_view, order_create, order_confirm, order_payment,verify_phone
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -41,6 +41,10 @@ urlpatterns = [
     path('cart/', cart_view, name='cart'),
     path('wishlist/', wishlist_view, name='wishlist'),
     path('order/', order_create, name='order_create'),
+    # path('order/', views.order_create, name='order_create'),
+    path('order/confirm/', order_confirm, name='order_confirm'),
+    path('order/payment/',order_payment, name='order_payment'),
+    path('verify-phone/', verify_phone, name='verify_phone'),
 
     # API
     path('api/', include(router.urls)),

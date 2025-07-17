@@ -1,9 +1,32 @@
 {% extends 'core/base.html' %}
 {% block title %}Checkout{% endblock %}
+
 {% block content %}
-    <h1 class="text-3xl font-bold mb-4">Checkout</h1>
-    <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-xl font-bold mb-2">Order Summary</h2>
+<h1 class="text-3xl font-bold mb-4">Checkout</h1>
+
+<!-- Delivery Address -->
+<div class="bg-white p-4 rounded shadow mb-6">
+    <h2 class="text-xl font-bold mb-2">Delivery Address</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="full_name" placeholder="Full Name" required class="w-full p-2 mb-2 border"><br>
+        <input type="text" name="phone" placeholder="Mobile Number" required class="w-full p-2 mb-2 border">
+        <button type="button" id="verify-btn" onclick="verifyPhone()" class="bg-green-500 text-white px-2 py-1 rounded ml-2">Verify</button><br>
+
+        <div id="otp-section" style="display: none;" class="mt-2">
+            <input type="text" name="otp" placeholder="Enter OTP" class="w-full p-2 border mb-2">
+        </div>
+
+        <input type="email" name="email" placeholder="Email (optional)" class="w-full p-2 mb-2 border"><br>
+        <input type="text" name="pincode" required placeholder="Pincode" class="w-full p-2 mb-2 border"><br>
+        <input type="text" name="city" required placeholder="City" class="w-full p-2 mb-2 border"><br>
+        <input type="text" name="district" required placeholder="District" class="w-full p-2 mb-2 border"><br>
+        <input type="text" name="state" required placeholder="State" class="w-full p-2 mb-2 border"><br>
+        <textarea name="local_address" required placeholder="Street, Area, House no. etc" class="w-full p-2 mb-2 border"></textarea><br>
+        <input type="text" name="landmark" placeholder="Landmark (optional)" class="w-full p-2 mb-2 border"><br>
+        
+        <!-- Order Summary -->
+        <h2 class="text-xl font-bold mt-6 mb-2">Order Summary</h2>
         {% for item in cart.items.all %}
             <div class="flex justify-between items-center mb-4">
                 <div>
@@ -13,14 +36,57 @@
                 </div>
             </div>
         {% endfor %}
-        <p class="text-xl font-bold">Total: ₹{{ cart.items.all|length|floatformat:2 }}</p>
-        <form method="post" class="mt-4">
-            {% csrf_token %}
-            <div class="mb-4">
-                <label for="coupon_code" class="block">Coupon Code</label>
-                <input type="text" name="coupon_code" id="coupon_code" class="w-full p-2 border">
-            </div>
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Place Order</button>
-        </form>
-    </div>
+        <p class="text-xl font-bold">Total: ₹{{ total_price }}</p>
+
+        <!-- Coupon -->
+        <div class="mb-4 mt-4">
+            <label for="coupon_code" class="block">Coupon Code</label>
+            <input type="text" name="coupon_code" id="coupon_code" class="w-full p-2 border">
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Continue to Confirmation</button>
+    </form>
+</div>
+
+<script>
+    let otpSent = false;
+    
+    function verifyPhone() {
+        const phone = document.querySelector('input[name="phone"]').value;
+        const otp = document.querySelector('input[name="otp"]').value;
+    
+        const payload = { phone };
+        if (otpSent) {
+            payload.otp = otp;
+        }
+    
+        fetch("{% url 'verify_phone' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'otp_sent') {
+                otpSent = true;
+                alert('OTP sent to ' + phone);
+                document.getElementById('otp-section').style.display = 'block';
+                document.getElementById('verify-btn').textContent = 'Submit OTP';
+            } else if (data.status === 'verified') {
+                alert('Phone verified!');
+                document.querySelector('input[name="phone"]').readOnly = true;
+                document.getElementById('otp-section').style.display = 'none';
+                document.getElementById('verify-btn').textContent = 'Verified ✅';
+                document.getElementById('verify-btn').disabled = true;
+            } else {
+                alert(data.message || 'Something went wrong.');
+            }
+        });
+    }
+    </script>
+    
+    
 {% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+{% block title %}Payment{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-4">Choose Payment Method</h2>
+
+<div class="bg-white p-4 rounded shadow-md max-w-xl">
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="mb-4">
+      <p class="font-semibold">Pay to this UPI ID:</p>
+      <p class="text-lg text-green-600 font-bold">store@upi</p>
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-1">Enter UPI Transaction ID:</label>
+      <input type="text" name="txn_id" class="w-full border border-gray-300 p-2 rounded" required>
+    </div>
+
+    <div class="mb-4">
+      <label class="block mb-1">Upload Screenshot (optional):</label>
+      <input type="file" name="screenshot" accept="image/*" class="block">
+    </div>
+
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+      Confirm Payment
+    </button>
+  </form>
+
+  <div class="mt-6 text-sm text-gray-600">
+    <p><strong>Note:</strong> Your payment will be verified manually. Please ensure the UPI ID and transaction ID are correct.</p>
+  </div>
+</div>
+{% endblock %}
