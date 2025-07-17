@@ -51,15 +51,30 @@ CREATE USER evaultuser WITH PASSWORD 'evaultpass123';
 GRANT ALL PRIVILEGES ON DATABASE evault TO evaultuser;
 
 
-EvWorx/
-├── core/               # Main Django application
-├── media/              # Uploaded files (e.g., product images)
-├── static/             # Static assets (CSS, JS)
-├── templates/          # HTML templates
-├── .env                # Environment variables (excluded from git)
-├── .gitignore          # Git ignore rules
-├── requirements.txt    # Python dependencies
-└── manage.py           # Django management script
+Here is the same EvWorx project structure in bash-style format using tree command syntax:
+
+                EvWorx/
+                ├── core/               # Main Django application
+                │   ├── admin.py
+                │   ├── apps.py
+                │   ├── models.py
+                │   ├── urls.py
+                │   ├── views.py
+                │   ├── ...
+                ├── media/              # Uploaded files (e.g., product images)
+                │   └── ...
+                ├── static/             # Static assets (CSS, JS)
+                │   └── ...
+                ├── templates/          # HTML templates
+                │   └── ...
+                ├── .env                # Environment variables (excluded from git)
+                ├── .gitignore          # Git ignore rules
+                ├── requirements.txt    # Python dependencies
+                ├── docker-compose.yml  # Docker configuration (if added)
+                └── manage.py           # Django management script
+
+
+
 Deployment Notes
 
 The project uses PostgreSQL for local development.
