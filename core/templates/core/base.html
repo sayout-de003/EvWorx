@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvWorx - {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #fbbf24;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #374151 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(107, 114, 128, 0.4);
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="{% url 'homepage' %}" class="flex items-center space-x-2">
+                    <i class="fas fa-bolt text-3xl text-blue-600"></i>
+                    <span class="text-2xl font-bold text-gradient">EvWorx</span>
+                </a>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'homepage' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Home</a>
+                    <a href="{% url 'catalog' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Catalog</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'garage' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">
+                            <i class="fas fa-car mr-1"></i>Garage
+                        </a>
+                        <a href="{% url 'cart' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">
+                            <i class="fas fa-shopping-cart mr-1"></i>Cart
+                        </a>
+                        <a href="{% url 'wishlist' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">
+                            <i class="fas fa-heart mr-1"></i>Wishlist
+                        </a>
+                        <a href="{% url 'logout' %}" class="nav-link text-gray-700 hover:text-red-600 font-medium">
+                            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                        </a>
+                    {% else %}
+                        <!-- <a href="{% url 'garage' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">
+                            <i class="fas fa-car mr-1"></i>Garage
+                        </a> -->
+                        <a href="{% url 'cart' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">
+                            <i class="fas fa-shopping-cart mr-1"></i>Cart
+                        </a>
+                        <a href="{% url 'wishlist' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">
+                            <i class="fas fa-heart mr-1"></i>Wishlist
+                        </a>
+                        <a href="{% url 'login' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Login</a>
+                        <a href="{% url 'signup' %}"class="nav-link text-gray-700 hover:text-blue-600 font-medium">SignUp</a>
+                        <!-- <a href="{% url 'signup' %}" class="btn-primary text-white px-6 py-2 rounded-full font-medium"> -->
+                            <!-- Signup
+                        </a> -->
+                    {% endif %}
+                </div>
+                
+                <!-- Mobile menu button -->
+                <button class="md:hidden text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% if messages %}
+            <div class="container mx-auto px-4 pt-4">
+                {% for message in messages %}
+                    <div class="mb-4 fade-in">
+                        <div class="bg-{% if message.tags == 'error' %}red{% else %}green{% endif %}-50 border-l-4 border-{% if message.tags == 'error' %}red{% else %}green{% endif %}-400 p-4 rounded-r-lg shadow-md">
+                            <div class="flex items-center">
+                                <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %} text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-500 mr-3"></i>
+                                <p class="text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-700 font-medium">{{ message }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-bolt text-2xl text-blue-400"></i>
+                        <span class="text-xl font-bold">EVault</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">Your trusted partner for premium electric vehicle parts and accessories.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'homepage' %}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="{% url 'catalog' %}" class="text-gray-400 hover:text-white transition-colors">Catalog</a></li>
+                        <li><a href="{% url 'about' %}" class="text-gray-400 hover:text-white transition-colors">About</a></li>
+                        <li><a href="{% url 'faq' %}" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="{% url 'blog' %}" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Support</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Shipping Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Returns</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Warranty</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Newsletter</h3>
+                    <p class="text-gray-400 mb-4">Stay updated with our latest products and offers.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-2 rounded-l-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-blue-500">
+                        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-r-lg transition-colors">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">
+                    &copy; 2025 EvWorx. All rights reserved. | 
+                    <span class="text-blue-400">Powering the Future of Electric Mobility</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

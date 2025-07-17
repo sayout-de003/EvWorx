@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+    <h1 class="text-3xl font-bold mb-4">Checkout</h1>
+    <div class="bg-white p-4 rounded shadow">
+        <h2 class="text-xl font-bold mb-2">Order Summary</h2>
+        {% for item in cart.items.all %}
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-lg font-bold">{{ item.product.title }}</h3>
+                    <p>Quantity: {{ item.quantity }}</p>
+                    <p>Price: ₹{{ item.get_total_price }}</p>
+                </div>
+            </div>
+        {% endfor %}
+        <p class="text-xl font-bold">Total: ₹{{ cart.items.all|length|floatformat:2 }}</p>
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="coupon_code" class="block">Coupon Code</label>
+                <input type="text" name="coupon_code" id="coupon_code" class="w-full p-2 border">
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Place Order</button>
+        </form>
+    </div>
+{% endblock %}

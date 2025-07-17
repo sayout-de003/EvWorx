@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+{% block title %}Your Cart{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">Your Shopping Cart</h1>
+
+{% if cart_items %}
+    <table class="min-w-full table-auto">
+        <thead>
+            <tr class="bg-gray-200 text-left">
+                <th class="px-4 py-2">Product</th>
+                <th class="px-4 py-2">Quantity</th>
+                <th class="px-4 py-2">Price</th>
+                <th class="px-4 py-2">Subtotal</th>
+                <th class="px-4 py-2">Actions</th>  <!-- New column -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+                <tr class="border-b">
+                    <td class="px-4 py-2">
+                        {% if item.product %}
+                            {{ item.product.title }}
+                        {% else %}
+                            {{ item.title }}
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-2">
+                        <form method="POST" action="{% url 'cart' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="update" value="1">
+                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="w-16 px-2 py-1 border rounded">
+                            <button type="submit" class="ml-2 px-3 py-1 bg-blue-600 text-white rounded">Update</button>
+                        </form>
+                    </td>
+                    <td class="px-4 py-2">
+                        ₹{% if item.product %}{{ item.product.price }}{% else %}{{ item.price }}{% endif %}
+                    </td>
+                    <td class="px-4 py-2">
+                        ₹{% if item.subtotal %}{{ item.subtotal }}{% else %}{{ item.get_total_price }}{% endif %}
+                    </td>
+                    <td class="px-4 py-2">
+                        <form method="POST" action="{% url 'cart' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete" value="1">
+                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="text-right mt-4">
+        <p class="text-xl font-bold">Total: ₹{{ total_price }}</p>
+        <a href="{% url 'order_create' %}" class="bg-green-600 text-white px-4 py-2 rounded mt-2 inline-block">Checkout</a>
+    </div>
+
+{% else %}
+    <p>Your cart is empty.</p>
+{% endif %}
+
+{% endblock %}

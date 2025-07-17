@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% block title %}Garage{% endblock %}
+{% block content %}
+    <h1 class="text-3xl font-bold mb-4">My Garage</h1>
+    <h2 class="text-xl font-bold mb-2">Add Vehicle</h2>
+    <form method="post" class="max-w-md mb-8">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="brand" class="block">Brand</label>
+            <select name="brand" id="brand" class="w-full p-2 border" required>
+                {% for brand in brands %}
+                    <option value="{{ brand.id }}">{{ brand.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="model" class="block">Model</label>
+            <input type="text" name="model" id="model" class="w-full p-2 border" required>
+        </div>
+        <div class="mb-4">
+            <label for="year" class="block">Year</label>
+            <input type="number" name="year" id="year" class="w-full p-2 border" required>
+        </div>
+        <div class="mb-4">
+            <label for="type" class="block">Vehicle Type</label>
+            <select name="type" id="type" class="w-full p-2 border" required>
+                {% for vehicle_type in vehicle_types %}
+                    <option value="{{ vehicle_type.id }}">{{ vehicle_type.name }} ({{ vehicle_type.type }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Add Vehicle</button>
+    </form>
+    <h2 class="text-xl font-bold mb-2">My Vehicles</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for vehicle in vehicles %}
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="text-lg font-bold">{{ vehicle.brand.name }} {{ vehicle.model }}</h3>
+                <p>Year: {{ vehicle.year }}</p>
+                <p>Type: {{ vehicle.type.name }}</p>
+            </div>
+        {% empty %}
+            <p>No vehicles added yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

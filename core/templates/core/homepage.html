@@ -1,0 +1,222 @@
+{% extends 'core/base.html' %}
+{% block title %}Premium Electric Vehicle Parts{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+ <style>
+
+ </style>
+<!-- Include the Spline Viewer -->
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.32/build/spline-viewer.js"></script>
+
+<!-- Hero Section with Spline -->
+<section class="relative gradient-bg text-white py-20 mb-16 overflow-hidden">
+    <!-- Spline 3D Bot Background -->
+    <div class="absolute inset-0 opacity-20 pointer-events-none z-0">
+        <spline-viewer 
+            url="https://prod.spline.design/1bDv0dbsiz8BBhZE/scene.splinecode" 
+            style="width: 100%; height: 100%;"
+        ></spline-viewer>
+    </div>
+
+    <!-- Main Hero Content -->
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 fade-in">
+                Power Your Journey with 
+                <span class="text-yellow-400">Premium</span> EV Parts
+            </h1>
+            <p class="text-xl mb-8 text-gray-100 fade-in">
+                Discover our curated collection of high-quality electric vehicle parts and accessories. 
+                Trusted by thousands of EV enthusiasts worldwide.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in">
+                <a href="{% url 'catalog' %}" class="btn-primary text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center">
+                    <i class="fas fa-shopping-bag mr-2"></i>
+                    Shop Now
+                </a>
+                <a href="{% url 'about' %}" class="glass-effect text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center hover:bg-white/20 transition-all">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Trust Indicators -->
+<section class="container mx-auto px-4 mb-16">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="fade-in">
+            <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-shield-alt text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800">Quality Assured</h3>
+            <p class="text-gray-600 text-sm">Premium certified parts</p>
+        </div>
+        <div class="fade-in" style="animation-delay: 0.1s;">
+            <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-shipping-fast text-blue-600 text-2xl"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800">Fast Shipping</h3>
+            <p class="text-gray-600 text-sm">24-48 hour delivery</p>
+        </div>
+        <div class="fade-in" style="animation-delay: 0.2s;">
+            <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-headset text-purple-600 text-2xl"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800">24/7 Support</h3>
+            <p class="text-gray-600 text-sm">Expert assistance</p>
+        </div>
+        <div class="fade-in" style="animation-delay: 0.3s;">
+            <div class="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-award text-yellow-600 text-2xl"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800">Warranty</h3>
+            <p class="text-gray-600 text-sm">2-year guarantee</p>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="container mx-auto px-4 mb-16">
+    <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-gray-800 mb-4">Featured Products</h2>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+            Handpicked selection of our most popular and highest-rated electric vehicle components
+        </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for product in products %}
+            <div class="bg-white rounded-2xl premium-shadow card-hover overflow-hidden fade-in" data-delay="{{ forloop.counter0|floatformat:1 }}s">
+                <div class="relative">
+                    <!-- {% if product.is_out_of_stock %}
+                        <div class="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium z-10">
+                            Out of Stock
+                        </div>
+                    {% endif %} -->
+
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-full h-64 object-cover">
+                        <div class="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            New
+                        </div>
+                    {% else %}
+                        <div class="w-full h-64 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">{{ product.title }}</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">{{ product.description|truncatewords:20 }}</p>
+                    
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-1">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="text-sm text-gray-500">(24 reviews)</span>
+                        </div>
+                        <span class="text-2xl font-bold text-green-600">₹{{ product.price }}</span>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        {% if product.is_out_of_stock %}
+                                <button type="button" class="bg-gray-400 text-white py-3 rounded-lg font-medium w-full cursor-not-allowed" disabled>
+                                    <i class="fas fa-ban mr-2"></i>
+                                    Out of Stock
+                                </button>
+                            {% else %}
+                        <form action="{% url 'cart' %}" method="post" class="flex-1">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <div class="flex items-center space-x-2 mb-3">
+                                <label class="text-sm text-gray-600">Qty:</label>
+                                <input type="number" name="quantity" value="1" min="1" max="10" class="w-16 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                            </div>
+                            <button type="submit" class="btn-primary w-full text-white py-3 rounded-lg font-medium inline-flex items-center justify-center">
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Add to Cart
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        <form action="{% url 'wishlist' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors mt-8">
+                                <i class="fas fa-heart text-gray-600"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-12">
+                <i class="fas fa-box-open text-gray-400 text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-600 mb-2">No Products Available</h3>
+                <p class="text-gray-500">Check back soon for exciting new products!</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-12">
+        <a href="{% url 'catalog' %}" class="btn-primary text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center">
+            <i class="fas fa-th-large mr-2"></i>
+            View All Products
+        </a>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="bg-gray-900 text-white py-16 mb-16">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="fade-in">
+                <div class="text-4xl font-bold text-blue-400 mb-2">50K+</div>
+                <p class="text-gray-300">Happy Customers</p>
+            </div>
+            <div class="fade-in" style="animation-delay: 0.1s;">
+                <div class="text-4xl font-bold text-green-400 mb-2">10K+</div>
+                <p class="text-gray-300">Products Sold</p>
+            </div>
+            <div class="fade-in" style="animation-delay: 0.2s;">
+                <div class="text-4xl font-bold text-yellow-400 mb-2">99%</div>
+                <p class="text-gray-300">Satisfaction Rate</p>
+            </div>
+            <div class="fade-in" style="animation-delay: 0.3s;">
+                <div class="text-4xl font-bold text-purple-400 mb-2">24/7</div>
+                <p class="text-gray-300">Support Available</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="container mx-auto px-4 mb-16">
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-white text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Stay Updated</h2>
+        <p class="text-xl mb-8 text-blue-100">Get the latest news on EV technology and exclusive offers</p>
+        <form class="max-w-md mx-auto flex">
+            <input type="email" placeholder="Enter your email address" class="flex-1 px-6 py-4 rounded-l-full text-gray-800 focus:outline-none">
+            <button type="submit" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 px-8 py-4 rounded-r-full font-semibold transition-colors">
+                Subscribe
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+<script>
+  document.querySelectorAll('[data-delay]').forEach(el => {
+    el.style.animationDelay = el.getAttribute('data-delay');
+  });
+</script>

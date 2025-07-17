@@ -1,0 +1,31 @@
+{% extends 'core/base.html' %}
+{% block title %}Signup{% endblock %}
+{% block content %}
+    <h1 class="text-3xl font-bold mb-4">Signup</h1>
+    <form method="post" class="max-w-md">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="username" class="block">Username</label>
+            <input type="text" name="username" id="username" class="w-full p-2 border" required>
+        </div>
+        <div class="mb-4">
+            <label for="email" class="block">Email</label>
+            <input type="email" name="email" id="email" class="w-full p-2 border" required>
+        </div>
+        <div class="mb-4">
+            <label for="password" class="block">Password</label>
+            <input type="password" name="password" id="password" class="w-full p-2 border" required>
+        </div>
+        <div class="mb-4">
+            <label for="phone_number" class="block">Phone Number</label>
+            <input type="text" name="phone_number" id="phone_number" class="w-full p-2 border">
+        </div>
+        <div class="mb-4">
+            <label for="is_technician" class="inline-flex items-center">
+                <input type="checkbox" name="is_technician" id="is_technician" class="mr-2">
+                Are you a technician?
+            </label>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Signup</button>
+    </form>
+{% endblock %}

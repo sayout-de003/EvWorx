@@ -1,0 +1,61 @@
+import os
+from django.core.management.base import BaseCommand
+from django.core.files.base import ContentFile
+from openpyxl import load_workbook
+from openpyxl.drawing.image import Image as OpenpyxlImage
+from core.models import Product
+
+class Command(BaseCommand):
+    help = 'Extract and attach embedded Excel images to products based on part_number'
+
+    def handle(self, *args, **kwargs):
+        excel_path = '/Users/sayantande/Downloads/SPARE PARTS -2024.doc 1 (2).xlsx'
+        media_path = 'media/products'
+
+        # Ensure media directory exists
+        os.makedirs(media_path, exist_ok=True)
+
+        wb = load_workbook(excel_path)
+        ws = wb.active
+
+        image_map = {}
+        for img in ws._images:
+            cell = img.anchor._from
+            row_idx = cell.row
+            image_map[row_idx] = img
+
+        updated = 0
+        skipped = 0
+
+        for row in ws.iter_rows(min_row=3):  # start from row 3
+            part_cell = row[0].value
+            if not part_cell:
+                continue
+            part_number = str(part_cell).strip()
+
+            if part_number == '':
+                continue
+
+            if part_number and row[0].row in image_map:
+                img = image_map[row[0].row]
+                img_bytes = img._data()
+                ext = os.path.splitext(img.path or 'image.jpg')[-1].lower() or '.jpg'
+                image_name = f"{part_number}{ext}"
+                image_path = os.path.join(media_path, image_name)
+
+                with open(image_path, 'wb') as f:
+                    f.write(img_bytes)
+
+                try:
+                    product = Product.objects.get(part_number=part_number)
+                    product.image.save(image_name, ContentFile(img_bytes), save=True)
+                    updated += 1
+                    self.stdout.write(f"✅ Image added to {part_number}")
+                except Product.DoesNotExist:
+                    skipped += 1
+                    self.stderr.write(f"❌ Product not found for {part_number}")
+            else:
+                skipped += 1
+                self.stderr.write(f"⚠️ No image found for row {row[0].row} / part {part_number}")
+
+        self.stdout.write(self.style.SUCCESS(f"✅ Done: {updated} updated, {skipped} skipped."))
