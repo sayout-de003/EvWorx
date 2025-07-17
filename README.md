@@ -46,32 +46,45 @@ python manage.py runserver
 cloudflared tunnel --url http://localhost:8000
 Directory Structure
 
-CREATE DATABASE evault;
-CREATE USER evaultuser WITH PASSWORD 'evaultpass123';
-GRANT ALL PRIVILEGES ON DATABASE evault TO evaultuser;
+        evault/
+        ├── core/
+        │   ├── __init__.py
+        │   ├── admin.py
+        │   ├── apps.py
+        │   ├── models.py
+        │   ├── serializers.py
+        │   ├── tests.py
+        │   ├── urls.py
+        │   ├── views.py
+        │   ├── migrations/
+        │   ├── management/
+        │   │   └── commands/
+        │   └── templates/
+        │       └── core/
+        │           ├── about.html
+        │           ├── base.html
+        │           ├── blog.html
+        │           ├── blog_detail.html
+        │           ├── cart.html
+        │           ├── catalog.html
+        │           ├── faq.html
+        │           ├── garage.html
+        │           ├── homepage.html
+        │           ├── login.html
+        │           ├── order_create.html
+        │           ├── signup.html
+        │           └── wishlist.html
+        ├── evault/
+        │   ├── __init__.py
+        │   ├── asgi.py
+        │   ├── settings.py
+        │   ├── urls.py
+        │   └── wsgi.py
+        ├── media/
+        ├── manage.py
+        ├── README.md
+        └── requirements.txt
 
-
-Here is the same EvWorx project structure in bash-style format using tree command syntax:
-
-                EvWorx/
-                ├── core/               # Main Django application
-                │   ├── admin.py
-                │   ├── apps.py
-                │   ├── models.py
-                │   ├── urls.py
-                │   ├── views.py
-                │   ├── ...
-                ├── media/              # Uploaded files (e.g., product images)
-                │   └── ...
-                ├── static/             # Static assets (CSS, JS)
-                │   └── ...
-                ├── templates/          # HTML templates
-                │   └── ...
-                ├── .env                # Environment variables (excluded from git)
-                ├── .gitignore          # Git ignore rules
-                ├── requirements.txt    # Python dependencies
-                ├── docker-compose.yml  # Docker configuration (if added)
-                └── manage.py           # Django management script
 
 
 
