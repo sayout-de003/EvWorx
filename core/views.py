@@ -456,6 +456,31 @@ def order_create(request):
     })
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Product, Review
+from django.contrib.auth.decorators import login_required
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    return render(request, 'core/product_detail.html', {'product': product})
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        Review.objects.create(
+            user=request.user,
+            product=product,
+            rating=rating,
+            comment=comment
+        )
+        messages.success(request, 'Review submitted successfully!')
+        return redirect('product_detail', slug=product.slug)
+    return redirect('product_detail', slug=product.slug)
+
+
 from decimal import Decimal
 from .models import DeliveryAddress, Coupon, Order, OrderItem, Product, Cart
 

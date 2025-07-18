@@ -22,11 +22,35 @@ class OrderItemInline(admin.TabularInline):
     extra = 1
 
 # Admin for Vehicle
+# @admin.register(Vehicle)
+# class VehicleAdmin(admin.ModelAdmin):
+#     list_display = ['user', 'brand', 'model', 'year', 'type', 'created_at']
+#     list_filter = ['brand', 'type', 'year']
+#     search_fields = ['model', 'user__username']
+
+from django.contrib import admin
+from .models import Vehicle, Brand, VehicleType
+
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
-    list_display = ['user', 'brand', 'model', 'year', 'type', 'created_at']
-    list_filter = ['brand', 'type', 'year']
-    search_fields = ['model', 'user__username']
+    list_display = ('user', 'get_model_name', 'get_brand', 'get_type', 'year', 'created_at')
+    list_filter = ('model__brand', 'model__type', 'year')
+    search_fields = ('user__username', 'model__name', 'model__brand__name')
+
+    def get_model_name(self, obj):
+        return obj.model.name
+    get_model_name.short_description = 'Model'
+
+    def get_brand(self, obj):
+        return obj.model.brand.name
+    get_brand.short_description = 'Brand'
+
+    def get_type(self, obj):
+        return obj.model.type.name
+    get_type.short_description = 'Vehicle Type'
+
+    get_type.short_description = 'Type'
+
 
 # Admin for VehicleType
 @admin.register(VehicleType)

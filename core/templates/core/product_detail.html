@@ -1,0 +1,172 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ product.title }} - Product Details{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Product Header -->
+    <div class="flex flex-col md:flex-row gap-8">
+        <!-- Product Images -->
+        <div class="md:w-1/2">
+            {% if product.main_image %}
+                <img src="{{ product.main_image.url }}" alt="{{ product.title }}" class="w-full h-auto rounded-lg shadow-md mb-4">
+            {% else %}
+                <div class="w-full h-64 bg-gray-200 flex items-center justify-center rounded-lg shadow-md mb-4">
+                    No Image Available
+                </div>
+            {% endif %}
+            
+            <!-- Additional Images -->
+            {% if product.images.all %}
+            <div class="grid grid-cols-3 gap-2">
+                {% for image in product.images.all %}
+                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.title }}" class="w-full h-24 object-cover rounded-md">
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Details -->
+        <div class="md:w-1/2">
+            <h1 class="text-3xl font-bold mb-2">{{ product.title }}</h1>
+            <p class="text-gray-600 mb-2">Part Number: {{ product.part_number|default:"N/A" }}</p>
+            <p class="text-gray-600 mb-2">Brand: {{ product.brand.name }}</p>
+            
+            <!-- Price and Discount -->
+            <div class="mb-4">
+                {% if product.discount_percentage > 0 %}
+                    <p class="text-2xl text-green-600 font-semibold">
+                        ₹{{ product.price|floatformat:2 }} 
+                        <span class="text-sm text-gray-500 line-through">₹{{ product.price|floatformat:2 }}</span>
+                        <span class="text-sm text-red-500">({{ product.discount_percentage }}% off)</span>
+                    </p>
+                {% else %}
+                    <p class="text-2xl text-green-600 font-semibold">₹{{ product.price|floatformat:2 }}</p>
+                {% endif %}
+                <p class="text-sm text-gray-600">{{ product.stock_status }}</p>
+            </div>
+
+            <!-- Add to Cart/Wishlist -->
+            <form method="POST" action="{% url 'cart' %}" class="mb-4">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <div class="flex items-center gap-2">
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" 
+                           class="w-20 p-2 border rounded" {% if product.is_out_of_stock %}disabled{% endif %}>
+                    <button type="submit" 
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                            {% if product.is_out_of_stock %}disabled{% endif %}>
+                        Add to Cart
+                    </button>
+                    <a href="{% url 'wishlist' %}" 
+                       class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
+                        Add to Wishlist
+                    </a>
+                </div>
+            </form>
+
+            <!-- Stock and Availability -->
+            <p class="text-sm text-gray-600 mb-2">
+                {% if product.stock > 0 %}
+                    In Stock: {{ product.stock }} units
+                {% else %}
+                    Out of Stock
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Product Description -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4">Product Description</h2>
+        <p class="text-gray-700">{{ product.description|default:"No description available." }}</p>
+    </div>
+
+    <!-- Compatible Vehicles -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4">Compatible Vehicles</h2>
+        {% if product.compatible_vehicle_types.all or product.compatible_vehicle_models.all %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for vehicle_type in product.compatible_vehicle_types.all %}
+                    <div class="border p-4 rounded-lg">
+                        <p class="font-semibold">{{ vehicle_type.name }} ({{ vehicle_type.type }})</p>
+                    </div>
+                {% endfor %}
+                {% for vehicle_model in product.compatible_vehicle_models.all %}
+                    <div class="border p-4 rounded-lg">
+                        <p class="font-semibold">{{ vehicle_model.brand.name }} {{ vehicle_model.name }}</p>
+                        <p class="text-sm text-gray-600">Type: {{ vehicle_model.type.name }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">No specific vehicle compatibility information available.</p>
+        {% endif %}
+    </div>
+
+    <!-- Product Specifications -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4">Specifications</h2>
+        <ul class="list-disc pl-5 text-gray-700">
+            <li>Category: {{ product.category.name|default:"Not specified" }}</li>
+            <li>Subcategory: {{ product.subcategory.name|default:"Not specified" }}</li>
+            <li>Created: {{ product.created_at|date:"F d, Y" }}</li>
+            <li>Last Updated: {{ product.updated_at|date:"F d, Y" }}</li>
+        </ul>
+    </div>
+
+    <!-- Bulk Discounts -->
+    {% if product.bulk_discounts.all %}
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4">Bulk Discounts</h2>
+        <ul class="list-disc pl-5 text-gray-700">
+            {% for discount in product.bulk_discounts.all %}
+                <li>{{ discount.discount_percentage }}% off for {{ discount.min_quantity }}+ units</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Reviews -->
+    <div class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4">Customer Reviews</h2>
+        {% if product.review_set.all %}
+            {% for review in product.review_set.all %}
+                <div class="border p-4 rounded-lg mb-4">
+                    <p class="font-semibold">{{ review.user.username }} - {{ review.rating }}/5</p>
+                    <p class="text-gray-600">{{ review.comment|default:"No comment provided." }}</p>
+                    <p class="text-sm text-gray-500">{{ review.created_at|date:"F d, Y" }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600">No reviews yet.</p>
+        {% endif %}
+
+        <!-- Add Review Form -->
+        {% if request.user.is_authenticated %}
+        <form method="POST" action="{% url 'add_review' product_id=product.id %}" class="mt-4">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
+                <select name="rating" id="rating" class="border rounded p-2 w-full">
+                    <option value="1">1 Star</option>
+                    <option value="2">2 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="5">5 Stars</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="comment" class="block text-sm font-medium text-gray-700">Comment</label>
+                <textarea name="comment" id="comment" class="border rounded p-2 w-full" rows="4"></textarea>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Submit Review
+            </button>
+        </form>
+        {% else %}
+        <p class="text-gray-600">Please <a href="{% url 'login' %}" class="text-blue-500">log in</a> to submit a review.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
