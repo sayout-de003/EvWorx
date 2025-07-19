@@ -89,7 +89,7 @@ class Product(models.Model):
         related_name='products'
     )
 
-    compatible_vehicle_types = models.ManyToManyField(VehicleType, null=True, blank=True)
+    compatible_vehicle_types = models.ManyToManyField(VehicleType, blank=True)
 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
