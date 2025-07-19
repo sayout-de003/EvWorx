@@ -1,55 +1,57 @@
-{% extends 'core/base.html' %}
-{% block title %}Your Cart{% endblock %}
-
-{% block content %}
-<h1 class="text-3xl font-bold mb-6">Your Shopping Cart</h1>
-
-{% if cart_items %}
-    <div class="grid gap-6">
-        {% for item in cart_items %}
-            <div class="bg-white rounded-xl shadow-md p-4 flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    {% if item.product.image %}
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-20 h-20 object-cover rounded-md border">
-                    {% endif %}
-                    <div>
-                        <h2 class="text-lg font-semibold">
-                            {{ item.product.title }}
-                        </h2>
-                        <p class="text-gray-500">Price: ₹{{ item.product.price }}</p>
-                        <p class="text-gray-600">Subtotal: ₹{{ item.subtotal }}</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <form method="POST" action="{% url 'cart' %}" class="flex items-center gap-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="update" value="1">
-                        <input type="hidden" name="product_id" value="{{ item.product.id }}">
-                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="w-16 px-2 py-1 border rounded">
-                        <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Update</button>
-                    </form>
-                    <form method="POST" action="{% url 'cart' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="delete" value="1">
-                        <input type="hidden" name="product_id" value="{{ item.product.id }}">
-                        <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">Delete</button>
-                    </form>
-                </div>
-            </div>
-        {% endfor %}
+<footer class="bg-gray-900 text-white px-6 py-8">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 items-start text-sm">
+    <!-- Brand Column -->
+    <div>
+      <h2 class="text-lg font-semibold flex items-center gap-1 mb-2">
+        ⚡ EVault
+      </h2>
+      <p class="text-gray-400 mb-4">Your trusted partner for premium electric vehicle parts and accessories.</p>
+      <div class="flex gap-3 text-gray-400">
+        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin"></i></a>
+      </div>
     </div>
 
-    <div class="text-right mt-8">
-        <p class="text-xl font-bold mb-2">Total: ₹{{ total_price }}</p>
-        <a href="{% url 'order_create' %}" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">Proceed to Checkout</a>
+    <!-- Quick Links -->
+    <div>
+      <h3 class="text-md font-semibold mb-2">Quick Links</h3>
+      <ul class="space-y-1 text-gray-400">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Catalog</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
     </div>
 
-{% else %}
-    <div class="text-center mt-16">
-        <img src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png" alt="Empty Cart" class="mx-auto w-32 h-32 mb-4">
-        <p class="text-xl text-gray-500">Your cart is empty. Let’s add something awesome!</p>
-        <a href="{% url 'catalog' %}" class="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Browse Products</a>
+    <!-- Support -->
+    <div>
+      <h3 class="text-md font-semibold mb-2">Support</h3>
+      <ul class="space-y-1 text-gray-400">
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">Shipping Info</a></li>
+        <li><a href="#">Returns</a></li>
+        <li><a href="#">Warranty</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+      </ul>
     </div>
-{% endif %}
-{% endblock %}
+
+    <!-- Newsletter -->
+    <div>
+      <h3 class="text-md font-semibold mb-2">Newsletter</h3>
+      <p class="text-gray-400 mb-2">Stay updated with our latest products and offers.</p>
+      <form class="flex items-center bg-gray-800 rounded overflow-hidden">
+        <input type="email" placeholder="Enter your email" class="bg-transparent px-3 py-2 text-sm text-white outline-none w-full">
+        <button type="submit" class="bg-blue-600 px-3 py-2 hover:bg-blue-700 transition">
+          <svg class="w-4 h-4 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 5v4h7v6h-7v4l-5-7z"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="mt-6 text-center text-xs text-gray-500">
+    © 2025 <strong>EvWorx</strong>. All rights reserved. | <a href="#" class="text-blue-400 hover:underline">Powering the Future of Electric Mobility</a>
+  </div>
+</footer>
