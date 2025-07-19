@@ -1,57 +1,123 @@
-<footer class="bg-gray-900 text-white px-6 py-8">
-  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 items-start text-sm">
-    <!-- Brand Column -->
-    <div>
-      <h2 class="text-lg font-semibold flex items-center gap-1 mb-2">
-        ⚡ EVault
-      </h2>
-      <p class="text-gray-400 mb-4">Your trusted partner for premium electric vehicle parts and accessories.</p>
-      <div class="flex gap-3 text-gray-400">
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-linkedin"></i></a>
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- CART PAGE -->
+<section class="cart-container">
+  <div class="cart-wrapper">
+    <h1>Your Shopping Cart</h1>
+
+    {% if cart_items %}
+      <div class="cart-items">
+        {% for item in cart_items %}
+        <div class="cart-item">
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+          <div class="item-details">
+            <h2>{{ item.product.name }}</h2>
+            <p>₹{{ item.product.price }}</p>
+            <p>Qty: {{ item.quantity }}</p>
+            <p>Subtotal: ₹{{ item.get_total_price }}</p>
+          </div>
+        </div>
+        {% endfor %}
       </div>
-    </div>
 
-    <!-- Quick Links -->
-    <div>
-      <h3 class="text-md font-semibold mb-2">Quick Links</h3>
-      <ul class="space-y-1 text-gray-400">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Catalog</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">FAQ</a></li>
-        <li><a href="#">Blog</a></li>
-      </ul>
-    </div>
-
-    <!-- Support -->
-    <div>
-      <h3 class="text-md font-semibold mb-2">Support</h3>
-      <ul class="space-y-1 text-gray-400">
-        <li><a href="#">Contact Us</a></li>
-        <li><a href="#">Shipping Info</a></li>
-        <li><a href="#">Returns</a></li>
-        <li><a href="#">Warranty</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-      </ul>
-    </div>
-
-    <!-- Newsletter -->
-    <div>
-      <h3 class="text-md font-semibold mb-2">Newsletter</h3>
-      <p class="text-gray-400 mb-2">Stay updated with our latest products and offers.</p>
-      <form class="flex items-center bg-gray-800 rounded overflow-hidden">
-        <input type="email" placeholder="Enter your email" class="bg-transparent px-3 py-2 text-sm text-white outline-none w-full">
-        <button type="submit" class="bg-blue-600 px-3 py-2 hover:bg-blue-700 transition">
-          <svg class="w-4 h-4 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 5v4h7v6h-7v4l-5-7z"/></svg>
-        </button>
-      </form>
-    </div>
+      <div class="cart-summary">
+        <h3>Total: ₹{{ cart_total }}</h3>
+        <a href="{% url 'checkout' %}" class="checkout-btn">Proceed to Checkout</a>
+      </div>
+    {% else %}
+      <p class="empty-message">Your cart is empty.</p>
+    {% endif %}
   </div>
+</section>
 
-  <div class="mt-6 text-center text-xs text-gray-500">
-    © 2025 <strong>EvWorx</strong>. All rights reserved. | <a href="#" class="text-blue-400 hover:underline">Powering the Future of Electric Mobility</a>
-  </div>
-</footer>
+<style>
+.cart-container {
+  padding: 60px 20px;
+  background-color: #f8f9fa;
+  min-height: 80vh;
+}
+
+.cart-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.cart-wrapper h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  background-color: #ffffff;
+  align-items: center;
+}
+
+.cart-item img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.item-details h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.item-details p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.cart-summary {
+  text-align: right;
+  margin-top: 30px;
+}
+
+.cart-summary h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.checkout-btn {
+  background: linear-gradient(to right, #007bff, #00c6ff);
+  color: white;
+  padding: 12px 24px;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.checkout-btn:hover {
+  background: linear-gradient(to right, #0056b3, #0096d6);
+}
+
+.empty-message {
+  font-size: 1.2rem;
+  text-align: center;
+  color: #666;
+  padding: 40px 0;
+}
+</style>
+
+{% endblock %}
