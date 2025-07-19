@@ -1,123 +1,24 @@
 {% extends 'base.html' %}
+
 {% block content %}
+<h2 style="text-align: center; margin-bottom: 1rem;">Your Shopping Cart</h2>
 
-<!-- CART PAGE -->
-<section class="cart-container">
-  <div class="cart-wrapper">
-    <h1>Your Shopping Cart</h1>
-
+<div style="max-width: 800px; margin: 0 auto; background-color: white; padding: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px;">
     {% if cart_items %}
-      <div class="cart-items">
-        {% for item in cart_items %}
-        <div class="cart-item">
-          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
-          <div class="item-details">
-            <h2>{{ item.product.name }}</h2>
-            <p>₹{{ item.product.price }}</p>
-            <p>Qty: {{ item.quantity }}</p>
-            <p>Subtotal: ₹{{ item.get_total_price }}</p>
-          </div>
+        <ul style="list-style: none; padding: 0;">
+            {% for item in cart_items %}
+                <li style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 10px 0;">
+                    <span><strong>{{ item.product.name }}</strong> x {{ item.quantity }}</span>
+                    <span>₹{{ item.product.price|floatformat:2 }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+        <hr style="margin: 20px 0;">
+        <div style="text-align: right; font-weight: bold; font-size: 1.2rem;">
+            Total: ₹{{ total_price|floatformat:2 }}
         </div>
-        {% endfor %}
-      </div>
-
-      <div class="cart-summary">
-        <h3>Total: ₹{{ cart_total }}</h3>
-        <a href="{% url 'checkout' %}" class="checkout-btn">Proceed to Checkout</a>
-      </div>
     {% else %}
-      <p class="empty-message">Your cart is empty.</p>
+        <p style="text-align: center;">Your cart is empty.</p>
     {% endif %}
-  </div>
-</section>
-
-<style>
-.cart-container {
-  padding: 60px 20px;
-  background-color: #f8f9fa;
-  min-height: 80vh;
-}
-
-.cart-wrapper {
-  max-width: 1000px;
-  margin: 0 auto;
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.cart-wrapper h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-.cart-items {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.cart-item {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  border: 1px solid #dee2e6;
-  border-radius: 10px;
-  background-color: #ffffff;
-  align-items: center;
-}
-
-.cart-item img {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-.item-details h2 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.item-details p {
-  margin: 5px 0;
-  color: #555;
-}
-
-.cart-summary {
-  text-align: right;
-  margin-top: 30px;
-}
-
-.cart-summary h3 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-}
-
-.checkout-btn {
-  background: linear-gradient(to right, #007bff, #00c6ff);
-  color: white;
-  padding: 12px 24px;
-  text-decoration: none;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: background 0.3s ease;
-}
-
-.checkout-btn:hover {
-  background: linear-gradient(to right, #0056b3, #0096d6);
-}
-
-.empty-message {
-  font-size: 1.2rem;
-  text-align: center;
-  color: #666;
-  padding: 40px 0;
-}
-</style>
-
+</div>
 {% endblock %}
