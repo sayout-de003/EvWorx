@@ -1,0 +1,139 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-10">
+  <div class="text-center mb-10">
+    <h1 class="text-4xl font-bold text-blue-600">📦 Order Management</h1>
+    <p class="text-lg text-blue-500 mt-2">Manage and track all customer orders</p>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="mb-4 px-4 py-3 rounded
+    {% if message.tags == 'success' %}
+        bg-green-100 text-green-800
+    {% else %}
+        bg-red-100 text-red-800
+    {% endif %}
+">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Filters -->
+  <div class="flex flex-wrap gap-4 mb-8">
+    <div class="flex-grow relative">
+      <input id="searchInput" type="text" placeholder="Search orders or customers..."
+        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+      <i class="absolute right-3 top-2.5 text-gray-400 fas fa-search"></i>
+    </div>
+    <select id="statusFilter"
+      class="px-4 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+      <option value="">All Statuses</option>
+      {% for status, label in orders.0.STATUS_CHOICES %}
+        <option value="{{ status }}">{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Orders Grid -->
+  <div id="ordersGrid" class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    {% for order in orders %}
+    <div class="bg-white rounded-xl shadow-lg p-6 space-y-4" 
+         data-order-id="{{ order.id }}" 
+         data-status="{{ order.status|lower }}" 
+         data-customer="{{ order.user.username|default:order.delivery_address.full_name|lower }}">
+      <!-- Header -->
+      <div class="flex justify-between items-center">
+        <div class="text-lg font-bold text-indigo-600">#{{ order.id }}</div>
+        <div
+          class="px-3 py-1 text-xs rounded-full font-semibold uppercase
+          {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+          {% elif order.status == 'processing' %}bg-blue-100 text-blue-800
+          {% elif order.status == 'shipped' %}bg-green-100 text-green-800
+          {% elif order.status == 'delivered' %}bg-emerald-100 text-emerald-800
+          {% elif order.status == 'cancelled' %}bg-red-100 text-red-800
+          {% else %}bg-gray-100 text-gray-800{% endif %}">
+          {{ order.status }}
+        </div>
+      </div>
+
+      <!-- Customer Info -->
+      <div>
+        <div class="flex items-center gap-2 font-medium text-gray-800">
+          <i class="fas fa-user text-indigo-500"></i>
+          {{ order.user.username|default:order.delivery_address.full_name|default:"Guest" }}
+        </div>
+        <div class="text-sm text-gray-600 mt-1">
+          {% if order.delivery_address %}
+            {{ order.delivery_address.local_address }}, {{ order.delivery_address.city }},
+            {{ order.delivery_address.state }} {{ order.delivery_address.pincode }}<br>
+            Phone: {{ order.delivery_address.phone }}
+          {% else %}
+            No address provided
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Order Meta -->
+      <div class="grid grid-cols-2 text-sm text-gray-700 gap-4">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-dollar-sign text-indigo-500"></i> ₹{{ order.total_amount }}
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fas fa-calendar-alt text-indigo-500"></i> {{ order.created_at|date:"Y-m-d H:i" }}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <form method="POST" action="{% url 'admin_orders' %}" class="space-y-2">
+        {% csrf_token %}
+        <input type="hidden" name="order_id" value="{{ order.id }}">
+        <select name="status"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          {% for status, label in order.STATUS_CHOICES %}
+            <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="tracking_link"
+          value="{{ order.tracking_link|default_if_none:'' }}"
+          placeholder="Tracking link"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <button type="submit"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md font-semibold transition duration-150">
+          Update
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Scripts for filtering -->
+<script>
+  const searchInput = document.getElementById("searchInput");
+  const statusFilter = document.getElementById("statusFilter");
+  const cards = document.querySelectorAll("[data-order-id]");
+
+  function filterOrders() {
+    const query = searchInput.value.toLowerCase();
+    const status = statusFilter.value;
+
+    cards.forEach(card => {
+      const id = card.dataset.orderId.toLowerCase();
+      const customer = card.dataset.customer.toLowerCase();
+      const orderStatus = card.dataset.status.toLowerCase();
+
+      const matchesSearch = id.includes(query) || customer.includes(query);
+      const matchesStatus = !status || orderStatus === status.toLowerCase();
+
+      card.style.display = matchesSearch && matchesStatus ? "block" : "none";
+    });
+  }
+
+  searchInput.addEventListener("input", filterOrders);
+  statusFilter.addEventListener("change", filterOrders);
+</script>
+{% endblock %}

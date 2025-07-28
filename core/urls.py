@@ -5,7 +5,7 @@ from core.views import (
     ProductViewSet, CartViewSet, OrderViewSet, WishlistViewSet, 
     ReviewViewSet, homepage, about, faq, blog, blog_detail, 
     signup, user_login, user_logout, catalog, garage, cart_view, 
-    wishlist_view, order_create, order_confirm, order_payment,verify_phone , product_detail , add_review
+    wishlist_view, order_create, order_confirm, order_payment,verify_phone , product_detail , add_review,admin_orders_view
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -48,6 +48,8 @@ urlpatterns = [
     path('order/confirm/', order_confirm, name='order_confirm'),
     path('order/payment/',order_payment, name='order_payment'),
     path('verify-phone/', verify_phone, name='verify_phone'),
+    path('staff/orders/', admin_orders_view, name='admin_orders'), 
+
 
     # API
     path('api/', include(router.urls)),
