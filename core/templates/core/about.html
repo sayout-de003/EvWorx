@@ -1,7 +1,41 @@
 {% extends 'core/base.html' %}
-{% block title %}About{% endblock %}
+{% block title %}About Us - EVworkx{% endblock %}
+
 {% block content %}
-    <h1 class="text-3xl font-bold mb-4">About EVworkx</h1>
-    <p class="mb-4">EVworkx is your trusted source for electric vehicle parts and accessories. We are committed to providing high-quality products and excellent customer service to help you keep your EV running smoothly.</p>
-    <p>Our mission is to support the EV community with reliable parts, expert advice, and educational resources.</p>
+<div class="bg-gradient-to-r from-blue-50 via-white to-green-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="p-8 sm:p-12">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-indigo-700 mb-6">Welcome to EVworkx</h1>
+            <p class="text-lg sm:text-xl text-gray-700 text-center mb-8">
+                Your trusted destination for premium electric vehicle parts and accessories.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <h2 class="text-2xl font-semibold text-green-700 mb-3">Our Purpose</h2>
+                    <p class="text-gray-600 text-base leading-relaxed">
+                        At <strong>EVworkx</strong>, we’re on a mission to accelerate the EV movement. We provide high-quality, tested components that help ensure your electric vehicle runs efficiently, safely, and smoothly.
+                    </p>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-semibold text-blue-700 mb-3">Why Choose Us</h2>
+                    <ul class="list-disc pl-5 text-gray-600 space-y-2 text-base">
+                        <li>Reliable and affordable EV parts</li>
+                        <li>Expert advice and responsive support</li>
+                        <li>Educational resources for every EV owner</li>
+                        <li>Fast delivery and easy returns</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-10 bg-gradient-to-r from-indigo-600 to-green-600 text-white p-6 rounded-2xl shadow-md">
+                <h3 class="text-2xl font-bold mb-2">Driving Toward a Greener Tomorrow</h3>
+                <p class="text-base sm:text-lg">
+                    We're not just a parts provider—we’re your partner in building a cleaner, smarter future through sustainable mobility.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

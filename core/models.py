@@ -183,8 +183,8 @@ class OrderItem(models.Model):
 class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-    compatible_vehicle_models = models.ManyToManyField('VehicleModel', blank=True, related_name='products')
-    compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
+    compatible_vehicle_models = models.ManyToManyField('VehicleModel', blank=True, related_name='products',null=True)
+    compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True,null=True,related_name='products')
     country_of_origin = models.CharField(max_length=100, blank=True, null=True)  # Product/Service Information
     created_at = models.DateTimeField(auto_now_add=True)
     delivery_details = models.TextField(blank=True, null=True)  # Product/Service Information
@@ -314,7 +314,7 @@ class VehicleModel(models.Model):
 # ----------------- VehicleType -----------------
 class VehicleType(models.Model):
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=20, choices=[('Car', 'Car'), ('Bike', 'Bike'), ('Scooter', 'Scooter'), ('Cycle', 'Cycle')])
+    type = models.CharField(max_length=20, choices=[('Car', 'Car'), ('Bike', 'Bike'), ('Scooter', 'Scooter'), ('Cycle', 'Cycle'),('E-Rikshaw','E-Rikshaw')])
 
     def __str__(self):
         return f"{self.name} ({self.type})"
