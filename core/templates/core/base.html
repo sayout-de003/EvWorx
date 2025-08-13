@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EvWorx - {% block title %}{% endblock %}</title>
+    <title>EvWorx {% block title %}{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -126,6 +126,12 @@
                     <a href="{% url 'homepage' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Home</a>
                     <a href="{% url 'catalog' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Catalog</a>
                     {% if user.is_authenticated %}
+                            {% if user.is_staff %}
+                                <a href="{% url 'admin_orders' %}" class="nav-link">
+                                    <i class="fas fa-tools mr-1"></i>Manage Orders
+                                </a>
+                            {% endif %}
+
                         <a href="{% url 'garage' %}" class="nav-link text-gray-700 hover:text-blue-600 font-medium">
                             <i class="fas fa-car mr-1"></i>Garage
                         </a>

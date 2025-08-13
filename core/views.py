@@ -456,6 +456,31 @@ def order_create(request):
     })
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Product, Review
+from django.contrib.auth.decorators import login_required
+
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    return render(request, 'core/product_detail.html', {'product': product})
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        Review.objects.create(
+            user=request.user,
+            product=product,
+            rating=rating,
+            comment=comment
+        )
+        messages.success(request, 'Review submitted successfully!')
+        return redirect('product_detail', slug=product.slug)
+    return redirect('product_detail', slug=product.slug)
+
+
 from decimal import Decimal
 from .models import DeliveryAddress, Coupon, Order, OrderItem, Product, Cart
 
@@ -556,6 +581,24 @@ def order_confirm(request):
         verified=False
     )
 
+    # Prepare cart items for template display
+    cart_items = []
+    if request.user.is_authenticated:
+        cart_items = list(cart.items.all())
+    else:
+        # Create a simple class for anonymous user cart items
+        class CartItemLike:
+            def __init__(self, product, quantity):
+                self.product = product
+                self.quantity = quantity
+            
+            def get_total_price(self):
+                return self.product.price * self.quantity
+        
+        # Convert session cart items to CartItem-like objects for template
+        for item in items:
+            cart_items.append(CartItemLike(item['product'], item['quantity']))
+
     # Clear cart
     if request.user.is_authenticated:
         cart.items.all().delete()
@@ -567,6 +610,7 @@ def order_confirm(request):
     request.session.pop('applied_coupon', None)
 
     return render(request, 'core/order_confirm.html', {
+        'cart_items': cart_items,
         'order': order,
         'address': address_data,
         'total_breakdown': {
@@ -631,7 +675,35 @@ def verify_phone(request):
 
             return JsonResponse({'status': 'otp_sent'})
 
+# views.py
 
+from django.contrib.admin.views.decorators import staff_member_required
+from .models import Order, DeliveryAddress
+from django.views.decorators.csrf import csrf_protect
+
+@staff_member_required
+@csrf_protect
+def admin_orders_view(request):
+    # Use select_related for both 'user' and 'delivery_address'
+    orders = Order.objects.all().select_related('user', 'delivery_address').order_by('-created_at')
+
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        new_status = request.POST.get('status')
+        tracking_link = request.POST.get('tracking_link', '').strip()
+
+        try:
+            order = Order.objects.get(id=order_id)
+            order.status = new_status
+            order.tracking_link = tracking_link
+            order.save()
+            messages.success(request, f"Order #{order_id} updated.")
+        except Order.DoesNotExist:
+            messages.error(request, f"Order #{order_id} not found.")
+
+        return redirect('admin_orders')
+
+    return render(request, 'core/admin_orders.html', {'orders': orders})
 
 
 # Existing ViewSets...
@@ -746,3 +818,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Review.objects.filter(user=self.request.user)
+    
+
+

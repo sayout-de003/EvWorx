@@ -1,11 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from core.views import (
-    UserViewSet, VehicleViewSet, VehicleTypeViewSet, BrandViewSet, 
+    UserViewSet, VehicleViewSet, VehicleTypeViewSet, BrandViewSet,  
     ProductViewSet, CartViewSet, OrderViewSet, WishlistViewSet, 
     ReviewViewSet, homepage, about, faq, blog, blog_detail, 
     signup, user_login, user_logout, catalog, garage, cart_view, 
-    wishlist_view, order_create, order_confirm, order_payment,verify_phone
+    wishlist_view, order_create, order_confirm, order_payment,verify_phone , product_detail , add_review,admin_orders_view
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -30,6 +30,8 @@ urlpatterns = [
     path('blog/', blog, name='blog'),
     path('blog/<int:pk>/', blog_detail, name='blog_detail'),
     path('catalog/', catalog, name='catalog'),
+    path('product/<slug:slug>/', product_detail, name='product_detail'),
+    path('product/<int:product_id>/review/', add_review, name='add_review'),
 
     # Auth
     path('signup/', signup, name='signup'),
@@ -41,10 +43,13 @@ urlpatterns = [
     path('cart/', cart_view, name='cart'),
     path('wishlist/', wishlist_view, name='wishlist'),
     path('order/', order_create, name='order_create'),
+
     # path('order/', views.order_create, name='order_create'),
     path('order/confirm/', order_confirm, name='order_confirm'),
     path('order/payment/',order_payment, name='order_payment'),
     path('verify-phone/', verify_phone, name='verify_phone'),
+    path('staff/orders/', admin_orders_view, name='admin_orders'), 
+
 
     # API
     path('api/', include(router.urls)),

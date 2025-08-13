@@ -2,47 +2,65 @@
 {% block title %}Confirm Order{% endblock %}
 
 {% block content %}
-<h2 class="text-2xl font-bold mb-4">Confirm Order</h2>
+<div class="max-w-3xl mx-auto px-4 py-6 bg-white rounded-lg shadow-md mt-6">
 
-<h3 class="text-lg font-semibold">Delivery Address:</h3>
-<p class="mb-4">
-  {{ address.full_name }}, {{ address.local_address }}, {{ address.city }} - {{ address.pincode }},
-  {{ address.district }}, {{ address.state }}<br>
-  Phone: {{ address.phone }}{% if address.email %}, Email: {{ address.email }}{% endif %}
-</p>
+  <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">🧾 Confirm Your Order</h2>
 
-<h3 class="text-lg font-semibold">Cart Items:</h3>
-<table class="w-full mb-4 border">
-  <thead class="bg-gray-200">
-    <tr>
-      <th class="px-4 py-2 text-left">Product</th>
-      <th class="px-4 py-2 text-left">Quantity</th>
-      <th class="px-4 py-2 text-left">Total Price</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in cart_items %}
-      <tr>
-        <td class="px-4 py-2">{{ item.product.title }}</td>
-        <td class="px-4 py-2">{{ item.quantity }}</td>
-        <td class="px-4 py-2">₹{{ item.get_total_price }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+  <!-- Delivery Address -->
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold text-gray-700 mb-1">📦 Delivery Address:</h3>
+    <p class="text-gray-600 leading-relaxed">
+      {{ address.full_name }}, {{ address.local_address }}, {{ address.city }} - {{ address.pincode }},
+      {{ address.district }}, {{ address.state }}<br>
+      <span class="block mt-1">📞 {{ address.phone }}{% if address.email %} | ✉️ {{ address.email }}{% endif %}</span>
+    </p>
+  </div>
 
-<h3 class="text-lg font-semibold">Price Summary:</h3>
-<ul class="mb-4">
-  <li>Subtotal: ₹{{ total_breakdown.subtotal }}</li>
-  <li>Discount: ₹{{ total_breakdown.discount }}</li>
-  <li>Coupon Discount: ₹{{ total_breakdown.coupon }}</li>
-  <li>GST: ₹{{ total_breakdown.gst }}</li>
-  <li>Delivery: ₹{{ total_breakdown.delivery }}</li>
-  <li class="font-bold text-lg">Total: ₹{{ total_breakdown.total }}</li>
-</ul>
+  <!-- Cart Items -->
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold text-gray-700 mb-2">🛒 Cart Items:</h3>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left text-sm border rounded-md">
+        <thead class="bg-gray-100 text-gray-700">
+          <tr>
+            <th class="py-2 px-4">Product</th>
+            <th class="py-2 px-4">Quantity</th>
+            <th class="py-2 px-4">Total Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart_items %}
+          <tr class="border-t hover:bg-gray-50">
+            <td class="py-2 px-4 font-medium text-gray-800">{{ item.product.title }}</td>
+            <td class="py-2 px-4">{{ item.quantity }}</td>
+            <td class="py-2 px-4">₹{{ item.get_total_price }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-<form action="{% url 'order_payment' %}" method="POST">
-  {% csrf_token %}
-  <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Proceed to Payment</button>
-</form>
+  <!-- Price Summary -->
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold text-gray-700 mb-2">💰 Price Summary:</h3>
+    <ul class="text-gray-700 space-y-1">
+      <li>Subtotal: ₹{{ total_breakdown.subtotal }}</li>
+      <li>Discount: ₹{{ total_breakdown.discount }}</li>
+      <li>Coupon Discount: ₹{{ total_breakdown.coupon }}</li>
+      <li>GST: ₹{{ total_breakdown.gst }}</li>
+      <li>Delivery: ₹{{ total_breakdown.delivery }}</li>
+      <li class="font-bold text-lg text-green-700 mt-2">Total: ₹{{ total_breakdown.total }}</li>
+    </ul>
+  </div>
+
+  <!-- Payment Button -->
+  <form action="{% url 'order_payment' %}" method="POST" class="mt-4">
+    {% csrf_token %}
+    <button type="submit"
+      class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded shadow transition duration-200">
+      ✅ Proceed to Payment
+    </button>
+  </form>
+</div>
 {% endblock %}
