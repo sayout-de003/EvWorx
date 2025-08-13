@@ -1,24 +1,56 @@
-{% extends 'base.html' %}
+{% extends 'core/base.html' %}
+{% block title %}Your Cart{% endblock %}
 
 {% block content %}
-<h2 style="text-align: center; margin-bottom: 1rem;">Your Shopping Cart</h2>
+<div class="max-w-5xl mx-auto px-4 pt-16 pb-24">
+    <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-12 border-b-2 border-gray-300 pb-4">
+        Your Shopping Cart
+    </h1>
 
-<div style="max-width: 800px; margin: 0 auto; background-color: white; padding: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px;">
     {% if cart_items %}
-        <ul style="list-style: none; padding: 0;">
+        <div class="grid gap-6">
             {% for item in cart_items %}
-                <li style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding: 10px 0;">
-                    <span><strong>{{ item.product.name }}</strong> x {{ item.quantity }}</span>
-                    <span>₹{{ item.product.price|floatformat:2 }}</span>
-                </li>
+                <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col md:flex-row md:items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-24 h-24 object-cover rounded-lg border">
+                        {% endif %}
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900">{{ item.product.title }}</h2>
+                            <p class="text-gray-500 mt-1">Price: ₹{{ item.product.price }}</p>
+                            <p class="text-gray-600">Subtotal: ₹{{ item.subtotal }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 mt-4 md:mt-0">
+                        <form method="POST" action="{% url 'cart' %}" class="flex items-center gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="update" value="1">
+                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="w-16 px-2 py-1 border rounded focus:outline-none">
+                            <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Update</button>
+                        </form>
+                        <form method="POST" action="{% url 'cart' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete" value="1">
+                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <button type="submit" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">Delete</button>
+                        </form>
+                    </div>
+                </div>
             {% endfor %}
-        </ul>
-        <hr style="margin: 20px 0;">
-        <div style="text-align: right; font-weight: bold; font-size: 1.2rem;">
-            Total: ₹{{ total_price|floatformat:2 }}
+        </div>
+
+        <div class="text-right mt-12">
+            <p class="text-2xl font-bold mb-4 text-gray-800">Total: ₹{{ total_price }}</p>
+            <a href="{% url 'order_create' %}" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">Proceed to Checkout</a>
         </div>
     {% else %}
-        <p style="text-align: center;">Your cart is empty.</p>
+        <div class="text-center mt-20">
+            <img src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png" alt="Empty Cart" class="mx-auto w-32 h-32 mb-6">
+            <p class="text-xl text-gray-500">Your cart is empty. Let’s add something awesome!</p>
+            <a href="{% url 'catalog' %}" class="inline-block mt-6 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Browse Products</a>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

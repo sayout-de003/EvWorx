@@ -1,31 +1,56 @@
 {% extends 'core/base.html' %}
+
 {% block title %}Signup{% endblock %}
+
 {% block content %}
-    <h1 class="text-3xl font-bold mb-4">Signup</h1>
-    <form method="post" class="max-w-md">
-        {% csrf_token %}
-        <div class="mb-4">
-            <label for="username" class="block">Username</label>
-            <input type="text" name="username" id="username" class="w-full p-2 border" required>
+<div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-xl">
+    <div>
+      <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Already have an account?
+        <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:underline">Login here</a>
+      </p>
+    </div>
+    <form class="mt-8 space-y-6" method="post">
+      {% csrf_token %}
+      <div class="rounded-md shadow-sm space-y-4">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+          <input id="username" name="username" type="text" required
+                 class="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
         </div>
-        <div class="mb-4">
-            <label for="email" class="block">Email</label>
-            <input type="email" name="email" id="email" class="w-full p-2 border" required>
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+          <input id="email" name="email" type="email" required
+                 class="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
         </div>
-        <div class="mb-4">
-            <label for="password" class="block">Password</label>
-            <input type="password" name="password" id="password" class="w-full p-2 border" required>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+          <input id="password" name="password" type="password" required
+                 class="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
         </div>
-        <div class="mb-4">
-            <label for="phone_number" class="block">Phone Number</label>
-            <input type="text" name="phone_number" id="phone_number" class="w-full p-2 border">
+        <div>
+          <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+          <input id="phone_number" name="phone_number" type="text"
+                 class="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
         </div>
-        <div class="mb-4">
-            <label for="is_technician" class="inline-flex items-center">
-                <input type="checkbox" name="is_technician" id="is_technician" class="mr-2">
-                Are you a technician?
-            </label>
+        <div class="flex items-center">
+          <input id="is_technician" name="is_technician" type="checkbox"
+                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <label for="is_technician" class="ml-2 block text-sm text-gray-700">
+            Are you a technician?
+          </label>
         </div>
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Signup</button>
+      </div>
+
+      <div>
+        <button type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          Sign up
+        </button>
+      </div>
     </form>
+  </div>
+</div>
 {% endblock %}
