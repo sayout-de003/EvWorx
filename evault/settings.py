@@ -25,11 +25,8 @@ SECRET_KEY = 'django-insecure-mpo^(is8fe*=7%o2!pa9njb#2jayrvxawbkzrs_8$s(20@thlg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    'rush-heads-handles-ata.trycloudflare.com',
-]
+ALLOWED_HOSTS = ["*"]
+
 
 
 # Application definition
