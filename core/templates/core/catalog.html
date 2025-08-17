@@ -1,159 +1,123 @@
-{% extends "core/base.html" %}
-{% block title %}Product Catalog - EVworkx{% endblock %}
+{% extends 'core/base.html' %}
+{% block title %}Catalog{% endblock %}
 
 {% block content %}
-<!-- Full height container so body doesn't scroll -->
-<div class="bg-gray-50 h-screen flex flex-col">
-  
-  <!-- Header -->
-  <div class="py-4 px-4 sm:px-6 lg:px-8 bg-white shadow">
-    <h1 class="text-3xl font-extrabold text-center text-gray-800">
-      Explore Our EV Parts Catalog
+<div class="max-w-7xl mx-auto px-4 pt-16 pb-24">
+    <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-12 border-b-2 border-gray-300 pb-4">
+        Product Catalog
     </h1>
-  </div>
 
-  <!-- Main content area with independent scrolls -->
-  <div class="flex flex-1 gap-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
-    
-    <!-- FILTER SIDEBAR -->
-    <form method="get" 
-          class="w-full lg:w-1/4 bg-white p-6 rounded-2xl shadow overflow-y-auto">
-      <h2 class="text-2xl font-semibold text-blue-600 mb-6">Filter By</h2>
+    <!-- Filter Form -->
+    <form method="get" class="mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <!-- Vehicle -->
+            <div>
+                <label for="vehicle_id" class="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
+                <select name="vehicle_id" id="vehicle_id" class="w-full p-2 border rounded">
+                    <option value="">All Vehicles</option>
+                    {% for vehicle in vehicles %}
+                        <option value="{{ vehicle.id }}" {% if selected_vehicle == vehicle.id|stringformat:"s" %}selected{% endif %}>
+                            {{ vehicle.brand.name }} {{ vehicle.model }} ({{ vehicle.year }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <!-- Vehicle -->
-      <div class="mb-5">
-        <label for="vehicle_id" class="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
-        <select name="vehicle_id" id="vehicle_id" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          <option value="">All Vehicles</option>
-          {% for vehicle in vehicles %}
-            <option value="{{ vehicle.id }}" {% if selected_vehicle == vehicle.id|stringformat:"s" %}selected{% endif %}>
-              {{ vehicle.brand.name }} {{ vehicle.model }} ({{ vehicle.year }})
-            </option>
-          {% endfor %}
-        </select>
-      </div>
+            <!-- Category -->
+            <div>
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select name="category" id="category" class="w-full p-2 border rounded">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <!-- Category -->
-      <div class="mb-5">
-        <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-        <select name="category" id="category" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          <option value="">All Categories</option>
-          {% for category in categories %}
-            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
-              {{ category.name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
+            <!-- Brand -->
+            <div>
+                <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                <select name="brand" id="brand" class="w-full p-2 border rounded">
+                    <option value="">All Brands</option>
+                    {% for brand in brands %}
+                        <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                            {{ brand.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <!-- Brand -->
-      <div class="mb-5">
-        <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-        <select name="brand" id="brand" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          <option value="">All Brands</option>
-          {% for brand in brands %}
-            <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>
-              {{ brand.name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
+            <!-- Search -->
+            <div>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input type="text" name="search" id="search" value="{{ search_query }}"
+                       placeholder="Product name" class="w-full p-2 border rounded">
+            </div>
 
-      <!-- Search -->
-      <div class="mb-5">
-        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-        <input type="text" name="search" id="search" placeholder="Search product name"
-               value="{{ search_query }}" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-      </div>
+            <!-- Sort -->
+            <div>
+                <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                <select name="sort" id="sort" class="w-full p-2 border rounded">
+                    <option value="">Default</option>
+                    <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>Name: A to Z</option>
+                    <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>Name: Z to A</option>
+                </select>
+            </div>
 
-      <!-- Sort -->
-      <div class="mb-5">
-        <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-        <select name="sort" id="sort" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-          <option value="">Default</option>
-          <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
-          <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
-          <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>Name: A to Z</option>
-          <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>Name: Z to A</option>
-        </select>
-      </div>
-
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
-        Apply Filters
-      </button>
+            <!-- Apply Button -->
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                    Apply
+                </button>
+            </div>
+        </div>
     </form>
 
-    <!-- PRODUCT GRID -->
-    <div class="w-full lg:w-3/4 overflow-y-auto">
-      {% if products %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-1">
-          {% for product in products %}
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition">
+    <!-- Product Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        {% for product in products %}
+        <div class="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition p-4 flex flex-col justify-between">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-full h-48 object-cover rounded-lg mb-4">
+            {% endif %}
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-800 mb-1">{{ product.title }}</h3>
+                <p class="text-sm text-gray-600 mb-2">{{ product.description|truncatewords:20 }}</p>
+                <p class="text-xl text-green-600 font-bold mb-3">₹{{ product.price }}</p>
+            </div>
 
-              <!-- Product Image -->
-              <div class="relative w-full h-48">
-                {% if product.main_image %}
-                  <img src="{{ product.main_image.url }}" alt="{{ product.title }}"
-                       class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
-                  <span class="absolute top-2 right-2 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full">New</span>
-                {% else %}
-                  <div class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
-                    <i class="fas fa-image text-4xl"></i>
-                  </div>
-                {% endif %}
-              </div>
-
-              <!-- Product Info -->
-              <div class="p-4">
-                <h3 class="text-lg font-bold text-gray-800 mb-1 truncate">{{ product.title }}</h3>
-                <p class="text-sm text-gray-500 mb-2">{{ product.description|truncatewords:20 }}</p>
-                <p class="text-green-700 font-extrabold text-lg mb-2">₹{{ product.price }}</p>
-
-                <!-- View Product -->
-                <a href="{% url 'product_detail' slug=product.slug %}"
-                   class="inline-block mb-3 text-blue-600 hover:underline font-medium">
-                  <i class="fas fa-eye mr-1"></i> View Product
-                </a>
-
-                {% if product.is_out_of_stock %}
-                  <button class="bg-gray-400 text-white w-full py-2 rounded-lg cursor-not-allowed" disabled>
-                    <i class="fas fa-ban mr-2"></i> Out of Stock
-                  </button>
-                {% else %}
-                  <form action="{% url 'cart' %}" method="post" class="mb-2">
+            {% if product.is_out_of_stock %}
+                <button disabled class="bg-gray-400 text-white py-2 rounded-md font-medium w-full cursor-not-allowed">
+                    <i class="fas fa-ban mr-1"></i> Out of Stock
+                </button>
+            {% else %}
+                <form action="{% url 'cart' %}" method="post" class="mb-2">
                     {% csrf_token %}
                     <input type="hidden" name="product_id" value="{{ product.id }}">
                     <div class="flex items-center gap-2 mb-2">
-                      <label class="text-sm">Qty:</label>
-                      <input type="number" name="quantity" value="1" min="1" max="10"
-                             class="w-16 px-2 py-1 border rounded-lg">
+                        <label class="text-sm text-gray-600">Qty:</label>
+                        <input type="number" name="quantity" value="1" min="1" max="10"
+                               class="w-16 px-2 py-1 border border-gray-300 rounded">
                     </div>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded-lg transition">
-                      <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                    <button type="submit" class="bg-blue-600 text-white py-2 rounded-md w-full hover:bg-blue-700 transition">
+                        <i class="fas fa-shopping-cart mr-1"></i> Add to Cart
                     </button>
-                  </form>
-                {% endif %}
-
-                <!-- Wishlist -->
-                <form action="{% url 'wishlist' %}" method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="product_id" value="{{ product.id }}">
-                  <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white w-full py-2 rounded-lg transition">
-                    <i class="fas fa-heart mr-2"></i> Add to Wishlist
-                  </button>
                 </form>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="text-center text-gray-500 py-20">
-          <i class="fas fa-box-open text-5xl mb-4"></i>
-          <p class="text-lg">No products found matching your filters.</p>
-        </div>
-      {% endif %}
-    </div>
+            {% endif %}
 
-  </div>
+            <form action="{% url 'wishlist' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <button type="submit" class="bg-gray-700 text-white py-2 rounded-md w-full hover:bg-gray-800 transition">
+                    Add to Wishlist
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
