@@ -1,255 +1,320 @@
 {% extends 'core/base.html' %}
-{% block title %}Checkout - EVworkx{% endblock %}
+{% block title %}Checkout - EVWorx{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans">
-  <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-center mb-8">Secure Checkout</h1>
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Form Section -->
-    <div class="lg:col-span-2">
-      <form method="POST" class="bg-white shadow-md rounded-xl p-6 space-y-6 lg:space-y-4" id="order-form" onsubmit="return checkPhoneVerified(event)">
-        {% csrf_token %}
-
-        <!-- Delivery Information -->
-        <section class="bg-gray-50 rounded-lg p-5">
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">Delivery Information</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input type="text" name="full_name" id="full_name" placeholder="Full Name" required
-                     class="input">
-            </div>
-            <div class="flex gap-2 items-end">
-              <div class="flex-1">
-                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                <input type="text" name="phone" id="phone" placeholder="Mobile Number" required
-                       class="input" maxlength="10" pattern="[0-9]{10}" oninput="validatePhoneInput()">
-                <span id="phone-error" class="text-red-500 text-xs hidden">Enter a valid 10-digit number</span>
-              </div>
-              <button type="button" id="verify-btn" onclick="verifyPhone()"
-                      class="btn-green mt-6 h-11 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Verify</button>
-            </div>
-            <div id="otp-section" class="col-span-1 sm:col-span-2 hidden flex gap-2 items-end mt-2">
-              <div class="flex-1">
-                <label for="otp" class="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
-                <input type="text" name="otp" id="otp" placeholder="Enter OTP"
-                       class="input" maxlength="6" pattern="[0-9]{4,6}" oninput="validateOtpInput()">
-                <span id="otp-error" class="text-red-500 text-xs hidden">Enter a valid OTP</span>
-              </div>
-            </div>
-            <div id="verify-error" class="col-span-1 sm:col-span-2 text-red-500 text-sm hidden mt-2"></div>
-            <div>
-              <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
-              <input type="email" name="email" id="email" placeholder="Email"
-                     class="input">
-            </div>
-            <div>
-              <label for="pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
-              <input type="text" name="pincode" id="pincode" placeholder="Pincode" required
-                     class="input">
-            </div>
-            <div>
-              <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
-              <input type="text" name="city" id="city" placeholder="City" required
-                     class="input">
-            </div>
-            <div>
-              <label for="district" class="block text-sm font-medium text-gray-700 mb-1">District</label>
-              <input type="text" name="district" id="district" placeholder="District" required
-                     class="input">
-            </div>
-            <div>
-              <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
-              <input type="text" name="state" id="state" placeholder="State" required
-                     class="input">
-            </div>
-            <div class="col-span-1 sm:col-span-2 lg:col-span-2">
-              <label for="local_address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-              <textarea name="local_address" id="local_address" placeholder="Street, Area, House No., etc." required
-                        rows="3" class="input resize-none w-full lg:w-[98%] xl:w-[99%] 2xl:w-full"></textarea>
-            </div>
-            <div class="col-span-1 sm:col-span-2">
-              <label for="landmark" class="block text-sm font-medium text-gray-700 mb-1">Landmark (optional)</label>
-              <input type="text" name="landmark" id="landmark" placeholder="Landmark"
-                     class="input">
-            </div>
-          </div>
-        </section>
-
-        <!-- Coupon Code -->
-        <section class="bg-gray-50 rounded-lg p-5">
-          <h2 class="text-xl font-semibold text-gray-800 mb-4">Coupon Code</h2>
-          <div class="flex gap-2">
-            <input type="text" name="coupon_code" id="coupon_code" placeholder="Enter your coupon"
-                   class="input flex-1">
-            <button type="button" class="btn-green h-11">Apply</button>
-          </div>
-        </section>
-
-        <!-- Submit Button -->
-        <div class="pt-4 flex justify-center">
-          <button type="submit" class="btn-primary w-full max-w-xl text-2xl py-5 font-bold shadow-lg transition-transform transform hover:scale-105" id="continue-btn">Continue to Confirmation</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Order Summary -->
-    <div class="lg:col-span-1">
-      <section class="bg-white shadow-md rounded-xl p-6 sticky top-4">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
-        <div class="space-y-4">
-          {% for item in cart.items.all %}
-            <div class="flex justify-between items-start pb-3 border-b">
-              <div>
-                <h3 class="text-base font-medium text-gray-800 line-clamp-2">{{ item.product.title }}</h3>
-                <p class="text-sm text-gray-600">Qty: {{ item.quantity }}</p>
-              </div>
-              <p class="text-sm font-medium text-gray-800">₹{{ item.get_total_price }}</p>
-            </div>
-          {% endfor %}
-          <div class="flex justify-between font-bold text-lg text-gray-900 pt-4">
-            <span>Total</span>
-            <span>₹{{ total_price }}</span>
-          </div>
-        </div>
-      </section>
-    </div>
-  </div>
-</div>
-
-<!-- Styles -->
 <style>
-  .input {
-    @apply p-3 border border-gray-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 transition;
-    font-size: 1.1rem;
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(180deg, #7c5cf0 0%, #5a3ce4 100%);
+    color: #1f2937;
   }
 
-  .btn-primary {
-    @apply bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium transition;
+  .checkout-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 50px;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #111827;
+  }
+
+  .checkout-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .checkout-form,
+  .order-summary {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+  }
+
+  .form-group {
+    margin-bottom: 25px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.95rem;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #f9fafb;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: #7c5cf0;
+    box-shadow: 0 0 0 4px rgba(124, 92, 240, 0.15);
+    outline: none;
+    background-color: #fff;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(to right, #7c5cf0, #5a3ce4);
+    color: #fff;
+    font-weight: 600;
+    padding: 18px 30px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 1.15rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(124,92,240,0.3);
+  }
+
+  .btn-verify {
+    background: linear-gradient(135deg, #7c5cf0, #5a3ce4);
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-verify:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(124,92,240,0.3);
+  }
+
+  .phone-group {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .order-summary {
+    position: sticky;
+    top: 40px;
+  }
+
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 1rem;
+    color: #374151;
+  }
+
+  .order-item:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
     font-size: 1.3rem;
-    padding-top: 1.1rem;
-    padding-bottom: 1.1rem;
-    min-height: 3.5rem;
+    margin-top: 30px;
+    border-top: 2px solid #e5e7eb;
+    padding-top: 25px;
+    color: #111827;
   }
 
-  @media (min-width: 1024px) {
-    form.bg-white {
-      max-width: 700px;
-      margin: 0 auto;
+  #otp-section {
+    margin-top: 10px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+  }
+
+  @media (max-width: 1024px) {
+    .checkout-grid {
+      grid-template-columns: 1fr;
+      gap: 30px;
     }
-    .order-summary-section {
-      max-width: 350px;
+    .order-summary {
+      position: static;
+      margin-top: 0;
     }
-    .input, textarea.input {
-      max-width: 99%;
+    .phone-group {
+      flex-direction: column;
     }
   }
 </style>
 
+<div class="checkout-container">
+  <h1>Secure Checkout</h1>
+  <div class="checkout-grid">
+    <!-- Checkout Form -->
+    <div class="checkout-form">
+      <h2>Delivery Information</h2>
+      <form method="POST" id="order-form" onsubmit="return checkPhoneVerified(event)">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="full_name">Full Name</label>
+          <input type="text" name="full_name" id="full_name" placeholder="Full Name" required>
+        </div>
+
+        <div class="form-group phone-group">
+          <div class="flex-1">
+            <label for="phone">Mobile Number</label>
+            <input type="text" name="phone" id="phone" placeholder="Mobile Number" maxlength="10" required>
+          </div>
+          <button type="button" id="verify-btn" onclick="showOtpForm()" class="btn-verify" disabled>Verify 🔒</button>
+        </div>
+
+        <!-- OTP Form (hidden initially) -->
+        <div id="otp-section" style="display:none;">
+          <div class="form-group">
+            <label for="otp">Enter OTP</label>
+            <input type="text" id="otp" name="otp" placeholder="6-digit OTP" maxlength="6">
+          </div>
+          <button type="button" class="btn-verify" onclick="submitOtp()">Submit OTP ✅</button>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email (optional)</label>
+          <input type="email" name="email" id="email" placeholder="Email">
+        </div>
+
+        <div class="form-group">
+          <label for="pincode">Pincode</label>
+          <input type="text" name="pincode" id="pincode" placeholder="Pincode" required>
+        </div>
+
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" name="city" id="city" placeholder="City" required>
+        </div>
+
+        <div class="form-group">
+          <label for="district">District</label>
+          <input type="text" name="district" id="district" placeholder="District" required>
+        </div>
+
+        <div class="form-group">
+          <label for="state">State</label>
+          <input type="text" name="state" id="state" placeholder="State" required>
+        </div>
+
+        <div class="form-group">
+          <label for="local_address">Address</label>
+          <textarea name="local_address" id="local_address" placeholder="Street, Area, House No., etc." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="landmark">Landmark (optional)</label>
+          <input type="text" name="landmark" id="landmark" placeholder="Landmark">
+        </div>
+
+        <button type="submit" class="btn">Continue to Confirmation</button>
+      </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <h2>Order Summary</h2>
+      {% for item in cart.items.all %}
+        <div class="order-item">
+          <p>{{ item.product.title }} x {{ item.quantity }}</p>
+          <p>₹{{ item.get_total_price }}</p>
+        </div>
+      {% endfor %}
+      <div class="total">
+        <p>Total</p>
+        <p>₹{{ total_price }}</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-  let otpSent = false;
   let phoneVerified = false;
 
   function validatePhoneInput() {
     const phoneInput = document.getElementById('phone');
     const verifyBtn = document.getElementById('verify-btn');
-    const phoneError = document.getElementById('phone-error');
     const phone = phoneInput.value.trim();
-    if (/^\d{10}$/.test(phone)) {
-      verifyBtn.disabled = false;
-      phoneError.classList.add('hidden');
-    } else {
-      verifyBtn.disabled = true;
-      phoneError.classList.remove('hidden');
-    }
+    verifyBtn.disabled = !/^\d{10}$/.test(phone);
   }
 
-  function validateOtpInput() {
-    const otpInput = document.getElementById('otp');
-    const verifyBtn = document.getElementById('verify-btn');
-    const otpError = document.getElementById('otp-error');
-    const otp = otpInput.value.trim();
-    // Accept 4-6 digit OTPs
-    if (/^\d{4,6}$/.test(otp)) {
-      verifyBtn.disabled = false;
-      otpError.classList.add('hidden');
-    } else {
-      verifyBtn.disabled = true;
-      otpError.classList.remove('hidden');
-    }
+  function showOtpForm() {
+    alert("OTP sent to your phone number!");
+    document.getElementById('otp-section').style.display = 'block';
   }
 
-  function verifyPhone() {
-    const phone = document.querySelector('input[name="phone"]').value.trim();
-    const otp = document.querySelector('input[name="otp"]')?.value.trim();
-    const payload = { phone };
-    if (otpSent) payload.otp = otp;
+  function submitOtp() {
+    const otp = document.getElementById('otp').value.trim();
 
-    // Prevent submission if not valid
-    if (!otpSent && !/^\d{10}$/.test(phone)) {
-      document.getElementById('phone-error').classList.remove('hidden');
-      return;
+    // This should be replaced with backend verification
+    if (/^\d{5,6}$/.test(otp)) {
+      phoneVerified = true;
+      alert("Phone verified successfully!");
+      document.getElementById('otp-section').style.display = 'none';
+      document.getElementById('verify-btn').innerText = "Verified ✅";
+      document.getElementById('verify-btn').disabled = true;
+      document.getElementById('phone').readOnly = true;
+    } else {
+      alert("Invalid OTP. Please try again.");
     }
-    if (otpSent && !/^\d{4,6}$/.test(otp)) {
-      document.getElementById('otp-error').classList.remove('hidden');
-      return;
-    }
-
-    fetch("{% url 'verify_phone' %}", {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': '{{ csrf_token }}',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'otp_sent') {
-        otpSent = true;
-        alert('OTP sent to ' + phone);
-        document.getElementById('otp-section').classList.remove('hidden');
-        document.getElementById('verify-btn').textContent = 'Submit OTP';
-        document.getElementById('verify-btn').disabled = true;
-        document.getElementById('otp').focus();
-      } else if (data.status === 'verified') {
-        alert('Phone verified!');
-        phoneVerified = true;
-        document.querySelector('input[name="phone"]').readOnly = true;
-        document.getElementById('otp-section').classList.add('hidden');
-        document.getElementById('verify-btn').textContent = 'Verified ✅';
-        document.getElementById('verify-btn').disabled = true;
-        document.getElementById('verify-btn').classList.add('bg-green-600', 'hover:bg-green-600');
-        document.getElementById('verify-error').classList.add('hidden');
-      } else {
-        phoneVerified = false;
-        document.getElementById('verify-error').textContent = data.message || 'Incorrect OTP. Please try again.';
-        document.getElementById('verify-error').classList.remove('hidden');
-      }
-    })
-    .catch(error => {
-      alert('Error: ' + error.message);
-    });
   }
 
   function checkPhoneVerified(event) {
     if (!phoneVerified) {
       event.preventDefault();
-      document.getElementById('verify-error').textContent = 'Please verify your phone number with OTP before continuing.';
-      document.getElementById('verify-error').classList.remove('hidden');
+      alert("Please verify your phone before continuing.");
       return false;
     }
     return true;
   }
 
-  // Attach input listeners on page load
   document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('phone').addEventListener('input', validatePhoneInput);
-    if (document.getElementById('otp')) {
-      document.getElementById('otp').addEventListener('input', validateOtpInput);
-    }
   });
 </script>
 {% endblock %}

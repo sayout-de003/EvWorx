@@ -1,20 +1,16 @@
-asgiref==3.8.1
-certifi==2025.6.2
-charset-normalizer==3.3.2
-cloudflared==2024.7.1  # Only if installed via pip; often installed via binary instead
-Django==5.1.6
-djangorestframework==3.15.1
-idna==3.7
-Pillow==10.3.0  # For image support (e.g., product images)
-psycopg2-binary==2.9.9  # If using PostgreSQL; skip if using SQLite
-python-decouple==3.8  # Optional: to manage `.env` securely
-requests==2.32.3
-sqlparse==0.5.0
-tzdata==2024.1
-urllib3==2.2.2
-whitenoise==6.6.0  # If you're deploying static files without nginx
-
-# Optional (but often used in projects):
-django-cors-headers==4.3.1
-django-crispy-forms==2.1
-django-filter==24.2
+asgiref==3.9.1
+Brotli==1.1.0
+click==8.2.1
+dj-database-url==3.0.1
+Django==5.2.4
+django-cors-headers==4.7.0
+djangorestframework==3.16.0
+gunicorn==23.0.0
+h11==0.16.0
+packaging==25.0
+pillow==11.3.0
+psycopg2-binary==2.9.10
+python-decouple==3.8
+sqlparse==0.5.3
+uvicorn==0.35.0
+whitenoise==6.9.0
