@@ -89,6 +89,8 @@ WSGI_APPLICATION = 'evault.wsgi.application'
 from decouple import config  # Only if you're using python-decouple
 import os
 
+import dj_database_url
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -99,6 +101,12 @@ DATABASES = {
         'PORT': config('DB_PORT', default='5432'),
     }
 }
+
+# Override only if DATABASE_URL exists (Render/production)
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+
 
 
 
