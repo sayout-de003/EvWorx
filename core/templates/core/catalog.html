@@ -2,122 +2,236 @@
 {% block title %}Catalog{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 pt-16 pb-24">
-    <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-12 border-b-2 border-gray-300 pb-4">
-        Product Catalog
-    </h1>
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
 
-    <!-- Filter Form -->
-    <form method="get" class="mb-12">
-        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <!-- Vehicle -->
-            <div>
-                <label for="vehicle_id" class="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
-                <select name="vehicle_id" id="vehicle_id" class="w-full p-2 border rounded">
-                    <option value="">All Vehicles</option>
-                    {% for vehicle in vehicles %}
-                        <option value="{{ vehicle.id }}" {% if selected_vehicle == vehicle.id|stringformat:"s" %}selected{% endif %}>
-                            {{ vehicle.brand.name }} {{ vehicle.model }} ({{ vehicle.year }})
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 text-white">
+        <div class="absolute inset-0 bg-black/30"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
+        <div class="relative max-w-7xl mx-auto px-4 py-24 text-center animate-fadeIn">
+            <h1 class="text-5xl md:text-6xl font-black tracking-tight mb-6">
+                <span class="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                    Premium
+                </span>
+                <span class="text-white"> Catalog</span>
+            </h1>
+            <p class="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed mb-8">
+                Discover our curated collection of automotive excellence
+            </p>
+            <a href="#catalog" class="px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full text-lg font-semibold shadow-lg hover:scale-105 transition-transform">
+                Explore Now
+            </a>
+        </div>
+    </div>
 
-            <!-- Category -->
-            <div>
-                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select name="category" id="category" class="w-full p-2 border rounded">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
-                            {{ category.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+    <div id="catalog" class="max-w-7xl mx-auto px-4 mt-8 relative z-10">
 
-            <!-- Brand -->
-            <div>
-                <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                <select name="brand" id="brand" class="w-full p-2 border rounded">
-                    <option value="">All Brands</option>
-                    {% for brand in brands %}
-                        <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>
-                            {{ brand.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+        <!-- Sticky Filter/Search/Sort Bar -->
+        <div id="filterBar" class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50">
+            <div class="flex flex-col lg:flex-row items-center justify-between px-4 py-3 gap-3">
 
-            <!-- Search -->
-            <div>
-                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                <input type="text" name="search" id="search" value="{{ search_query }}"
-                       placeholder="Product name" class="w-full p-2 border rounded">
-            </div>
+                <!-- Mobile & Desktop Search -->
+                <div class="flex-1 w-full lg:w-auto">
+                    <form method="get" class="flex w-full">
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Search products..."
+                               class="flex-[2] p-3 border-2 border-gray-200 rounded-xl lg:rounded-l-xl focus:outline-none">
+                        <button type="submit" class="px-4 bg-indigo-600 text-white rounded-r-xl lg:rounded-l-none hover:bg-indigo-700 transition">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
 
-            <!-- Sort -->
-            <div>
-                <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                <select name="sort" id="sort" class="w-full p-2 border rounded">
-                    <option value="">Default</option>
-                    <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
-                    <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
-                    <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>Name: A to Z</option>
-                    <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>Name: Z to A</option>
-                </select>
-            </div>
+                <!-- Mobile Filter & Sort Buttons -->
+                <div class="flex gap-2 lg:hidden">
+                    <button onclick="toggleFilter()" class="flex items-center px-4 py-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
+                        <i class="fas fa-filter mr-2 text-indigo-600"></i> Filter
+                    </button>
+                    <button onclick="toggleSort()" class="flex items-center px-4 py-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
+                        <i class="fas fa-sort mr-2 text-indigo-600"></i> Sort
+                    </button>
+                </div>
 
-            <!-- Apply Button -->
-            <div class="flex items-end">
-                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    Apply
-                </button>
+                <!-- Desktop Filters -->
+                <div class="hidden lg:flex flex-1 justify-between gap-4">
+                    <form method="get" class="flex flex-1 gap-4 w-full">
+                        <!-- Search already included above, so skip here for desktop -->
+
+                        <!-- Vehicle Filter -->
+                        <select name="vehicle_id" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
+                            <option value="">All Vehicles</option>
+                            {% for vehicle in vehicles %}
+                                <option value="{{ vehicle.id }}" {% if selected_vehicle == vehicle.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ vehicle.brand.name }} {{ vehicle.model }} ({{ vehicle.year }})
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Category Filter -->
+                        <select name="category" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Brand Filter -->
+                        <select name="brand" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
+                            <option value="">All Brands</option>
+                            {% for brand in brands %}
+                                <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ brand.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Sort -->
+                        <select name="sort" class="flex-[2] p-3 bg-white border-2 border-gray-200 rounded-xl">
+                            <option value="">Default</option>
+                            <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>Name: A to Z</option>
+                            <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>Name: Z to A</option>
+                        </select>
+
+                        <!-- Apply Button -->
+                        <button type="submit" class="flex-[1] bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
+                            Apply
+                        </button>
+                    </form>
+                </div>
+
             </div>
         </div>
-    </form>
 
-    <!-- Product Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {% for product in products %}
-        <div class="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-lg transition p-4 flex flex-col justify-between">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="w-full h-48 object-cover rounded-lg mb-4">
-            {% endif %}
-            <div class="flex-1">
-                <h3 class="text-lg font-semibold text-gray-800 mb-1">{{ product.title }}</h3>
-                <p class="text-sm text-gray-600 mb-2">{{ product.description|truncatewords:20 }}</p>
-                <p class="text-xl text-green-600 font-bold mb-3">₹{{ product.price }}</p>
-            </div>
-
-            {% if product.is_out_of_stock %}
-                <button disabled class="bg-gray-400 text-white py-2 rounded-md font-medium w-full cursor-not-allowed">
-                    <i class="fas fa-ban mr-1"></i> Out of Stock
-                </button>
-            {% else %}
-                <form action="{% url 'cart' %}" method="post" class="mb-2">
-                    {% csrf_token %}
-                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                    <div class="flex items-center gap-2 mb-2">
-                        <label class="text-sm text-gray-600">Qty:</label>
-                        <input type="number" name="quantity" value="1" min="1" max="10"
-                               class="w-16 px-2 py-1 border border-gray-300 rounded">
-                    </div>
-                    <button type="submit" class="bg-blue-600 text-white py-2 rounded-md w-full hover:bg-blue-700 transition">
-                        <i class="fas fa-shopping-cart mr-1"></i> Add to Cart
+        <!-- Mobile Filter Modal -->
+        <div id="filterModal" class="fixed inset-0 bg-black/40 hidden z-50">
+            <div class="absolute bottom-0 w-full bg-white rounded-t-2xl p-6 max-h-[80%] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Filters</h2>
+                    <button onclick="toggleFilter()" class="text-gray-500 hover:text-gray-800">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form method="get" class="grid grid-cols-1 gap-4">
+                    {{ filter_form }}
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold mt-4">
+                        Apply Filters
                     </button>
                 </form>
-            {% endif %}
-
-            <form action="{% url 'wishlist' %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <button type="submit" class="bg-gray-700 text-white py-2 rounded-md w-full hover:bg-gray-800 transition">
-                    Add to Wishlist
-                </button>
-            </form>
+            </div>
         </div>
-        {% endfor %}
+
+        <!-- Mobile Sort Modal -->
+        <div id="sortModal" class="fixed inset-0 bg-black/40 hidden z-50">
+            <div class="absolute bottom-0 w-full bg-white rounded-t-2xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold">Sort By</h2>
+                    <button onclick="toggleSort()" class="text-gray-500 hover:text-gray-800">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <ul class="space-y-3">
+                    <li><a href="?sort=price_asc" class="block">Price: Low to High</a></li>
+                    <li><a href="?sort=price_desc" class="block">Price: High to Low</a></li>
+                    <li><a href="?sort=name_asc" class="block">Name: A to Z</a></li>
+                    <li><a href="?sort=name_desc" class="block">Name: Z to A</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-16 mt-6">
+            {% for product in products %}
+            <div class="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition">
+
+                <!-- Image -->
+                <div class="relative h-64 bg-gray-100 overflow-hidden">
+                    {% if product.main_image %}
+                        <a href="{% url 'product_detail' product.slug %}">
+                            <img src="{{ product.main_image.url }}" alt="{{ product.title }}" loading="lazy"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        </a>
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                            <i class="fas fa-image text-6xl opacity-50"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div class="p-6 space-y-3">
+                    <h3 class="text-lg font-bold text-gray-800 group-hover:text-indigo-600 transition">
+                        <a href="{% url 'product_detail' product.slug %}">{{ product.title }}</a>
+                    </h3>
+                    <p class="text-sm text-gray-500 line-clamp-2">{{ product.description|truncatewords:15 }}</p>
+                    <div class="flex justify-between items-center">
+                        <p class="text-2xl font-bold text-green-600">₹{{ product.price }}</p>
+                        <div class="flex text-yellow-400">★★★★☆</div>
+                    </div>
+                    <div class="pt-4 flex gap-3">
+                        <a href="{% url 'product_detail' product.slug %}" 
+                           class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-center hover:bg-indigo-700 transition">
+                           View
+                        </a>
+                        {% if not product.is_out_of_stock %}
+                        <form action="{% url 'cart' %}" method="post" class="flex-1">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="flex justify-center space-x-2 pb-12">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-gray-200 rounded-lg">« Prev</a>
+            {% endif %}
+            <span class="px-4 py-2 bg-indigo-600 text-white rounded-lg">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-gray-200 rounded-lg">Next »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
     </div>
 </div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+
+<script>
+function toggleFilter() {
+    document.getElementById('filterModal').classList.toggle('hidden');
+}
+function toggleSort() {
+    document.getElementById('sortModal').classList.toggle('hidden');
+}
+
+// Add shadow effect when sticky
+window.addEventListener('scroll', () => {
+    const bar = document.getElementById('filterBar');
+    if(window.scrollY > 50) {
+        bar.classList.add('shadow-xl');
+    } else {
+        bar.classList.remove('shadow-xl');
+    }
+});
+</script>
+
 {% endblock %}

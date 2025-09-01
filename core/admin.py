@@ -59,7 +59,7 @@ class VehicleModelAdmin(admin.ModelAdmin):
 # ----------------- Category -----------------
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'created_at']
+    list_display = ['name', 'description', 'created_at','image']
     search_fields = ['name']
 
 @admin.register(SubCategory)
@@ -102,6 +102,17 @@ class CartAdmin(admin.ModelAdmin):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 1
+
+# core/admin.py
+from django.contrib import admin
+from .models import HeroSlider
+
+@admin.register(HeroSlider)
+class HeroSliderAdmin(admin.ModelAdmin):
+    list_display = ("title", "order", "active")
+    list_editable = ("order", "active")
+    ordering = ("order",)
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):

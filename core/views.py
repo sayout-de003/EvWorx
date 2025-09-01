@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import User, Vehicle, VehicleType, Brand, Product, Cart, CartItem, Order, OrderItem, Wishlist, Review, Coupon
+from .models import User, Vehicle, VehicleType, Brand, Product, Cart, CartItem, Order, OrderItem, Wishlist, Review, Coupon, Category, HeroSlider
 from .serializers import UserSerializer, VehicleSerializer, VehicleTypeSerializer, BrandSerializer, ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer, WishlistSerializer, ReviewSerializer, CouponSerializer
 from django.db.models import Q
 from django.utils import timezone
@@ -13,7 +13,13 @@ from django.contrib import messages
 
 def homepage(request):
     products = Product.objects.filter(stock__gt=0).order_by('-id')[:6] # Show 6 featured products
-    return render(request, 'core/homepage.html', {'products': products})
+    categories = Category.objects.all()
+    sliders = HeroSlider.objects.filter(active=True)
+    return render(request, 'core/homepage.html', {
+        'sliders': sliders,
+        'products': products,
+        'categories': categories,
+    })
 
 def about(request):
     return render(request, 'core/about.html')

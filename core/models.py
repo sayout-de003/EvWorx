@@ -1,7 +1,3 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator
-
 from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -20,6 +16,7 @@ class Brand(models.Model):
     def __str__(self):
         return self.name
 
+
 # ----------------- BulkDiscountTier -----------------
 class BulkDiscountTier(models.Model):
     discount_percentage = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
@@ -35,6 +32,7 @@ class BulkDiscountTier(models.Model):
     def __str__(self):
         return f"{self.product.title}: {self.discount_percentage}% off from {self.min_quantity}+"
 
+
 # ----------------- Cart -----------------
 class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -42,6 +40,7 @@ class Cart(models.Model):
 
     def __str__(self):
         return f"Cart ({self.user.username})"
+
 
 # ----------------- CartItem -----------------
 class CartItem(models.Model):
@@ -64,11 +63,13 @@ class CartItem(models.Model):
         discounted_price = price * (Decimal('1.0') - bulk_discount / Decimal('100'))
         return discounted_price * quantity
 
+
 # ----------------- Category -----------------
 class Category(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     description = models.TextField(blank=True)
     name = models.CharField(max_length=100, unique=True)
+    image = models.ImageField(upload_to='categories/', blank=True, null=True)
 
     class Meta:
         ordering = ['name']
@@ -77,6 +78,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
 
 # ----------------- Coupon -----------------
 class Coupon(models.Model):
@@ -88,6 +90,7 @@ class Coupon(models.Model):
 
     def __str__(self):
         return self.code
+
 
 # ----------------- DeliveryAddress -----------------
 class DeliveryAddress(models.Model):
@@ -106,6 +109,7 @@ class DeliveryAddress(models.Model):
     def __str__(self):
         return f"{self.full_name} - {self.pincode}"
 
+
 # ----------------- GrievanceOfficer -----------------
 class GrievanceOfficer(models.Model):
     contact_details = models.TextField()
@@ -115,6 +119,48 @@ class GrievanceOfficer(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# ----------------- HeroSlider -----------------
+class HeroSlider(models.Model):
+    title = models.CharField(max_length=200, help_text="Main heading for the slide")
+    subtitle = models.CharField(max_length=300, blank=True, null=True, help_text="Optional subheading")
+    button_text = models.CharField(max_length=100, blank=True, null=True)
+    button_link = models.URLField(blank=True, null=True)
+    background_color = models.CharField(max_length=50, default="bg-gradient-to-r from-blue-600 to-indigo-700")
+    image = models.ImageField(upload_to="hero_slides/")
+    order = models.PositiveIntegerField(default=0, help_text="Slide order (0 = first)")
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"Slide {self.order+1}: {self.title}"
+
+    def clean(self):
+        if not self.pk and HeroSlider.objects.count() >= 10:
+            raise ValidationError("You can only have up to 10 slides.")
+
+    def delete(self, *args, **kwargs):
+        if HeroSlider.objects.count() <= 1:
+            raise ValidationError("You must keep at least one slide.")
+        super().delete(*args, **kwargs)
+
+
+# ----------------- Manufacturer -----------------
+class Manufacturer(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Manufacturer"
+        verbose_name_plural = "Manufacturers"
+
+    def __str__(self):
+        return self.name
+
 
 # ----------------- Order -----------------
 class Order(models.Model):
@@ -126,7 +172,7 @@ class Order(models.Model):
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=50)
-    gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # GST Compliance
+    gst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -143,7 +189,7 @@ class Order(models.Model):
 
     def calculate_total(self, save=True):
         subtotal = sum(item.get_total_price() for item in self.items.all())
-        gst = subtotal * Decimal('0.18')  # GST Compliance
+        gst = subtotal * Decimal('0.18')
         delivery = self.delivery_charge or Decimal('50.00')
         total = subtotal + gst + delivery
 
@@ -167,8 +213,8 @@ class Order(models.Model):
                     raise ValidationError(f"Insufficient stock for '{product.title}' (Available: {product.stock}, Requested: {item.quantity})")
                 product.stock -= item.quantity
                 product.save()
-
             self.calculate_total(save=True)
+
 
 # ----------------- OrderItem -----------------
 class OrderItem(models.Model):
@@ -183,32 +229,33 @@ class OrderItem(models.Model):
     def get_total_price(self):
         return self.price * self.quantity
 
+
 # ----------------- Product -----------------
 class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     compatible_vehicle_models = models.ManyToManyField('VehicleModel', blank=True, related_name='products')
-    compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True,related_name='products')
-    country_of_origin = models.CharField(max_length=100, blank=True, null=True)  # Product/Service Information
+    compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
+    country_of_origin = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    delivery_details = models.TextField(blank=True, null=True)  # Product/Service Information
-    description = models.TextField(blank=True)  # Product/Service Information
-    discount_percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])  # Pricing and Discount Clarity
+    description = models.TextField(blank=True)
+    discount_percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     is_out_of_stock_manual = models.BooleanField(default=False)
     main_image = models.ImageField(upload_to='products/', blank=True, null=True)
-    net_quantity = models.CharField(max_length=100, blank=True, null=True)  # Product/Service Information
-    mrp = models.DecimalField(max_digits=10, decimal_places=2)  # Product/Service Information (MRP)
+    manufacturer = models.ForeignKey('Manufacturer', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+    mrp = models.DecimalField(max_digits=10, decimal_places=2)
+    net_quantity = models.CharField(max_length=100, blank=True, null=True)
     part_number = models.CharField(max_length=100, unique=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Pricing and Discount Clarity
-    return_policy = models.TextField(blank=True, null=True)  # Return, Refund, Cancellation Policies
-    # seller = models.ForeignKey('SellerInformation', on_delete=models.CASCADE, related_name='products')  # Seller Information Disclosure
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    return_policy = models.TextField(blank=True, null=True)
     seller = models.ForeignKey('SellerInformation', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     slug = models.SlugField(unique=True, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
     subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-    title = models.CharField(max_length=200)  # Product/Service Information
+    title = models.CharField(max_length=200)
     updated_at = models.DateTimeField(auto_now=True)
-    warranty = models.CharField(max_length=100, blank=True, null=True)  # Product/Service Information
+    warranty_period = models.CharField(max_length=100, blank=True, null=True)
+    warranty_terms = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -233,6 +280,7 @@ class Product(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
+
 # ----------------- ProductImage -----------------
 class ProductImage(models.Model):
     alt_text = models.CharField(max_length=255, blank=True)
@@ -242,29 +290,32 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Image for {self.product.title}"
 
+
 # ----------------- Review -----------------
 class Review(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
-    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])  # Marketplace-specific Requirements
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='reviews')
 
     def __str__(self):
         return f"Review for {self.product.title} by {self.user.username}"
 
+
 # ----------------- SellerInformation -----------------
 class SellerInformation(models.Model):
-    address = models.TextField()  # Seller Information Disclosure
-    commission_rate = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])  # Marketplace-specific Requirements
-    gstin = models.CharField(max_length=15, blank=True, null=True)  # Seller Information Disclosure
-    importer_details = models.TextField(blank=True, null=True)  # Seller Information Disclosure
-    name = models.CharField(max_length=255)  # Seller Information Disclosure
-    pan = models.CharField(max_length=10, blank=True, null=True)  # Seller Information Disclosure
+    address = models.TextField()
+    commission_rate = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    gstin = models.CharField(max_length=15, blank=True, null=True)
+    importer_details = models.TextField(blank=True, null=True)
+    name = models.CharField(max_length=255)
+    pan = models.CharField(max_length=10, blank=True, null=True)
     user = models.OneToOneField('User', on_delete=models.CASCADE, related_name='seller_info')
 
     def __str__(self):
         return self.name
+
 
 # ----------------- SubCategory -----------------
 class SubCategory(models.Model):
@@ -282,15 +333,17 @@ class SubCategory(models.Model):
     def __str__(self):
         return f"{self.category.name} → {self.name}"
 
+
 # ----------------- User -----------------
 class User(AbstractUser):
-    accepted_privacy_policy = models.BooleanField(default=False)  # Consent and Data Privacy
+    accepted_privacy_policy = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
     is_technician = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=15, blank=True)
 
     def __str__(self):
         return self.username
+
 
 # ----------------- Vehicle -----------------
 class Vehicle(models.Model):
@@ -301,6 +354,7 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return f"{self.model.brand.name} {self.model.name} ({self.user.username})"
+
 
 # ----------------- VehicleModel -----------------
 class VehicleModel(models.Model):
@@ -315,13 +369,21 @@ class VehicleModel(models.Model):
     def __str__(self):
         return f"{self.brand.name} {self.name} ({self.type.name})"
 
+
 # ----------------- VehicleType -----------------
 class VehicleType(models.Model):
     name = models.CharField(max_length=100)
-    type = models.CharField(max_length=20, choices=[('Car', 'Car'), ('Bike', 'Bike'), ('Scooter', 'Scooter'), ('Cycle', 'Cycle'),('E-Rikshaw','E-Rikshaw')])
+    type = models.CharField(max_length=20, choices=[
+        ('Car', 'Car'),
+        ('Bike', 'Bike'),
+        ('Scooter', 'Scooter'),
+        ('Cycle', 'Cycle'),
+        ('E-Rikshaw', 'E-Rikshaw')
+    ])
 
     def __str__(self):
         return f"{self.name} ({self.type})"
+
 
 # ----------------- Wishlist -----------------
 class Wishlist(models.Model):

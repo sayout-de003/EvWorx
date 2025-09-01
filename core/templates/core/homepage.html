@@ -1,315 +1,175 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Electric Vehicle Parts</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
-
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.64/build/spline-viewer.js"></script>
-
-    <style>
-        .btn-primary {
-            background: linear-gradient(90deg, #2563eb, #7c3aed);
-            color: white;
-            font-weight: 600;
-            transition: transform .18s ease, box-shadow .18s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 14px 38px rgba(15, 23, 42, 0.18);
-        }
-        .swiper-slide {
-            touch-action: pan-y;
-        }
-        /* Spline is now on top */
-        spline-viewer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: block;
-            pointer-events: none;
-            opacity: 0.3; /* Adjust for desired transparency */
-            z-index: 100; /* Set a high z-index to be on top */
-        }
-        /* Ensure all other content is behind the spline viewer but still visible */
-        .content-container, .hero-swiper {
-            position: relative;
-            z-index: 1; /* Keep the content visible and interactive below the overlay */
-        }
-    </style>
-</head>
-<body class="bg-gray-900 text-white">
-
-<div class="bg-gray-600 text-white text-sm py-3 border-b border-gray-800 content-container">
-    <div class="container mx-auto flex flex-wrap justify-center gap-6 items-center">
-        <div class="flex items-center gap-2"><i class="fas fa-shipping-fast text-yellow-400"></i> Free Shipping over ₹5,000</div>
-        <div class="flex items-center gap-2"><i class="fas fa-headset text-yellow-400"></i> 24/7 Expert Support</div>
-        <div class="flex items-center gap-2"><i class="fas fa-lock text-yellow-400"></i> Secure Payments</div>
-        <div class="flex items-center gap-2"><i class="fas fa-award text-yellow-400"></i> 2-Year Warranty on Select Parts</div>
-    </div>
-</div>
-
-<section class="relative overflow-hidden">
-    <spline-viewer
-        url="https://prod.spline.design/1bDv0dbsiz8BBhZE/scene.splinecode"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.3; z-index: 100;">
-    </spline-viewer>
-
-    <div class="relative z-10 container mx-auto px-4 py-12">
-        <div class="swiper hero-swiper rounded-3xl overflow-hidden shadow-2xl">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide py-16 px-6 md:px-12 bg-gradient-to-r from-[#07203b] via-[#1f2a6a] to-[#5b21b6] text-white">
-                    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8">
-                        <div class="flex-1 text-center md:text-left">
-                            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4 text-yellow-400">Power Your Journey with High-Performance EV Batteries</h1>
-                            <p class="text-lg md:text-xl">Next-generation components for extended range and reliability.</p>
-                            <div class="mt-8 flex flex-wrap justify-center md:justify-start gap-4">
-                                <a href="#" class="btn-primary inline-flex items-center gap-3 px-8 py-4 rounded-full text-lg shadow-xl transition-transform hover:scale-105">
-                                    <i class="fas fa-shopping-bag"></i> Shop Batteries
-                                </a>
-                                <a href="#" class="inline-flex items-center gap-3 px-8 py-4 rounded-full text-lg shadow-xl bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black font-medium transition-all hover:scale-105 hover:shadow-2xl">
-                                    <i class="fas fa-info-circle text-black"></i> Learn More
-                                </a>
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <img src="media/images/1.jpg" alt="EV Battery" class="w-full rounded-2xl shadow-lg animate-fadeInUp">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="swiper-slide py-16 px-6 md:px-12 bg-gradient-to-r from-[#0b4f3a] to-[#06b6b3] text-white">
-                    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8">
-                        <div class="flex-1 text-center md:text-left">
-                            <h2 class="text-4xl md:text-5xl font-extrabold mb-4 text-blue-500">Eco-Friendly Motors. Performance-Driven.</h2>
-                            <p class="text-lg md:text-xl mb-8 text-green-100">Powerful electric motors engineered with sustainability in mind.</p>
-                            <a href="#" class="btn-primary px-8 py-4 rounded-full text-lg shadow-xl transition-transform hover:scale-105">Browse Motors</a>
-                        </div>
-                        <div class="flex-1">
-                            <img src="media/images/2.jpg" alt="EV Motor" class="w-full rounded-2xl shadow-lg animate-fadeInUp">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="swiper-slide py-16 px-6 md:px-12 bg-gradient-to-r from-[#f59e0b] to-[#f97316] text-gray-900">
-                    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8">
-                        <div class="flex-1 text-center md:text-left">
-                            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Smart Charging Solutions</h2>
-                            <p class="text-lg md:text-xl mb-8 text-gray-800">Fast, reliable, and intelligent chargers for your home and business.</p>
-                            <a href="#" class="bg-gray-900 text-white px-8 py-4 rounded-full text-lg shadow-xl hover:bg-gray-800 transition-transform hover:scale-105">View Chargers</a>
-                        </div>
-                        <div class="flex-1">
-                            <img src="media/images/3.jpg" alt="EV Charging Station" class="w-full rounded-2xl shadow-lg animate-fadeInUp">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="swiper-pagination !bottom-6"></div>
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-        </div>
-    </div>
-</section>
-
-<section class="container mx-auto px-4 py-6 relative z-10">
-    <div class="bg-white rounded-2xl p-6 flex items-center justify-between gap-6 shadow-md">
-        <div class="flex items-center gap-6 flex-wrap justify-center md:justify-start">
-            <img src="https://placehold.co/100x40" alt="EV Brand 1" class="h-8 opacity-80">
-            <img src="https://placehold.co/100x40" alt="EV Brand 2" class="h-8 opacity-80">
-            <img src="https://placehold.co/100x40" alt="EV Brand 3" class="h-8 opacity-80">
-            <img src="https://placehold.co/100x40" alt="EV Brand 4" class="h-8 opacity-80">
-        </div>
-        <div class="text-sm text-gray-600">Trusted by top EV manufacturers, workshops & tens of thousands of customers</div>
-    </div>
-</section>
-
-<section class="container mx-auto px-4 py-12 relative z-10">
-  <div class="text-center mb-10">
-    <h2 class="text-3xl md:text-4xl font-bold mb-3">Featured Products</h2>
-    <p class="text-gray-600 max-w-2xl mx-auto">Handpicked selection of our most popular and highest-rated components.</p>
-  </div>
-
-  <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-    {% for product in products %}
-    <div class="product-card bg-white rounded-2xl shadow-md overflow-hidden transform transition-all will-change-transform" data-index="{{ forloop.counter0 }}" data-title="{{ product.title|escapejs }}" data-desc="{{ product.description|escapejs }}" data-price="{{ product.price }}" data-img="{% if product.main_image %}{{ product.main_image.url }}{% else %}/static/img/placeholder.png{% endif %}">
-      <div class="relative h-56 overflow-hidden">
-        {% if product.main_image %}
-        <img src="{{ product.main_image.url }}" alt="{{ product.title }}" class="w-full h-full object-cover transition-transform duration-700 transform hover:scale-105">
-        {% else %}
-        <div class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
-          <i class="fas fa-image text-4xl"></i>
-        </div>
-        {% endif %}
-        {% if product.is_new %}
-        <span class="absolute top-4 left-4 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">New</span>
-        {% endif %}
-        {% if product.is_out_of_stock %}
-        <span class="absolute top-4 right-4 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">Out of Stock</span>
-        {% endif %}
-      </div>
-
-      <div class="p-5 flex flex-col justify-between h-44">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-800 mb-1 truncate">{{ product.title }}</h3>
-          <p class="text-sm text-gray-500 line-clamp-3">{{ product.description|truncatewords:18 }}</p>
-        </div>
-
-        <div class="mt-4 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <div class="text-yellow-400">
-              {% for _ in "12345" %}<i class="fas fa-star"></i>{% endfor %}
-            </div>
-            <span class="text-sm text-gray-500">(24)</span>
-          </div>
-
-          <div class="text-right">
-            <div class="text-xl font-bold text-green-600">₹{{ product.price }}</div>
-            {% if not product.is_out_of_stock %}
-            <div class="mt-3 flex gap-2">
-              <form method="post" action="{% url 'cart' %}" class="flex items-center gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="btn-primary px-4 py-2 rounded-lg inline-flex items-center gap-2 text-sm">
-                  <i class="fas fa-cart-plus"></i> Add
-                </button>
-              </form>
-              <button class="quickview-btn bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm flex items-center gap-2" data-product-id="{{ product.id }}">
-                <i class="fas fa-eye"></i> Quick View
-              </button>
-            </div>
+<!-- Hero Slider -->
+<section class="relative w-full overflow-hidden">
+    <div class="swiper hero-swiper">
+      <div class="swiper-wrapper">
+        {% for slide in sliders %}
+        <div class="swiper-slide relative h-[85vh] flex items-center justify-center">
+          <!-- Dynamic Background -->
+          <div class="absolute inset-0">
+            {% if slide.image %}
+              <img src="{{ slide.image.url }}" alt="{{ slide.title }}"
+                   class="w-full h-full object-cover brightness-70">
             {% else %}
-            <button class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg cursor-not-allowed text-sm" disabled>Out of stock</button>
+              <div class="w-full h-full bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600"></div>
+            {% endif %}
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+          </div>
+  
+          <!-- Floating Content -->
+          <div class="relative z-10 container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-10">
+            <!-- Text Section -->
+            <div class="md:w-1/2 text-center md:text-left animate-fadeInUp">
+              <h1 class="text-4xl md:text-6xl font-extrabold text-white drop-shadow mb-6">
+                {{ slide.title }}
+              </h1>
+              <p class="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed">
+                {{ slide.subtitle }}
+              </p>
+              {% if slide.button_text and slide.button_link %}
+                <a href="{{ slide.button_link }}"
+                   class="inline-block px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition transform duration-300">
+                  {{ slide.button_text }}
+                </a>
+              {% endif %}
+            </div>
+  
+            <!-- Floating Image -->
+            {% if slide.image %}
+            <div class="md:w-1/2 flex justify-center">
+              <img src="{{ slide.image.url }}" alt="{{ slide.title }}"
+                   class="w-64 md:w-96 lg:w-[28rem] object-contain drop-shadow-2xl animate-floating">
+            </div>
             {% endif %}
           </div>
         </div>
+        {% endfor %}
       </div>
+  
+      <!-- Swiper Controls -->
+      <div class="swiper-pagination !bottom-6"></div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
     </div>
-    {% empty %}
-    <div class="col-span-full text-center py-12">
-      <i class="fas fa-box-open text-gray-400 text-6xl mb-4"></i>
-      <h3 class="text-2xl font-bold text-gray-600 mb-2">No Products Available</h3>
-      <p class="text-gray-500">Check back soon for exciting new products!</p>
-    </div>
-    {% endfor %}
-  </div>
+  </section>
 
-  <div class="text-center mt-12">
-    <a href="{% url 'catalog' %}" class="btn-primary text-white px-8 py-4 rounded-full font-semibold text-lg inline-flex items-center gap-3">
-      <i class="fas fa-th-large"></i> View All Products
-    </a>
-  </div>
-</section>
-
-<section class="bg-gray-900 text-white py-12 relative z-10">
-  <div class="container mx-auto px-4">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-      <div class="stat-block">
-        <div class="text-4xl font-bold text-blue-400 mb-2">50K+</div>
-        <p class="text-gray-300">Happy Customers</p>
-      </div>
-      <div class="stat-block">
-        <div class="text-4xl font-bold text-green-400 mb-2">10K+</div>
-        <p class="text-gray-300">Products Sold</p>
-      </div>
-      <div class="stat-block">
-        <div class="text-4xl font-bold text-yellow-400 mb-2">99%</div>
-        <p class="text-gray-300">Satisfaction Rate</p>
-      </div>
-      <div class="stat-block">
-        <div class="text-4xl font-bold text-purple-400 mb-2">24/7</div>
-        <p class="text-gray-300">Support</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<section class="container mx-auto px-4 py-12 relative z-10">
-    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-white text-center shadow-xl">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">Stay Updated</h2>
-        <p class="text-xl mb-8 text-blue-100">Get the latest news on EV technology and exclusive offers</p>
-        <form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
-            <input type="email" placeholder="Enter your email" class="flex-1 p-4 rounded-full bg-white/20 text-white placeholder-gray-200 border-none focus:outline-none focus:ring-2 focus:ring-yellow-400">
-            <button type="submit" class="bg-yellow-400 text-black font-bold py-4 px-8 rounded-full hover:bg-yellow-300 transition-colors">Subscribe</button>
-        </form>
+<!-- Key Categories -->
+<section id="categories" class="container mx-auto px-6 py-16">
+    <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Key Categories</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 text-center">
+        {% for category in categories %}
+        <div class="bg-white rounded-xl shadow hover:shadow-lg p-6 transition flex flex-col items-center">
+            {% if category.image %}
+                <img src="{{ category.image.url }}" alt="{{ category.name }}" 
+                     class="w-16 h-16 object-contain mb-3">
+            {% else %}
+                <i class="fas fa-tools text-3xl text-indigo-600 mb-3"></i>
+            {% endif %}
+            <p class="font-semibold mb-3">{{ category.name }}</p>
+            <a href="{% url 'catalog' %}?category={{ category.id }}" 
+               class="px-4 py-2 mt-auto bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition text-sm">
+               View All Products
+            </a>
+        </div>
+        {% empty %}
+        <p class="col-span-full text-center text-gray-600">No Categories Available</p>
+        {% endfor %}
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<!-- Why Choose Us -->
+<section class="bg-gray-100 py-16">
+    <div class="container mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold mb-12">Why Choose Us</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                <i class="fas fa-shipping-fast text-blue-600 text-4xl mb-3"></i>
+                <h3 class="font-semibold text-lg">Fast Delivery</h3>
+                <p class="text-gray-600 text-sm">Even in Tier 2 & 3 cities</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                <i class="fas fa-tags text-green-600 text-4xl mb-3"></i>
+                <h3 class="font-semibold text-lg">Affordable Prices</h3>
+                <p class="text-gray-600 text-sm">Direct sourcing</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow hover:shadow-lg transition">
+                <i class="fas fa-check-circle text-indigo-600 text-4xl mb-3"></i>
+                <h3 class="font-semibold text-lg">Genuine Spare Parts</h3>
+                <p class="text-gray-600 text-sm">From trusted vendors</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="container mx-auto px-6 py-16">
+    <h2 class="text-3xl font-bold text-center mb-12">Featured Products</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {% for product in products %}
+        <div class="bg-white rounded-lg shadow hover:shadow-xl transition overflow-hidden">
+            <img src="{{ product.main_image.url }}" alt="{{ product.title }}" 
+                 class="w-full h-48 object-cover">
+            <div class="p-5">
+                <h3 class="font-semibold text-lg">{{ product.title }}</h3>
+                <p class="text-sm text-gray-500 mb-2">{{ product.description|truncatewords:12 }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-blue-600 font-bold">₹{{ product.price }}</span>
+                    <form method="post" action="{% url 'cart' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <button type="submit" 
+                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500 transition">
+                            <i class="fas fa-cart-plus mr-2"></i>Add
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="col-span-full text-center text-gray-600">No Products Available</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Offer & Deals -->
+<section class="bg-gradient-to-r from-yellow-400 to-red-400 py-12">
+    <div class="container mx-auto px-6 flex flex-col md:flex-row justify-center gap-6 text-center text-white font-semibold text-lg">
+        <div class="bg-black/20 px-6 py-3 rounded-lg shadow">🔥 Flat 10% Off on EV Batteries</div>
+        <div class="bg-black/20 px-6 py-3 rounded-lg shadow">🚚 Free Delivery above ₹999</div>
+    </div>
+</section>
+
+<!-- SwiperJS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css"/>
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Initialize Swiper
-        window.heroSwiper = new Swiper('.hero-swiper', {
-            loop: true,
-            autoplay: {
-                delay: 4000,
-                disableOnInteraction: false
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev'
-            },
-            effect: 'fade',
-            fadeEffect: {
-                crossFade: true
-            },
-            speed: 800,
-            allowTouchMove: true,
-            grabCursor: true,
-            touchRatio: 1.5,
-            threshold: 5,
-            preventInteractionOnTransition: false,
-            mousewheel: {
-                forceToAxis: true
-            },
-            keyboard: {
-                enabled: true
-            },
-        });
-
-        // GSAP animations
-        gsap.registerPlugin(ScrollTrigger);
-
-        function animateCurrentSlide() {
-            const slide = document.querySelector('.hero-swiper .swiper-slide-active');
-            if (!slide) return;
-            gsap.fromTo(
-                slide.querySelectorAll('h1, h2, p, a'), {
-                    y: 20,
-                    opacity: 0
-                }, {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.8,
-                    stagger: 0.12,
-                    ease: 'power3.out'
-                }
-            );
-        }
-
-        heroSwiper.on('slideChange', animateCurrentSlide);
-        animateCurrentSlide(); // Run on first load
-
-    });
+  const swiper = new Swiper('.hero-swiper', {
+    loop: true,
+    autoplay: { delay: 5000 },
+    pagination: { el: '.swiper-pagination', clickable: true },
+    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+  });
 </script>
 
-</body>
+<!-- Animations -->
+<style>
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeInUp {
+      animation: fadeInUp 1s ease-out both;
+    }
+  
+    @keyframes floating {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .animate-floating {
+      animation: floating 5s ease-in-out infinite;
+    }
+  </style>
 {% endblock %}

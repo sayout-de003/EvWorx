@@ -52,6 +52,28 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        
+        /* Smart filter bar responsive fixes */
+        .filter-container {
+            position: relative;
+            z-index: 40;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-container {
+                margin-bottom: 2rem;
+            }
+            
+            .filter-grid > div {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        /* Prevent overlay issues */
+        .main-content {
+            position: relative;
+            z-index: 10;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
@@ -168,7 +190,7 @@
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
                         <i class="fas fa-bolt text-2xl text-blue-400"></i>
-                        <span class="text-xl font-bold">EVault</span>
+                        <span class="text-xl font-bold">EvWorx</span>
                     </div>
                     <p class="text-gray-400 mb-4">Your trusted partner for premium electric vehicle parts and accessories.</p>
                     <div class="flex space-x-4">
