@@ -10,9 +10,13 @@ from .serializers import UserSerializer, VehicleSerializer, VehicleTypeSerialize
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+from django_ratelimit.decorators import ratelimit
 
 def homepage(request):
-    products = Product.objects.filter(stock__gt=0).order_by('-id')[:6] # Show 6 featured products
+    products = Product.objects.filter(stock__gt=0).select_related('brand', 'category').order_by('-id')[:6] # Show 6 featured products
     categories = Category.objects.all()
     sliders = HeroSlider.objects.filter(active=True)
     return render(request, 'core/homepage.html', {
@@ -149,6 +153,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Product, Cart, CartItem
 
+@ratelimit(key='ip', rate='50/h', method='POST')
 def cart_view(request):
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -200,7 +205,7 @@ def cart_view(request):
             return redirect('cart')
 
         # GET request
-        cart_items = cart.items.all()
+        cart_items = cart.items.select_related('product__brand', 'product__category').all()
         total_price = sum(item.get_total_price() for item in cart_items)
 
         return render(request, 'core/cart.html', {
@@ -286,14 +291,14 @@ def cart_view(request):
 # @login_required
 def wishlist_view(request):
     if request.user.is_authenticated:
-        wishlist = Wishlist.objects.filter(user=request.user)
+        wishlist = Wishlist.objects.filter(user=request.user).select_related('product__brand', 'product__category')
         if request.method == 'POST':
             product_id = request.POST['product_id']
             product = Product.objects.get(id=product_id)
             Wishlist.objects.get_or_create(user=request.user, product=product)
             return redirect('wishlist')
         return render(request, 'core/wishlist.html', {'wishlist': wishlist})
-    
+
     wishlist_ids = request.session.get('wishlist', [])
 
     if request.method == 'POST':
@@ -303,7 +308,7 @@ def wishlist_view(request):
             request.session['wishlist'] = wishlist_ids
         return redirect('wishlist')
 
-    wishlist_products = Product.objects.filter(id__in=wishlist_ids)
+    wishlist_products = Product.objects.filter(id__in=wishlist_ids).select_related('brand', 'category')
     return render(request, 'core/wishlist.html', {'wishlist': wishlist_products})
 
 # def catalog(request):
@@ -334,8 +339,11 @@ def wishlist_view(request):
 from django.shortcuts import render
 from .models import Product, Brand, Vehicle, VehicleType, Category
 
+@cache_page(60 * 15)  # Cache for 15 minutes
+@ratelimit(key='ip', rate='100/h', method='GET')
 def catalog(request):
-    products = Product.objects.all().order_by('-id')
+    # Use select_related and prefetch_related to reduce queries
+    products = Product.objects.select_related('brand', 'category').prefetch_related('compatible_vehicle_types', 'compatible_vehicle_models').all().order_by('-id')
 
     vehicle_id = request.GET.get('vehicle_id')
     category_id = request.GET.get('category')
@@ -368,13 +376,18 @@ def catalog(request):
     elif sort_option == 'name_desc':
         products = products.order_by('-title')
 
+    # Add pagination
+    paginator = Paginator(products, 20)  # 20 products per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     brands = Brand.objects.all()
     categories = Category.objects.all()
     vehicle_types = VehicleType.objects.all()
     vehicles = Vehicle.objects.filter(user=request.user) if request.user.is_authenticated else []
 
     return render(request, 'core/catalog.html', {
-        'products': products,
+        'products': page_obj,
         'brands': brands,
         'categories': categories,
         'vehicle_types': vehicle_types,
@@ -383,7 +396,8 @@ def catalog(request):
         'selected_category': category_id,
         'selected_brand': brand_id,
         'search_query': search_query,
-        'selected_sort': sort_option
+        'selected_sort': sort_option,
+        'page_obj': page_obj
     })
 
 
@@ -496,7 +510,7 @@ def order_confirm(request):
     if request.user.is_authenticated:
         try:
             cart = Cart.objects.get(user=request.user)
-            items = list(cart.items.all())
+            items = list(cart.items.select_related('product__brand', 'product__category').all())
         except Cart.DoesNotExist:
             items = []
     else:
