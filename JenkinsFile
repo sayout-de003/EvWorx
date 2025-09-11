@@ -1,0 +1,158 @@
+pipeline {
+    agent { label 'vinod' }
+
+    environment {
+        VENV = ".venv"
+        PYTHON = ".venv/bin/python"
+        PIP = ".venv/bin/pip"
+
+        SECRET_KEY = '@&l)jb%_sc6$^z3h2&nq#97$)=kh%wd4au#x)pi(irww7_3nru'
+        DEBUG = "True"
+
+        POSTGRES_CONTAINER = "jenkins-postgres"
+        DB_NAME = "evault"
+        DB_USER = "evaultuser"
+        DB_PASSWORD = "evaultpass123"
+        DB_HOST = "localhost"
+        DB_PORT = "5432"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/sayout-de003/EvWorx.git'
+            }
+        }
+
+        stage('Start PostgreSQL') {
+            steps {
+                sh '''
+                  echo "🐘 Starting PostgreSQL container..."
+                  sudo docker rm -f $POSTGRES_CONTAINER || true
+                  sudo docker run -d --name $POSTGRES_CONTAINER \
+                      -e POSTGRES_DB=$DB_NAME \
+                      -e POSTGRES_USER=$DB_USER \
+                      -e POSTGRES_PASSWORD=$DB_PASSWORD \
+                      -p 5432:5432 \
+                      postgres:15
+
+                  echo "⏳ Waiting for DB to be ready..."
+                  for i in {1..15}; do
+                      if sudo docker exec $POSTGRES_CONTAINER pg_isready -U $DB_USER -d $DB_NAME > /dev/null 2>&1; then
+                          echo "✅ Database is ready!"
+                          break
+                      fi
+                      echo "⏳ Still waiting..."
+                      sleep 2
+                  done
+                '''
+            }
+        }
+
+        stage('Setup Python Env') {
+            steps {
+                sh '''
+                  echo "🐍 Setting up Python virtual environment..."
+                  rm -rf ${VENV}
+
+                  if ! python3 -m venv ${VENV} 2>/dev/null; then
+                    echo "python3-venv not installed, falling back to virtualenv..."
+                    python3 -m pip install --user virtualenv
+                    ~/.local/bin/virtualenv ${VENV}
+                  fi
+
+                  ${PIP} install --upgrade pip setuptools wheel
+                  if [ -f requirements.txt ]; then
+                      ${PIP} install -r requirements.txt
+                  fi
+                '''
+            }
+        }
+
+        stage('Migrate Database') {
+            steps {
+                withEnv([
+                    "SECRET_KEY=${SECRET_KEY}",
+                    "DEBUG=${DEBUG}",
+                    "DB_NAME=${DB_NAME}",
+                    "DB_USER=${DB_USER}",
+                    "DB_PASSWORD=${DB_PASSWORD}",
+                    "DB_HOST=${DB_HOST}",
+                    "DB_PORT=${DB_PORT}"
+                ]) {
+                    sh "${PYTHON} manage.py migrate --noinput"
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                withEnv([
+                    "SECRET_KEY=${SECRET_KEY}",
+                    "DEBUG=${DEBUG}",
+                    "DB_NAME=${DB_NAME}",
+                    "DB_USER=${DB_USER}",
+                    "DB_PASSWORD=${DB_PASSWORD}",
+                    "DB_HOST=${DB_HOST}",
+                    "DB_PORT=${DB_PORT}"
+                ]) {
+                    sh '''
+                      echo "🧪 Running tests..."
+                      if [ -f manage.py ]; then
+                          ${PYTHON} manage.py test
+                      elif [ -f pytest.ini ] || [ -f conftest.py ]; then
+                          ${PYTHON} -m pytest -q
+                      fi
+                    '''
+                }
+            }
+        }
+
+        stage('Collect Static Files') {
+            steps {
+                withEnv([
+                    "SECRET_KEY=${SECRET_KEY}",
+                    "DEBUG=${DEBUG}",
+                    "DB_NAME=${DB_NAME}",
+                    "DB_USER=${DB_USER}",
+                    "DB_PASSWORD=${DB_PASSWORD}",
+                    "DB_HOST=${DB_HOST}",
+                    "DB_PORT=${DB_PORT}"
+                ]) {
+                    sh "${PYTHON} manage.py collectstatic --noinput"
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                  echo "🚀 Deploying Django app..."
+                  ${PYTHON} manage.py runserver 0.0.0.0:8000 &
+                  sleep 5
+                  echo "✅ Django app should be running on port 8000"
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "🧹 Cleaning up..."
+            sh '''
+              rm -rf ${VENV}
+              sudo docker rm -f $POSTGRES_CONTAINER || true
+            '''
+        }
+    }
+
+    post {
+        failure {
+            echo "❌ Pipeline failed!"
+        }
+        success {
+            echo "✅ Pipeline completed successfully!"
+        }
+    }
+}
