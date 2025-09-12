@@ -163,3 +163,13 @@ class SellerInformationAdmin(admin.ModelAdmin):
 class GrievanceOfficerAdmin(admin.ModelAdmin):
     list_display = ['name', 'designation', 'redressal_timeline']
     search_fields = ['name', 'designation']
+
+
+from django.contrib import admin
+from .models import WebsiteLogo
+
+@admin.register(WebsiteLogo)
+class WebsiteLogoAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active', 'uploaded_at')
+    list_filter = ('is_active',)
+    search_fields = ('name',)

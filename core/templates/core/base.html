@@ -8,9 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-       
-
         * {
             font-family: 'Inter', sans-serif;
         }
@@ -52,24 +49,18 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
-        /* Smart filter bar responsive fixes */
         .filter-container {
             position: relative;
             z-index: 40;
         }
-        
         @media (max-width: 768px) {
             .filter-container {
                 margin-bottom: 2rem;
             }
-            
             .filter-grid > div {
                 margin-bottom: 1rem;
             }
         }
-        
-        /* Prevent overlay issues */
         .main-content {
             position: relative;
             z-index: 10;
@@ -78,12 +69,15 @@
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
 
-    <!-- HEADER -->
     <nav class="bg-gray-900 sticky top-0 z-50">
         <div class="container mx-auto px-8 py-5">
             <div class="flex justify-between items-center">
                 <a href="{% url 'homepage' %}" class="flex items-center space-x-2 text-white">
-                    <i class="fas fa-bolt text-2xl"></i>
+                    {% if logo %}
+                        <img src="{{ logo.logo_image.url }}" alt="{{ logo.name }}" class="h-8 w-auto">
+                    {% else %}
+                        <i class="fas fa-bolt text-2xl"></i>
+                    {% endif %}
                     <span class="text-xl font-bold">EvWorx</span>
                 </a>
 
@@ -96,14 +90,8 @@
                                 <i class="fas fa-tools mr-1"></i>Manage Orders
                             </a>
                         {% endif %}
-                        <a href="{% url 'garage' %}" class="nav-link text-white font-medium">
-                            <i class="fas fa-car mr-1"></i>Garage
-                        </a>
                         <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
                             <i class="fas fa-shopping-cart mr-1"></i>Cart
-                        </a>
-                        <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
-                            <i class="fas fa-heart mr-1"></i>Wishlist
                         </a>
                         <a href="{% url 'logout' %}" class="nav-link text-red-200 hover:text-red-400 font-medium">
                             <i class="fas fa-sign-out-alt mr-1"></i>Logout
@@ -126,7 +114,6 @@
             </div>
         </div>
 
-        <!-- MOBILE MENU -->
         <div id="mobile-menu" class="hidden md:hidden bg-blue-700 py-3">
             <div class="container mx-auto px-4 flex flex-col space-y-3">
                 <a href="{% url 'homepage' %}" class="nav-link text-white font-medium">Home</a>
@@ -163,7 +150,6 @@
         </div>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <main class="main-content">
         {% if messages %}
             <div class="container mx-auto px-4 pt-4">
@@ -183,13 +169,16 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- FOOTER -->
     <footer class="bg-gray-900 text-white">
         <div class="container mx-auto px-4 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <i class="fas fa-bolt text-2xl text-blue-400"></i>
+                        {% if logo %}
+                            <img src="{{ logo.logo_image.url }}" alt="{{ logo.name }}" class="h-8 w-auto">
+                        {% else %}
+                            <i class="fas fa-bolt text-2xl text-blue-400"></i>
+                        {% endif %}
                         <span class="text-xl font-bold">EvWorx</span>
                     </div>
                     <p class="text-gray-400 mb-4">Your trusted partner for premium electric vehicle parts and accessories.</p>

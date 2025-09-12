@@ -383,6 +383,26 @@ class VehicleType(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.type})"
+    
+
+from django.db import models
+
+class WebsiteLogo(models.Model):
+    """
+    Model to manage the website logo.
+    Allows admin to upload and change the logo image.
+    """
+    name = models.CharField(max_length=100, default='EvWorx Logo')
+    logo_image = models.ImageField(upload_to='logos/', help_text='Upload the website logo image.')
+    is_active = models.BooleanField(default=True, help_text='Only one logo should be active at a time.')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Website Logo"
+        verbose_name_plural = "Website Logos"    
 
 
 # ----------------- Wishlist -----------------

@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import User, Vehicle, VehicleType, Brand, Product, Cart, CartItem, Order, OrderItem, Wishlist, Review, Coupon, Category, HeroSlider
 from .serializers import UserSerializer, VehicleSerializer, VehicleTypeSerializer, BrandSerializer, ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer, WishlistSerializer, ReviewSerializer, CouponSerializer
+from .models import WebsiteLogo
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
@@ -19,10 +20,15 @@ def homepage(request):
     products = Product.objects.filter(stock__gt=0).select_related('brand', 'category').order_by('-id')[:6] # Show 6 featured products
     categories = Category.objects.all()
     sliders = HeroSlider.objects.filter(active=True)
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     return render(request, 'core/homepage.html', {
         'sliders': sliders,
         'products': products,
         'categories': categories,
+         'logo': active_logo
     })
 
 def about(request):
