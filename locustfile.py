@@ -63,3 +63,28 @@ class WebsiteUser(HttpUser):
         })
         self.client.get("/order/confirm/")
         self.client.get("/order/payment/")
+
+class APIUser(HttpUser):
+    wait_time = between(0.1, 1)  # Faster for API testing
+
+    @task(10)
+    def api_products(self):
+        self.client.get("/api/products/")
+
+    @task(5)
+    def api_vehicle_types(self):
+        self.client.get("/api/vehicle-types/")
+
+    @task(3)
+    def api_brands(self):
+        self.client.get("/api/brands/")
+
+    @task(2)
+    def api_users(self):
+        self.client.get("/api/users/")
+
+    @task(1)
+    def burst_test(self):
+        # Simulate burst of requests
+        for _ in range(15):  # More than 10/second to trigger burst throttle
+            self.client.get("/api/products/")

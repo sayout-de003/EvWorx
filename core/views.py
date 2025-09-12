@@ -249,7 +249,7 @@ def cart_view(request):
             # UPDATE
             if 'update' in request.POST:
                 quantity = int(request.POST.get('quantity', 1))
-                if quantity < 1 or not quantity.isdigit():
+                if quantity < 1:
                     session_cart.pop(product_id_str, None)
                     messages.success(request, "Item removed from cart.")
                 else:
@@ -760,6 +760,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = []  # Disable throttling for this public endpoint
 
     @action(detail=False, methods=['get'])
     def filter_by_vehicle(self, request):

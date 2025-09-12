@@ -198,11 +198,14 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
+        'rest_framework.throttling.UserRateThrottle',
+        'core.throttles.BurstThrottle',
+        'core.throttles.WhitelistThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour'
+        'anon': '400/hour',
+        'user': '5000/hour',
+        'burst': '10/second'
     }
 }
 
