@@ -118,7 +118,15 @@
         {% for product in products %}
         <div class="group bg-white rounded-lg shadow-lg hover:shadow-2xl transition overflow-hidden duration-300 relative">
             <div class="relative w-full h-48 overflow-hidden">
-                <img src="{{ product.main_image.url }}" alt="{{ product.title }}" 
+              {% if product.main_image %}
+              <img src="{{ product.main_image.url }}" alt="{{ product.title }}"
+                   class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+               {% else %}    
+               <div class="w-full h-full flex items-center justify-center text-gray-400">
+                <i class="fas fa-image text-6xl opacity-50"></i>
+                </div>
+              
+              {% endif %}
                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
                 <div class="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 {% if product.is_new %}
