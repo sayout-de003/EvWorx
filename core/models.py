@@ -231,6 +231,59 @@ class OrderItem(models.Model):
 
 
 # ----------------- Product -----------------
+# class Product(models.Model):
+#     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products')
+#     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+#     compatible_vehicle_models = models.ManyToManyField('VehicleModel', blank=True, related_name='products')
+#     compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
+#     country_of_origin = models.CharField(max_length=100, blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     description = models.TextField(blank=True)
+#     discount_percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+#     is_out_of_stock_manual = models.BooleanField(default=False)
+#     main_image = models.ImageField(upload_to='products/', blank=True, null=True)
+#     manufacturer = models.ForeignKey('Manufacturer', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+#     mrp = models.DecimalField(max_digits=10, decimal_places=2)
+#     net_quantity = models.CharField(max_length=100, blank=True, null=True)
+#     part_number = models.CharField(max_length=100, unique=True, null=True)
+#     price = models.DecimalField(max_digits=10, decimal_places=2)
+#     return_policy = models.TextField(blank=True, null=True)
+#     seller = models.ForeignKey('SellerInformation', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
+#     slug = models.SlugField(unique=True, null=True, blank=True)
+#     stock = models.PositiveIntegerField(default=0)
+#     subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+#     title = models.CharField(max_length=200)
+#     updated_at = models.DateTimeField(auto_now=True)
+#     warranty_period = models.CharField(max_length=100, blank=True, null=True)
+#     warranty_terms = models.TextField(blank=True, null=True)
+
+#     class Meta:
+#         ordering = ['-created_at']
+
+#     def __str__(self):
+#         return self.title
+
+#     def is_out_of_stock(self):
+#         return self.stock == 0 or self.is_out_of_stock_manual
+
+#     def stock_status(self):
+#         return "Out of Stock" if self.is_out_of_stock() else "In Stock"
+
+#     def save(self, *args, **kwargs):
+#         if not self.slug:
+#             base_slug = slugify(self.title)
+#             slug = base_slug
+#             counter = 1
+#             while Product.objects.filter(slug=slug).exists():
+#                 slug = f"{base_slug}-{counter}"
+#                 counter += 1
+#             self.slug = slug
+#         super().save(*args, **kwargs)
+
+
+
+
+# ----------------- Product -----------------
 class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
@@ -257,6 +310,14 @@ class Product(models.Model):
     warranty_period = models.CharField(max_length=100, blank=True, null=True)
     warranty_terms = models.TextField(blank=True, null=True)
 
+    # ---------------- New Fields ----------------
+    weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Weight of product in KG or relevant unit")
+    hsn_code = models.CharField(max_length=20, blank=True, null=True, help_text="HSN Code for GST")
+    gst_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=18.00,
+                                         validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                         help_text="GST percentage (default 18%)")
+    moq = models.PositiveIntegerField(default=5, help_text="Minimum Order Quantity (default = 5). Can be adjusted per product.")
+
     class Meta:
         ordering = ['-created_at']
 
@@ -279,6 +340,27 @@ class Product(models.Model):
                 counter += 1
             self.slug = slug
         super().save(*args, **kwargs)
+
+
+# ----------------- MOQ Rule -----------------
+class MOQRule(models.Model):
+    """
+    Defines flexible MOQ rules between products.
+    Example: Buy 4 of Product A, then you can buy 1 of Product B.
+    """
+    primary_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="primary_moq_rules")
+    required_quantity = models.PositiveIntegerField(default=5, help_text="Required quantity of primary product")
+
+    dependent_product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="dependent_moq_rules")
+    allowed_quantity = models.PositiveIntegerField(default=1, help_text="How many dependent products allowed")
+
+    class Meta:
+        unique_together = ('primary_product', 'dependent_product')
+        verbose_name = "MOQ Rule"
+        verbose_name_plural = "MOQ Rules"
+
+    def __str__(self):
+        return f"Buy {self.required_quantity} of {self.primary_product.title} → Get {self.allowed_quantity} of {self.dependent_product.title}"
 
 
 # ----------------- ProductImage -----------------

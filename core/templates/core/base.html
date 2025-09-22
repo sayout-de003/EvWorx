@@ -7,157 +7,290 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
         * {
             font-family: 'Inter', sans-serif;
         }
+        
         body {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
+        
         .main-content {
             flex: 1;
         }
-        .nav-link {
-            position: relative;
+        
+        /* Enhanced Logo Styling */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             transition: all 0.3s ease;
         }
+        
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #e6eae8, #e9efed, #f1f6f4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 30px rgba(238, 244, 242, 0.3);
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #e0e6e4, #ecf1ef);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(239, 242, 241, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .logo-icon:hover {
+            box-shadow: 0 12px 40px rgba(233, 237, 235, 0.5);
+        }
+        
+        /* Navigation Enhancements */
+        .nav-link {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        
         .nav-link::after {
             content: '';
             position: absolute;
             bottom: -4px;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 0;
-            height: 2px;
-            background: #fbbf24;
-            transition: width 0.3s ease;
+            height: 3px;
+            background: linear-gradient(135deg, #e9eeec, #dde2e0);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
         }
+        
+        .nav-link:hover {
+            background: rgba(233, 239, 237, 0.1);
+            transform: translateY(-2px);
+        }
+        
         .nav-link:hover::after {
-            width: 100%;
+            width: 80%;
         }
+        
+        /* Button Enhancements */
+        .btn-primary {
+            background: linear-gradient(135deg, #edf4f1, #eef0ef);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(236, 238, 237, 0.4);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(238, 240, 239, 0.5);
+            background: linear-gradient(135deg, #f2f5f4, #f2f5f4);
+        }
+        
+        /* Mobile Menu Animation */
+        .mobile-menu-enter {
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Enhanced Animations */
         .fade-in {
-            animation: fadeIn 0.6s ease-in-out;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .text-gradient {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .filter-container {
-            position: relative;
-            z-index: 40;
-        }
-        @media (max-width: 768px) {
-            .filter-container {
-                margin-bottom: 2rem;
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px);
             }
-            .filter-grid > div {
-                margin-bottom: 1rem;
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
             }
         }
-        .main-content {
-            position: relative;
-            z-index: 10;
+        
+        /* Message Styling */
+        .message-container {
+            margin: 1rem 0;
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Navbar scroll effect */
+        .navbar-scrolled {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        /* Footer enhancements */
+        .footer-link:hover {
+            color: #10B981;
+            transform: translateX(5px);
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            transform: scale(1.2);
+            color: #ebf1ef;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800">
+<body class="bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-800">
 
-    <nav class="bg-gray-900 sticky top-0 z-50">
-        <div class="container mx-auto px-8 py-5">
+    <!-- Enhanced Navbar -->
+    <nav class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 sticky top-0 z-50 shadow-2xl">
+        <div class="container mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
-                <a href="{% url 'homepage' %}" class="flex items-center space-x-2 text-white">
+                
+                <!-- Enhanced Logo Section -->
+                <a href="{% url 'homepage' %}" class="logo-container group">
                     {% if logo %}
-                        <img src="{{ logo.logo_image.url }}" alt="{{ logo.name }}" class="h-8 w-auto">
+                        <img src="{{ logo.logo_image.url }}" alt="{{ logo.name }}" class="logo-icon object-contain">
+                        <span class="logo-text">EvWorx</span>
                     {% else %}
-                        <i class="fas fa-bolt text-2xl"></i>
+                        <div class="logo-icon group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-bolt text-white text-2xl"></i>
+                        </div>
+                        <span class="logo-text">EvWorx</span>
                     {% endif %}
-                    <span class="text-xl font-bold">EvWorx</span>
                 </a>
 
-                <div class="hidden md:flex items-center space-x-6">
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-2">
                     <a href="{% url 'homepage' %}" class="nav-link text-white font-medium">Home</a>
                     <a href="{% url 'catalog' %}" class="nav-link text-white font-medium">Catalog</a>
                     {% if user.is_authenticated %}
                         {% if user.is_staff %}
-                            <a href="{% url 'admin_orders' %}" class="nav-link text-white">
-                                <i class="fas fa-tools mr-1"></i>Manage Orders
+                            <a href="{% url 'admin_orders' %}" class="nav-link text-white font-medium">
+                                <i class="fas fa-tools mr-2"></i>Manage Orders
                             </a>
                         {% endif %}
+                        <a href="{% url 'garage' %}" class="nav-link text-white font-medium">
+                            <i class="fas fa-car mr-2"></i>Garage
+                        </a>
                         <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                            <i class="fas fa-shopping-cart mr-1"></i>Cart
+                            <i class="fas fa-shopping-cart mr-2"></i>Cart
+                        </a>
+                        <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
+                            <i class="fas fa-heart mr-2"></i>Wishlist
                         </a>
                         <a href="{% url 'logout' %}" class="nav-link text-red-200 hover:text-red-400 font-medium">
-                            <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
                         </a>
                     {% else %}
                         <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                            <i class="fas fa-shopping-cart mr-1"></i>Cart
+                            <i class="fas fa-shopping-cart mr-2"></i>Cart
                         </a>
                         <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
-                            <i class="fas fa-heart mr-1"></i>Wishlist
+                            <i class="fas fa-heart mr-2"></i>Wishlist
                         </a>
                         <a href="{% url 'login' %}" class="nav-link text-white font-medium">Login</a>
-                        <a href="{% url 'signup' %}" class="nav-link text-white font-medium">SignUp</a>
+                        <a href="{% url 'signup' %}" class="btn-primary text-white font-medium px-6 py-2 rounded-xl ml-4">
+                            Sign Up
+                        </a>
                     {% endif %}
                 </div>
 
-                <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                <!-- Mobile Button -->
+                <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none hover:bg-gray-700 p-2 rounded-lg transition-colors">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
         </div>
 
-        <div id="mobile-menu" class="hidden md:hidden bg-blue-700 py-3">
-            <div class="container mx-auto px-4 flex flex-col space-y-3">
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-800 mobile-menu-enter">
+            <div class="container mx-auto px-6 py-4 flex flex-col space-y-3">
                 <a href="{% url 'homepage' %}" class="nav-link text-white font-medium">Home</a>
                 <a href="{% url 'catalog' %}" class="nav-link text-white font-medium">Catalog</a>
                 {% if user.is_authenticated %}
                     {% if user.is_staff %}
                         <a href="{% url 'admin_orders' %}" class="nav-link text-white font-medium">
-                            <i class="fas fa-tools mr-1"></i>Manage Orders
+                            <i class="fas fa-tools mr-2"></i>Manage Orders
                         </a>
                     {% endif %}
                     <a href="{% url 'garage' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-car mr-1"></i>Garage
+                        <i class="fas fa-car mr-2"></i>Garage
                     </a>
                     <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-shopping-cart mr-1"></i>Cart
+                        <i class="fas fa-shopping-cart mr-2"></i>Cart
                     </a>
                     <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-heart mr-1"></i>Wishlist
+                        <i class="fas fa-heart mr-2"></i>Wishlist
                     </a>
                     <a href="{% url 'logout' %}" class="nav-link text-red-200 hover:text-red-400 font-medium">
-                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
                     </a>
                 {% else %}
                     <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-shopping-cart mr-1"></i>Cart
+                        <i class="fas fa-shopping-cart mr-2"></i>Cart
                     </a>
                     <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-heart mr-1"></i>Wishlist
+                        <i class="fas fa-heart mr-2"></i>Wishlist
                     </a>
                     <a href="{% url 'login' %}" class="nav-link text-white font-medium">Login</a>
-                    <a href="{% url 'signup' %}" class="nav-link text-white font-medium">SignUp</a>
+                    <a href="{% url 'signup' %}" class="btn-primary text-white font-medium px-6 py-3 rounded-xl text-center">
+                        Sign Up
+                    </a>
                 {% endif %}
             </div>
         </div>
     </nav>
 
+    <!-- Main Content -->
     <main class="main-content">
+        <!-- Messages Section -->
         {% if messages %}
-            <div class="container mx-auto px-4 pt-4">
+            <div class="container mx-auto px-6 pt-6">
                 {% for message in messages %}
-                    <div class="mb-4 fade-in">
-                        <div class="bg-{% if message.tags == 'error' %}red{% else %}green{% endif %}-50 border-l-4 border-{% if message.tags == 'error' %}red{% else %}green{% endif %}-400 p-4 rounded-r-lg shadow-md">
+                    <div class="message-container">
+                        <div class="bg-{% if message.tags == 'error' %}red{% else %}green{% endif %}-50 border-l-4 border-{% if message.tags == 'error' %}red{% else %}green{% endif %}-400 p-4 rounded-r-lg shadow-lg mb-4">
                             <div class="flex items-center">
-                                <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %} text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-500 mr-3"></i>
+                                <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %} text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-500 mr-3 text-lg"></i>
                                 <p class="text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-700 font-medium">{{ message }}</p>
                             </div>
                         </div>
@@ -169,76 +302,166 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-gray-900 text-white">
-        <div class="container mx-auto px-4 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center space-x-2 mb-4">
+    <!-- Enhanced Footer -->
+    <footer class="bg-gradient-to-b from-gray-900 to-black text-white">
+        <div class="container mx-auto px-6 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                
+                <!-- Footer Logo Section -->
+                <div class="md:col-span-1">
+                    <div class="logo-container mb-6">
                         {% if logo %}
-                            <img src="{{ logo.logo_image.url }}" alt="{{ logo.name }}" class="h-8 w-auto">
+                            <img src="{{ logo.logo_image.url }}" alt="{{ logo.name }}" class="logo-icon object-contain">
+                            <span class="logo-text text-3xl">EvWorx</span>
                         {% else %}
-                            <i class="fas fa-bolt text-2xl text-blue-400"></i>
+                            <div class="logo-icon">
+                                <i class="fas fa-bolt text-white text-2xl"></i>
+                            </div>
+                            <span class="logo-text text-3xl">EvWorx</span>
                         {% endif %}
-                        <span class="text-xl font-bold">EvWorx</span>
                     </div>
-                    <p class="text-gray-400 mb-4">Your trusted partner for premium electric vehicle parts and accessories.</p>
+                    <p class="text-gray-400 mb-6 leading-relaxed">Powering the future of electric mobility with premium parts and unmatched expertise.</p>
                     <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="text-gray-400 social-icon">
+                            <i class="fab fa-facebook-f text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 social-icon">
+                            <i class="fab fa-twitter text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 social-icon">
+                            <i class="fab fa-instagram text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 social-icon">
+                            <i class="fab fa-linkedin-in text-2xl"></i>
+                        </a>
                     </div>
                 </div>
                 
+                <!-- Quick Links -->
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="{% url 'homepage' %}" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
-                        <li><a href="{% url 'catalog' %}" class="text-gray-400 hover:text-white transition-colors">Catalog</a></li>
-                        <li><a href="{% url 'about' %}" class="text-gray-400 hover:text-white transition-colors">About</a></li>
-                        <li><a href="{% url 'faq' %}" class="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
-                        <li><a href="{% url 'blog' %}" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                    <h3 class="text-xl font-bold mb-6 text-white-400">Quick Links</h3>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'homepage' %}" class="text-gray-400 footer-link">Home</a></li>
+                        <li><a href="{% url 'catalog' %}" class="text-gray-400 footer-link">Catalog</a></li>
+                        <li><a href="{% url 'about' %}" class="text-gray-400 footer-link">About Us</a></li>
+                        <li><a href="{% url 'faq' %}" class="text-gray-400 footer-link">FAQ</a></li>
+                        <li><a href="{% url 'blog' %}" class="text-gray-400 footer-link">Blog</a></li>
                     </ul>
                 </div>
                 
+                <!-- Support Links -->
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Support</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Shipping Info</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Returns</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Warranty</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                    <h3 class="text-xl font-bold mb-6 text-white-400">Support</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 footer-link">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 footer-link">Shipping Info</a></li>
+                        <li><a href="#" class="text-gray-400 footer-link">Returns & Warranty</a></li>
+                        <li><a href="#" class="text-gray-400 footer-link">Technical Support</a></li>
+                        <li><a href="#" class="text-gray-400 footer-link">Privacy Policy</a></li>
                     </ul>
                 </div>
                 
+                <!-- Contact & Newsletter -->
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">Newsletter</h3>
-                    <p class="text-gray-400 mb-4">Stay updated with our latest products and offers.</p>
+                    <h3 class="text-xl font-bold mb-6 text-white-400">Stay Connected</h3>
+                    <div class="space-y-4 mb-6">
+                        <div class="flex items-center text-gray-400">
+                            <i class="fas fa-phone mr-3 text-white-400"></i>
+                            <span>1-800-EVWORX</span>
+                        </div>
+                        <div class="flex items-center text-gray-400">
+                            <i class="fas fa-envelope mr-3 text-white-400"></i>
+                            <span>support@evworx.com</span>
+                        </div>
+                    </div>
                     <form class="flex">
-                        <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-2 rounded-l-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-blue-500">
-                        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-r-lg transition-colors">
+                        <input type="email" placeholder="Your email" 
+                               class="flex-1 px-4 py-3 rounded-l-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-green-500 transition-colors">
+                        <button type="submit" class="px-6 py-3 bg-white-600 hover:bg-white-700 rounded-r-lg transition-colors">
                             <i class="fas fa-arrow-right"></i>
                         </button>
                     </form>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
-                <p class="text-gray-400">
-                    &copy; 2025 EvWorx. All rights reserved. | 
-                    <span class="text-blue-400">Powering the Future of Electric Mobility</span>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-400 text-lg">
+                    &copy; 2025 <span class="text-green-400 font-bold">EvWorx</span>. All rights reserved. | 
+                    <span class="text-green-400">Electrifying the World, One Vehicle at a Time</span>
                 </p>
             </div>
         </div>
     </footer>
 
+    <!-- Enhanced JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('mobile-menu-button').addEventListener('click', function() {
-                document.getElementById('mobile-menu').classList.toggle('hidden');
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('mobile-menu-enter');
+                    }
+                });
+            }
+            
+            // Navbar scroll effect
+            const navbar = document.querySelector('nav');
+            let lastScrollY = window.scrollY;
+            
+            window.addEventListener('scroll', () => {
+                const currentScrollY = window.scrollY;
+                
+                if (currentScrollY > 100) {
+                    navbar.classList.add('navbar-scrolled');
+                } else {
+                    navbar.classList.remove('navbar-scrolled');
+                }
+                
+                // Hide/show navbar on scroll
+                if (currentScrollY > lastScrollY && currentScrollY > 200) {
+                    navbar.style.transform = 'translateY(-100%)';
+                } else {
+                    navbar.style.transform = 'translateY(0)';
+                }
+                
+                lastScrollY = currentScrollY;
+            });
+            
+            // Auto-hide messages after 5 seconds
+            const messages = document.querySelectorAll('.message-container');
+            messages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+            
+            // Add loading animation to buttons
+            document.querySelectorAll('.btn-primary').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (this.type === 'submit' || this.getAttribute('data-loading') === 'true') {
+                        const originalText = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+                        this.disabled = true;
+                        
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.disabled = false;
+                        }, 2000);
+                    }
+                });
             });
         });
     </script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
