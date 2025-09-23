@@ -216,6 +216,8 @@ class Order(models.Model):
             self.calculate_total(save=True)
 
 
+
+
 # ----------------- OrderItem -----------------
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -228,6 +230,8 @@ class OrderItem(models.Model):
 
     def get_total_price(self):
         return self.price * self.quantity
+
+
 
 
 # ----------------- Product -----------------
@@ -342,6 +346,7 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
 
+
 # ----------------- MOQ Rule -----------------
 class MOQRule(models.Model):
     """
@@ -399,6 +404,8 @@ class SellerInformation(models.Model):
         return self.name
 
 
+
+
 # ----------------- SubCategory -----------------
 class SubCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
@@ -427,6 +434,7 @@ class User(AbstractUser):
         return self.username
 
 
+
 # ----------------- Vehicle -----------------
 class Vehicle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -452,6 +460,7 @@ class VehicleModel(models.Model):
         return f"{self.brand.name} {self.name} ({self.type.name})"
 
 
+
 # ----------------- VehicleType -----------------
 class VehicleType(models.Model):
     name = models.CharField(max_length=100)
@@ -465,11 +474,15 @@ class VehicleType(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.type})"
-    
+
+
+
+# ----------------- WebsiteLogo -----------------
 
 from django.db import models
 
 class WebsiteLogo(models.Model):
+    
     """
     Model to manage the website logo.
     Allows admin to upload and change the logo image.
