@@ -289,7 +289,7 @@ class OrderItem(models.Model):
 
 # ----------------- Product -----------------
 class Product(models.Model):
-    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products')
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     compatible_vehicle_models = models.ManyToManyField('VehicleModel', blank=True, related_name='products')
     compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
