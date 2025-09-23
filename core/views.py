@@ -392,6 +392,12 @@ def catalog(request):
     vehicle_types = VehicleType.objects.all()
     vehicles = Vehicle.objects.filter(user=request.user) if request.user.is_authenticated else []
 
+    # Active logo for base template
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
+
     return render(request, 'core/catalog.html', {
         'products': page_obj,
         'brands': brands,
@@ -403,7 +409,8 @@ def catalog(request):
         'selected_brand': brand_id,
         'search_query': search_query,
         'selected_sort': sort_option,
-        'page_obj': page_obj
+        'page_obj': page_obj,
+        'logo': active_logo
     })
 
 

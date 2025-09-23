@@ -33,7 +33,7 @@
                 <!-- Mobile & Desktop Search -->
                 <div class="flex-1 w-full lg:w-auto">
                     <form method="get" class="flex w-full">
-                        <input type="text" name="search" value="{{ search_query }}" placeholder="Search products..."
+                        <input type="text" name="search" value="{{ search_query|default_if_none:'' }}" placeholder="Search products..."
                                class="flex-[2] p-3 border-2 border-gray-200 rounded-xl lg:rounded-l-xl focus:outline-none">
                         <button type="submit" class="px-4 bg-indigo-600 text-white rounded-r-xl lg:rounded-l-none hover:bg-indigo-700 transition">
                             <i class="fas fa-search"></i>

@@ -302,7 +302,7 @@ class Product(models.Model):
     manufacturer = models.ForeignKey('Manufacturer', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     mrp = models.DecimalField(max_digits=10, decimal_places=2)
     net_quantity = models.CharField(max_length=100, blank=True, null=True)
-    part_number = models.CharField(max_length=100, unique=True, null=True)
+    part_number = models.CharField(max_length=100,  null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     return_policy = models.TextField(blank=True, null=True)
     seller = models.ForeignKey('SellerInformation', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
