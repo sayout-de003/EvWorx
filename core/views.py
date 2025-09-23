@@ -32,10 +32,25 @@ def homepage(request):
     })
 
 def about(request):
-    return render(request, 'core/about.html')
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
+    return render(request, 'core/about.html',
+    {
+         'logo': active_logo,
+    })
 
 def faq(request):
-    return render(request, 'core/faq.html')
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
+    return render(request, 'core/faq.html',
+    {
+         'logo': active_logo,
+    }
+    )
 
 def blog(request):
     # Mock blog articles (in a real app, you'd use a Blog model)
@@ -43,7 +58,11 @@ def blog(request):
         {'id': 1, 'title': 'EV Battery Maintenance', 'content': 'Learn how to maintain your EV battery...'},
         {'id': 2, 'title': 'Choosing the Right Charger', 'content': 'Understand charger types...'},
     ]
-    return render(request, 'core/blog.html', {'articles': articles})
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
+    return render(request, 'core/blog.html', {'articles': articles, 'logo': active_logo})
 
 def blog_detail(request, pk):
     # Mock blog detail
@@ -52,9 +71,17 @@ def blog_detail(request, pk):
         2: {'title': 'Choosing the Right Charger', 'content': 'Comprehensive guide on charger types...'},
     }
     article = articles.get(pk, {})
-    return render(request, 'core/blog_detail.html', {'article': article})
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
+    return render(request, 'core/blog_detail.html', {'article': article, 'logo': active_logo})
 
 def signup(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
@@ -73,9 +100,18 @@ def signup(request):
         )
         login(request, user)
         return redirect('homepage')
-    return render(request, 'core/signup.html')
+    return render(request, 'core/signup.html',
+    
+    {
+         'logo': active_logo,
+    }
+    )
 
 def user_login(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -84,7 +120,11 @@ def user_login(request):
             login(request, user)
             return redirect('homepage')
         messages.error(request, 'Invalid credentials')
-    return render(request, 'core/login.html')
+    return render(request, 'core/login.html',
+    {
+         'logo': active_logo,
+    }
+    )
 
 def user_logout(request):
     logout(request)
@@ -92,6 +132,10 @@ def user_logout(request):
 
 # @login_required
 def garage(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     vehicles = Vehicle.objects.filter(user=request.user)
     if request.method == 'POST':
         brand_id = request.POST['brand']
@@ -108,7 +152,12 @@ def garage(request):
         return redirect('garage')
     brands = Brand.objects.all()
     vehicle_types = VehicleType.objects.all()
-    return render(request, 'core/garage.html', {'vehicles': vehicles, 'brands': brands, 'vehicle_types': vehicle_types})
+    return render(request, 'core/garage.html', {'vehicles': vehicles, 
+    'brands': brands, 
+    'vehicle_types': vehicle_types ,
+    'logo': active_logo,
+
+     })
 
 # @login_required
 from decimal import Decimal
@@ -159,8 +208,12 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Product, Cart, CartItem
 
-@ratelimit(key='ip', rate='50/h', method='POST')
+#@ratelimit(key='ip', rate='50/h', method='POST')
 def cart_view(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
@@ -216,7 +269,8 @@ def cart_view(request):
 
         return render(request, 'core/cart.html', {
             'cart_items': cart_items,
-            'total_price': total_price
+            'total_price': total_price,
+            'logo': active_logo
         })
 
     else:
@@ -289,13 +343,18 @@ def cart_view(request):
 
         return render(request, 'core/cart.html', {
             'cart_items': cart_items,
-            'total_price': total_price
+            'total_price': total_price,
+            'logo': active_logo
         })
 
 
 
 # @login_required
 def wishlist_view(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     if request.user.is_authenticated:
         wishlist = Wishlist.objects.filter(user=request.user).select_related('product__brand', 'product__category')
         if request.method == 'POST':
@@ -303,7 +362,7 @@ def wishlist_view(request):
             product = Product.objects.get(id=product_id)
             Wishlist.objects.get_or_create(user=request.user, product=product)
             return redirect('wishlist')
-        return render(request, 'core/wishlist.html', {'wishlist': wishlist})
+        return render(request, 'core/wishlist.html', {'wishlist': wishlist, 'logo': active_logo})
 
     wishlist_ids = request.session.get('wishlist', [])
 
@@ -315,7 +374,7 @@ def wishlist_view(request):
         return redirect('wishlist')
 
     wishlist_products = Product.objects.filter(id__in=wishlist_ids).select_related('brand', 'category')
-    return render(request, 'core/wishlist.html', {'wishlist': wishlist_products})
+    return render(request, 'core/wishlist.html', {'wishlist': wishlist_products, 'logo': active_logo})
 
 # def catalog(request):
 #     products = Product.objects.all().order_by('-id')
@@ -346,7 +405,7 @@ from django.shortcuts import render
 from .models import Product, Brand, Vehicle, VehicleType, Category
 
 @cache_page(60 * 15)  # Cache for 15 minutes
-@ratelimit(key='ip', rate='100/h', method='GET')
+#@ratelimit(key='ip', rate='100/h', method='GET')
 def catalog(request):
     # Use select_related and prefetch_related to reduce queries
     products = Product.objects.select_related('brand', 'category').prefetch_related('compatible_vehicle_types', 'compatible_vehicle_models').all().order_by('-id')
@@ -422,6 +481,10 @@ from .models import Cart, Product, Order, OrderItem, Coupon
 from django.views.decorators.csrf import csrf_exempt
 
 def order_create(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     # Get cart items
     items = []
     if request.user.is_authenticated:
@@ -485,7 +548,8 @@ def order_create(request):
 
     return render(request, 'core/order_create.html', {
         'cart_items': items,
-        'total_price': total_price
+        'total_price': total_price,
+        'logo': active_logo
     })
 
 
@@ -495,7 +559,11 @@ from django.contrib.auth.decorators import login_required
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
-    return render(request, 'core/product_detail.html', {'product': product})
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
+    return render(request, 'core/product_detail.html', {'product': product, 'logo': active_logo})
 
 @login_required
 def add_review(request, product_id):
@@ -518,6 +586,10 @@ from decimal import Decimal
 from .models import DeliveryAddress, Coupon, Order, OrderItem, Product, Cart
 
 def order_confirm(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     # Load cart again
     items = []
     if request.user.is_authenticated:
@@ -652,13 +724,18 @@ def order_confirm(request):
             'delivery': delivery,
             'discount': discount,
             'total': total
-        }
+        },
+        'logo': active_logo
     })
 from django.shortcuts import render, get_object_or_404
 from .models import Order
 from django.contrib.auth.decorators import login_required
 
 def order_payment(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     if request.user.is_authenticated:
         # Get the most recent order by the user
         order = Order.objects.filter(user=request.user).order_by('-created_at').first()
@@ -675,7 +752,8 @@ def order_payment(request):
     return render(request, 'core/order_payment.html', {
         'order': order,
         'amount': order.total_amount,
-        'payment_options': ['UPI', 'QR Code', 'Card', 'Cash on Delivery']
+        'payment_options': ['UPI', 'QR Code', 'Card', 'Cash on Delivery'],
+        'logo': active_logo
     })
 
 from django.http import JsonResponse
@@ -717,6 +795,10 @@ from django.views.decorators.csrf import csrf_protect
 @staff_member_required
 @csrf_protect
 def admin_orders_view(request):
+    try:
+        active_logo = WebsiteLogo.objects.get(is_active=True)
+    except WebsiteLogo.DoesNotExist:
+        active_logo = None
     # Use select_related for both 'user' and 'delivery_address'
     orders = Order.objects.all().select_related('user', 'delivery_address').order_by('-created_at')
 
@@ -736,7 +818,7 @@ def admin_orders_view(request):
 
         return redirect('admin_orders')
 
-    return render(request, 'core/admin_orders.html', {'orders': orders})
+    return render(request, 'core/admin_orders.html', {'orders': orders, 'logo': active_logo})
 
 
 # Existing ViewSets...
