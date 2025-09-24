@@ -26,11 +26,9 @@
 
     <div id="catalog" class="max-w-7xl mx-auto px-4 mt-8 relative z-10">
 
-        <!-- Sticky Filter/Search/Sort Bar -->
+        <!-- Filter/Search/Sort Bar -->
         <div id="filterBar" class="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50">
             <div class="flex flex-col lg:flex-row items-center justify-between px-4 py-3 gap-3">
-
-                <!-- Mobile & Desktop Search -->
                 <div class="flex-1 w-full lg:w-auto">
                     <form method="get" class="flex w-full">
                         <input type="text" name="search" value="{{ search_query|default_if_none:'' }}" placeholder="Search products..."
@@ -41,22 +39,8 @@
                     </form>
                 </div>
 
-                <!-- Mobile Filter & Sort Buttons -->
-                <div class="flex gap-2 lg:hidden">
-                    <button onclick="toggleFilter()" class="flex items-center px-4 py-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
-                        <i class="fas fa-filter mr-2 text-indigo-600"></i> Filter
-                    </button>
-                    <button onclick="toggleSort()" class="flex items-center px-4 py-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
-                        <i class="fas fa-sort mr-2 text-indigo-600"></i> Sort
-                    </button>
-                </div>
-
-                <!-- Desktop Filters -->
                 <div class="hidden lg:flex flex-1 justify-between gap-4">
                     <form method="get" class="flex flex-1 gap-4 w-full">
-                        <!-- Search already included above, so skip here for desktop -->
-
-                        <!-- Vehicle Filter -->
                         <select name="vehicle_id" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">All Vehicles</option>
                             {% for vehicle in vehicles %}
@@ -66,7 +50,6 @@
                             {% endfor %}
                         </select>
 
-                        <!-- Category Filter -->
                         <select name="category" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">All Categories</option>
                             {% for category in categories %}
@@ -76,7 +59,6 @@
                             {% endfor %}
                         </select>
 
-                        <!-- Brand Filter -->
                         <select name="brand" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">All Brands</option>
                             {% for brand in brands %}
@@ -86,7 +68,6 @@
                             {% endfor %}
                         </select>
 
-                        <!-- Sort -->
                         <select name="sort" class="flex-[2] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">Default</option>
                             <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
@@ -95,49 +76,11 @@
                             <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>Name: Z to A</option>
                         </select>
 
-                        <!-- Apply Button -->
                         <button type="submit" class="flex-[1] bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition">
                             Apply
                         </button>
                     </form>
                 </div>
-
-            </div>
-        </div>
-
-        <!-- Mobile Filter Modal -->
-        <div id="filterModal" class="fixed inset-0 bg-black/40 hidden z-50">
-            <div class="absolute bottom-0 w-full bg-white rounded-t-2xl p-6 max-h-[80%] overflow-y-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold">Filters</h2>
-                    <button onclick="toggleFilter()" class="text-gray-500 hover:text-gray-800">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                <form method="get" class="grid grid-cols-1 gap-4">
-                    {{ filter_form }}
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold mt-4">
-                        Apply Filters
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Mobile Sort Modal -->
-        <div id="sortModal" class="fixed inset-0 bg-black/40 hidden z-50">
-            <div class="absolute bottom-0 w-full bg-white rounded-t-2xl p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold">Sort By</h2>
-                    <button onclick="toggleSort()" class="text-gray-500 hover:text-gray-800">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                <ul class="space-y-3">
-                    <li><a href="?sort=price_asc" class="block">Price: Low to High</a></li>
-                    <li><a href="?sort=price_desc" class="block">Price: High to Low</a></li>
-                    <li><a href="?sort=name_asc" class="block">Name: A to Z</a></li>
-                    <li><a href="?sort=name_desc" class="block">Name: Z to A</a></li>
-                </ul>
             </div>
         </div>
 
@@ -145,8 +88,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 pb-16 mt-6">
             {% for product in products %}
             <div class="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition">
-
-                <!-- Image -->
                 <div class="relative h-64 bg-gray-100 overflow-hidden">
                     {% if product.main_image %}
                         <a href="{% url 'product_detail' product.slug %}">
@@ -159,8 +100,6 @@
                         </div>
                     {% endif %}
                 </div>
-
-                <!-- Content -->
                 <div class="p-6 space-y-3">
                     <h3 class="text-lg font-bold text-gray-800 group-hover:text-indigo-600 transition">
                         <a href="{% url 'product_detail' product.slug %}">{{ product.title }}</a>
@@ -190,16 +129,35 @@
             {% endfor %}
         </div>
 
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <div class="flex justify-center space-x-2 pb-12">
+        <!-- Mobile-Friendly Pagination with Ellipsis -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center flex-wrap gap-2 pb-12">
+
             {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-gray-200 rounded-lg">« Prev</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if selected_vehicle %}&vehicle_id={{ selected_vehicle }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
+                   class="px-3 py-2 bg-gray-200 rounded-lg text-sm sm:text-base">« Prev</a>
             {% endif %}
-            <span class="px-4 py-2 bg-indigo-600 text-white rounded-lg">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == 1 or num == page_obj.paginator.num_pages or (num >= page_obj.number|add:-2 and num <= page_obj.number|add:2) %}
+                    {% if num == page_obj.number %}
+                        <span class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm sm:text-base">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if selected_vehicle %}&vehicle_id={{ selected_vehicle }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
+                           class="px-3 py-2 bg-gray-200 rounded-lg text-sm sm:text-base">{{ num }}</a>
+                    {% endif %}
+                {% elif num == 2 and page_obj.number > 4 %}
+                    <span class="px-3 py-2 text-gray-500">…</span>
+                {% elif num == page_obj.paginator.num_pages|add:-1 and page_obj.number < page_obj.paginator.num_pages|add:-3 %}
+                    <span class="px-3 py-2 text-gray-500">…</span>
+                {% endif %}
+            {% endfor %}
+
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-gray-200 rounded-lg">Next »</a>
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if selected_vehicle %}&vehicle_id={{ selected_vehicle }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
+                   class="px-3 py-2 bg-gray-200 rounded-lg text-sm sm:text-base">Next »</a>
             {% endif %}
+
         </div>
         {% endif %}
 
@@ -217,22 +175,10 @@
 </style>
 
 <script>
-function toggleFilter() {
-    document.getElementById('filterModal').classList.toggle('hidden');
-}
-function toggleSort() {
-    document.getElementById('sortModal').classList.toggle('hidden');
-}
-
-// Add shadow effect when sticky
 window.addEventListener('scroll', () => {
     const bar = document.getElementById('filterBar');
-    if(window.scrollY > 50) {
-        bar.classList.add('shadow-xl');
-    } else {
-        bar.classList.remove('shadow-xl');
-    }
+    if(window.scrollY > 50) bar.classList.add('shadow-xl');
+    else bar.classList.remove('shadow-xl');
 });
 </script>
-
 {% endblock %}

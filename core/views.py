@@ -458,7 +458,8 @@ def catalog(request):
         active_logo = None
 
     return render(request, 'core/catalog.html', {
-        'products': page_obj,
+        'products': page_obj.object_list, 
+        'page_obj': page_obj,
         'brands': brands,
         'categories': categories,
         'vehicle_types': vehicle_types,
@@ -479,6 +480,8 @@ from django.contrib import messages
 from django.utils import timezone
 from .models import Cart, Product, Order, OrderItem, Coupon
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+from django.views.decorators.cache import cache_page
 
 def order_create(request):
     try:
