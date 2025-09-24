@@ -139,7 +139,8 @@
             {% endif %}
 
             {% for num in page_obj.paginator.page_range %}
-                {% if num == 1 or num == page_obj.paginator.num_pages or (num >= page_obj.number|add:-2 and num <= page_obj.number|add:2) %}
+            {% if num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+
                     {% if num == page_obj.number %}
                         <span class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm sm:text-base">{{ num }}</span>
                     {% else %}
