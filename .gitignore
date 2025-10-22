@@ -22,3 +22,8 @@ __pycache__/
 # macOS
 .DS_Store
 .env
+
+
+# Ignore uploaded media files
+/media/
+__pycache__/

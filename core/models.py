@@ -284,8 +284,8 @@ class OrderItem(models.Model):
 #             self.slug = slug
 #         super().save(*args, **kwargs)
 
-from ckeditor.fields import RichTextField
-
+# from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 
 
 # ----------------- Product -----------------
@@ -297,14 +297,15 @@ class Product(models.Model):
     country_of_origin = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     # description = models.TextField(blank=True)
-    description = RichTextField(blank=True, null=True)
+    # description = RichTextField(blank=True, null=True)
+    description = CKEditor5Field('Content', config_name='default', blank=True, null=True)
     discount_percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     is_out_of_stock_manual = models.BooleanField(default=False)
     main_image = models.ImageField(upload_to='products/', blank=True, null=True)
     manufacturer = models.ForeignKey('Manufacturer', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     mrp = models.DecimalField(max_digits=10, decimal_places=2)
     net_quantity = models.CharField(max_length=100, blank=True, null=True)
-    part_number = models.CharField(max_length=100,  null=True)
+    part_number = models.CharField(max_length=100,  null=True, blank = True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     return_policy = models.TextField(blank=True, null=True)
     seller = models.ForeignKey('SellerInformation', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
