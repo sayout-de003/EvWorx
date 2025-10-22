@@ -284,6 +284,7 @@ class OrderItem(models.Model):
 #             self.slug = slug
 #         super().save(*args, **kwargs)
 
+from ckeditor.fields import RichTextField
 
 
 
@@ -295,7 +296,8 @@ class Product(models.Model):
     compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
     country_of_origin = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    description = models.TextField(blank=True)
+    # description = models.TextField(blank=True)
+    description = RichTextField(blank=True, null=True)
     discount_percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     is_out_of_stock_manual = models.BooleanField(default=False)
     main_image = models.ImageField(upload_to='products/', blank=True, null=True)
