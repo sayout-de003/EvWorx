@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ckeditor',
+    # 'ckeditor_uploader',
     'core',
 ]
 
@@ -228,6 +230,19 @@ if not DEBUG:
     }
 
 LOGIN_URL = '/login/'
+
+# # CKEditor Configuration
+# CKEDITOR_UPLOAD_PATH = "uploads/"
+# CKEDITOR_IMAGE_BACKEND = "pillow"
+# CKEDITOR_JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'
+
+# CKEDITOR_CONFIGS = {
+#     'default': {
+#         'toolbar': 'full',
+#         'height': 300,
+#         'width': '100%',
+#     },
+# }
 
 
 # settings.py

@@ -77,6 +77,23 @@ class BulkDiscountInline(admin.TabularInline):
     model = BulkDiscountTier
     extra = 1
 
+# @admin.register(Product)
+# class ProductAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'stock', 'stock_status_display', 'is_out_of_stock_manual')
+#     list_editable = ('is_out_of_stock_manual',)
+#     list_filter = ('brand', 'category', 'is_out_of_stock_manual')
+#     search_fields = ('title', 'part_number')
+#     inlines = [ProductImageInline, BulkDiscountInline]
+
+#     def stock_status_display(self, obj):
+#         return "Out of Stock" if obj.is_out_of_stock() else "In Stock"
+#     stock_status_display.short_description = "Stock Status"
+
+
+from ckeditor.widgets import CKEditorWidget
+# from django import forms
+from django.db import models
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'stock', 'stock_status_display', 'is_out_of_stock_manual')
@@ -85,9 +102,15 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('title', 'part_number')
     inlines = [ProductImageInline, BulkDiscountInline]
 
+    formfield_overrides = {
+        # Apply CKEditor to any RichTextField in Product
+        models.TextField: {'widget': CKEditorWidget},
+    }
+
     def stock_status_display(self, obj):
         return "Out of Stock" if obj.is_out_of_stock() else "In Stock"
     stock_status_display.short_description = "Stock Status"
+
 
 # ----------------- Cart and Order -----------------
 class CartItemInline(admin.TabularInline):
