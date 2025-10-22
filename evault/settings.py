@@ -251,7 +251,7 @@ import os
 import dj_database_url
 
 DEBUG = 'RENDER' not in os.environ  # Render sets RENDER env var in their environment
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "192.168.1.4"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "192.168.1.4", 'evworx.co.in', 'www.evworx.co.in', '93.127.206.199']
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
