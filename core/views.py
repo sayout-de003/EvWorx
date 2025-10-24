@@ -203,10 +203,160 @@ from decimal import Decimal
 #     return render(request, 'core/cart.html', {'cart_items': cart_items, 'total_price': total_price})
 
 
+# from decimal import Decimal
+# from django.shortcuts import render, redirect
+# from django.contrib import messages
+# from .models import Product, Cart, CartItem
+
+# #@ratelimit(key='ip', rate='50/h', method='POST')
+# def cart_view(request):
+#     try:
+#         active_logo = WebsiteLogo.objects.get(is_active=True)
+#     except WebsiteLogo.DoesNotExist:
+#         active_logo = None
+#     if request.user.is_authenticated:
+#         cart, _ = Cart.objects.get_or_create(user=request.user)
+
+#         if request.method == 'POST':
+#             product_id = request.POST.get('product_id')
+#             if not product_id or not product_id.isdigit():
+#                 messages.error(request, "Invalid product selected.")
+#                 return redirect('cart')
+
+#             try:
+#                 product = Product.objects.get(id=product_id)
+#             except Product.DoesNotExist:
+#                 messages.error(request, "Product not found.")
+#                 return redirect('cart')
+
+#             # DELETE ITEM
+#             if 'delete' in request.POST:
+#                 CartItem.objects.filter(cart=cart, product=product).delete()
+#                 messages.success(request, "Item removed from cart.")
+#                 return redirect('cart')
+
+#             # UPDATE QUANTITY
+#             if 'update' in request.POST:
+#                 quantity = int(request.POST.get('quantity', 1))
+#                 cart_item = CartItem.objects.filter(cart=cart, product=product).first()
+#                 if cart_item:
+#                     if quantity < 1:
+#                         cart_item.delete()
+#                         messages.success(request, "Item removed from cart.")
+#                     else:
+#                         cart_item.quantity = quantity
+#                         cart_item.save()
+#                         messages.success(request, "Cart updated.")
+#                 return redirect('cart')
+
+#             # DEFAULT: ADD TO CART
+#             quantity = int(request.POST.get('quantity', 1))
+#             if product.is_out_of_stock() or product.stock < quantity:
+#                 messages.error(request, 'This product is out of stock or does not have enough quantity.')
+#             else:
+#                 cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+#                 if not created:
+#                     cart_item.quantity += quantity
+#                 else:
+#                     cart_item.quantity = quantity
+#                 cart_item.save()
+#                 messages.success(request, "Item added to cart")
+#             return redirect('cart')
+
+#         # GET request
+#         cart_items = cart.items.select_related('product__brand', 'product__category').all()
+#         total_price = sum(item.get_total_price() for item in cart_items)
+
+#         return render(request, 'core/cart.html', {
+#             'cart_items': cart_items,
+#             'total_price': total_price,
+#             'logo': active_logo
+#         })
+
+#     else:
+#         # Anonymous user: session-based cart
+#         session_cart = request.session.get('cart', {})
+
+#         if request.method == 'POST':
+#             product_id = request.POST.get('product_id')
+#             if not product_id or not product_id.isdigit():
+#                 messages.error(request, "Invalid product selected.")
+#                 return redirect('cart')
+
+#             try:
+#                 product = Product.objects.get(id=int(product_id))
+#             except Product.DoesNotExist:
+#                 messages.error(request, "Product not found.")
+#                 return redirect('cart')
+
+#             product_id_str = str(product.id)
+
+#             # DELETE
+#             if 'delete' in request.POST:
+#                 if product_id_str in session_cart:
+#                     del session_cart[product_id_str]
+#                     request.session['cart'] = session_cart
+#                     request.session.modified = True
+#                     messages.success(request, "Item removed from cart.")
+#                 return redirect('cart')
+
+#             # UPDATE
+#             if 'update' in request.POST:
+#                 quantity = int(request.POST.get('quantity', 1))
+#                 if quantity < 1:
+#                     session_cart.pop(product_id_str, None)
+#                     messages.success(request, "Item removed from cart.")
+#                 else:
+#                     session_cart[product_id_str] = quantity
+#                     messages.success(request, "Cart updated.")
+#                 request.session['cart'] = session_cart
+#                 request.session.modified = True
+#                 return redirect('cart')
+
+#             # ADD
+#             quantity = int(request.POST.get('quantity', 1))
+#             if product.is_out_of_stock() or product.stock < quantity:
+#                 messages.error(request, 'This product is out of stock or does not have enough quantity.')
+#             else:
+#                 session_cart[product_id_str] = session_cart.get(product_id_str, 0) + quantity
+#                 request.session['cart'] = session_cart
+#                 request.session.modified = True
+#                 messages.success(request, "Item added to cart")
+
+#             return redirect('cart')
+
+#         # GET: Display session cart
+#         cart_items = []
+#         total_price = Decimal('0.00')
+#         for product_id, quantity in session_cart.items():
+#             try:
+#                 product = Product.objects.get(id=int(product_id))
+#                 subtotal = product.price * quantity
+#                 total_price += subtotal
+#                 cart_items.append({
+#                     'product': product,
+#                     'quantity': quantity,
+#                     'subtotal': subtotal
+#                 })
+#             except (Product.DoesNotExist, ValueError):
+#                 continue
+
+#         return render(request, 'core/cart.html', {
+#             'cart_items': cart_items,
+#             'total_price': total_price,
+#             'logo': active_logo
+#         })
+
+
+
+
+
+
 from decimal import Decimal
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Product, Cart, CartItem
+from .models import Product, Cart, CartItem, WebsiteLogo
+# from django_ratelimit.decorators import ratelimit # Uncomment if you are using this
 
 #@ratelimit(key='ip', rate='50/h', method='POST')
 def cart_view(request):
@@ -214,6 +364,11 @@ def cart_view(request):
         active_logo = WebsiteLogo.objects.get(is_active=True)
     except WebsiteLogo.DoesNotExist:
         active_logo = None
+
+    # Get the URL to redirect back to, default to 'cart'
+    # We get this early, but only use it for the 'add' action
+    next_url = request.POST.get('next', 'cart')
+
     if request.user.is_authenticated:
         cart, _ = Cart.objects.get_or_create(user=request.user)
 
@@ -233,7 +388,7 @@ def cart_view(request):
             if 'delete' in request.POST:
                 CartItem.objects.filter(cart=cart, product=product).delete()
                 messages.success(request, "Item removed from cart.")
-                return redirect('cart')
+                return redirect('cart') # Always redirect to cart on delete
 
             # UPDATE QUANTITY
             if 'update' in request.POST:
@@ -247,7 +402,7 @@ def cart_view(request):
                         cart_item.quantity = quantity
                         cart_item.save()
                         messages.success(request, "Cart updated.")
-                return redirect('cart')
+                return redirect('cart') # Always redirect to cart on update
 
             # DEFAULT: ADD TO CART
             quantity = int(request.POST.get('quantity', 1))
@@ -261,7 +416,11 @@ def cart_view(request):
                     cart_item.quantity = quantity
                 cart_item.save()
                 messages.success(request, "Item added to cart")
-            return redirect('cart')
+            
+            # *** MODIFIED PART ***
+            # Redirect to the 'next' URL (e.g., product page) if provided,
+            # otherwise default to the cart page.
+            return redirect(next_url)
 
         # GET request
         cart_items = cart.items.select_related('product__brand', 'product__category').all()
@@ -298,7 +457,7 @@ def cart_view(request):
                     request.session['cart'] = session_cart
                     request.session.modified = True
                     messages.success(request, "Item removed from cart.")
-                return redirect('cart')
+                return redirect('cart') # Always redirect to cart on delete
 
             # UPDATE
             if 'update' in request.POST:
@@ -311,7 +470,7 @@ def cart_view(request):
                     messages.success(request, "Cart updated.")
                 request.session['cart'] = session_cart
                 request.session.modified = True
-                return redirect('cart')
+                return redirect('cart') # Always redirect to cart on update
 
             # ADD
             quantity = int(request.POST.get('quantity', 1))
@@ -322,8 +481,11 @@ def cart_view(request):
                 request.session['cart'] = session_cart
                 request.session.modified = True
                 messages.success(request, "Item added to cart")
-
-            return redirect('cart')
+            
+            # *** MODIFIED PART ***
+            # Redirect to the 'next' URL (e.g., product page) if provided,
+            # otherwise default to the cart page.
+            return redirect(next_url)
 
         # GET: Display session cart
         cart_items = []
@@ -346,7 +508,6 @@ def cart_view(request):
             'total_price': total_price,
             'logo': active_logo
         })
-
 
 
 # @login_required

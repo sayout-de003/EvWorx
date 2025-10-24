@@ -2,6 +2,7 @@
 {% block title %}{{ product.title }} - Product Details{% endblock %}
 
 {% block content %}
+
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -107,25 +108,20 @@
             </div>
 
             <!-- Add to Cart -->
-            <form method="POST" action="{% url 'cart' %}" class="mt-auto">
+            <form action="{% url 'cart' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="product_id" value="{{ product.id }}">
-                <div class="flex flex-wrap items-center gap-4">
-                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}"
-                           class="w-24 p-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 text-gray-700 font-medium transition-colors"
-                           {% if product.is_out_of_stock %}disabled{% endif %}>
-                    <button type="submit"
-                            class="flex-grow btn-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            {% if product.is_out_of_stock %}disabled{% endif %}>
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>Add to Cart</span>
-                    </button>
-                    <!-- <a href="{% url 'wishlist' %}"
-                       class="bg-gray-100 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-200 transition-colors">
-                      <i class="fas fa-heart"></i>
-                    </a> -->
-                </div>
+                <input type="hidden" name="next" value="{{ request.path }}">
+                
+                <label for="quantity" class="text-gray-700 font-medium">Quantity:</label>
+                <input type="number" name="quantity" value="1" min="1" id="quantity"
+                       class="w-20 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+            
+                <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-cart-plus mr-2"></i> Add to Cart
+                </button>
             </form>
+            
         </div>
     </div>
 
@@ -139,28 +135,50 @@
             </div>
         </div>
 
-        <!-- Specifications & Discounts -->
-        <div class="bg-white rounded-3xl p-8 card-shadow">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Specifications</h2>
-            <ul class="list-disc pl-6 space-y-2 text-gray-600">
-                <li><strong class="text-gray-800">Category:</strong> {{ product.category.name|default:"Not specified" }}</li>
-                <li><strong class="text-gray-800">Subcategory:</strong> {{ product.subcategory.name|default:"Not specified" }}</li>
-                <li><strong class="text-gray-800">Created on:</strong> {{ product.created_at|date:"F d, Y" }}</li>
-                <li><strong class="text-gray-800">Last Updated:</strong> {{ product.updated_at|date:"F d, Y" }}</li>
-            </ul>
+       <!-- Specifications & Discounts -->
+<div class="bg-white rounded-3xl p-8 card-shadow">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Specifications</h2>
+    <ul class="list-disc pl-6 space-y-2 text-gray-600">
+        <li><strong class="text-gray-800">Category:</strong> {{ product.category.name|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">Subcategory:</strong> {{ product.subcategory.name|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">Brand:</strong> {{ product.brand.name|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">SKU/Code:</strong> {{ product.sku|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">Price:</strong> ₹{{ product.price|floatformat:2 }}</li>
+        <li><strong class="text-gray-800">Available Stock:</strong> {{ product.stock|default:"Out of stock" }}</li>
+        <li><strong class="text-gray-800">Weight:</strong> {{ product.weight|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">Dimensions:</strong> {{ product.dimensions|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">Material:</strong> {{ product.material|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">Color:</strong> {{ product.color|default:"Not specified" }}</li>
+        <li><strong class="text-gray-800">Warranty:</strong> {{ product.warranty|default:"Not specified" }}</li>
+        <!-- <li><strong class="text-gray-800">Created on:</strong> {{ product.created_at|date:"F d, Y" }}</li> -->
+        <!-- <li><strong class="text-gray-800">Last Updated:</strong> {{ product.updated_at|date:"F d, Y" }}</li> -->
+    </ul>
 
-            {% if product.bulk_discounts.all %}
-                <div class="mt-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Bulk Discounts</h2>
-                    <ul class="list-disc pl-6 space-y-2 text-gray-600">
-                        {% for discount in product.bulk_discounts.all %}
-                            <li>{{ discount.discount_percentage }}% off on {{ discount.min_quantity }}+ units</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
+    {% if product.bulk_discounts.all %}
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Bulk Discounts</h2>
+            <ul class="list-disc pl-6 space-y-2 text-gray-600">
+                {% for discount in product.bulk_discounts.all %}
+                    <li>{{ discount.discount_percentage }}% off on {{ discount.min_quantity }}+ units</li>
+                {% endfor %}
+            </ul>
         </div>
-    </div>
+    {% endif %}
+
+    
+
+    {% if product.features.all %}
+        <div class="mt-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Key Features</h2>
+            <ul class="list-disc pl-6 space-y-2 text-gray-600">
+                {% for feature in product.features.all %}
+                    <li>{{ feature.name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+
 
     <!-- Compatible Vehicles -->
     <div class="max-w-7xl mx-auto mt-8 bg-white rounded-3xl p-8 card-shadow">
