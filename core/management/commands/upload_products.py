@@ -131,25 +131,45 @@ class Command(BaseCommand):
             # --- 3. Get or create Category ---
             category_obj, _ = Category.objects.get_or_create(name=category_name)
 
-            # --- 4. Create or update Product ---
+            # --- 4. Create or update Product (NEW LOGIC) ---
             # Use update_or_create to update existing products based on title
-            product, created = Product.objects.update_or_create(
-                title=title,
-                defaults={
-                    'category': category_obj,
-                    'price': price,
-                    'mrp': mrp,
-                    'stock': stock,
-                    'moq': moq,
-                    'description': description,
-                    'net_quantity': net_quantity,
-                }
-            )
+            try:
+                product, created = Product.objects.update_or_create(
+                    title=title,
+                    defaults={
+                        'category': category_obj,
+                        'price': price,
+                        'mrp': mrp,
+                        'stock': stock,
+                        'moq': moq,
+                        'description': description,
+                        'net_quantity': net_quantity,
+                    }
+                )
 
-            if created:
-                self.stdout.write(self.style.SUCCESS(f"Created new product: {title}"))
-            else:
-                self.stdout.write(self.style.WARNING(f"Updated existing product: {title}"))
+                if created:
+                    self.stdout.write(self.style.SUCCESS(f"Created new product: {title}"))
+                else:
+                    self.stdout.write(self.style.WARNING(f"Updated existing product: {title}"))
+
+            except Product.MultipleObjectsReturned:
+                self.stdout.write(self.style.ERROR(f"DUPLICATE ERROR: Multiple products found with title '{title}'."))
+                # Get all products with that title, update the first one, and warn about others.
+                products = Product.objects.filter(title=title)
+                product = products.first() # Get the first one
+                
+                # Update this first object
+                product.category = category_obj
+                product.price = price
+                product.mrp = mrp
+                product.stock = stock
+                product.moq = moq
+                product.description = description
+                product.net_quantity = net_quantity
+                product.save()
+                
+                created = False # It was not created, it was updated
+                self.stdout.write(self.style.WARNING(f"--> Updated FIRST product found for: {title}. ({products.count() - 1} other duplicates exist in DB)"))
 
             # --- 5. Handle Image Downloads ---
             if image_urls_str:
