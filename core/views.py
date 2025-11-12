@@ -1101,3 +1101,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
     
 
 
+from django.shortcuts import redirect
+from core.models import Favicon  # replace with your model name
+from django.conf import settings
+
+def favicon_redirect(request):
+    try:
+        favicon_obj = Favicon.objects.first()  # get the uploaded favicon
+        if favicon_obj and favicon_obj.icon:
+            return redirect(favicon_obj.icon.url)
+    except:
+        pass
+    # fallback
+    return redirect(settings.STATIC_URL + 'core/favicon/favicon.svg')
