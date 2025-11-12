@@ -511,3 +511,18 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.product.title} (Wishlist of {self.user.username})"
+
+
+# models.py
+from django.db import models
+
+class Favicon(models.Model):
+    name = models.CharField(max_length=100, default="Default Favicon")
+    icon = models.ImageField(upload_to='site/favicon/')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Favicon"
+
+    def __str__(self):
+        return self.name

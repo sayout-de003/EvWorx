@@ -196,3 +196,12 @@ class WebsiteLogoAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active', 'uploaded_at')
     list_filter = ('is_active',)
     search_fields = ('name',)
+
+
+
+from django.contrib import admin
+from .models import Favicon
+
+@admin.register(Favicon)
+class FaviconAdmin(admin.ModelAdmin):
+    list_display = ('name', 'updated_at')
