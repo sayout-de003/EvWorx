@@ -4,10 +4,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core.views import favicon_redirect
 from django_ckeditor_5.views import upload_file
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
     path('ckeditor5/upload/', upload_file, name='ck_editor_5_upload_file'),
-    path('favicon.ico', favicon_redirect),  # dynamic redirect
+     path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
