@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
+
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EvWorx {% block title %}{% endblock %}</title>
+    
+    <!-- Tailwind & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Dynamic Favicon -->
+
+    <!-- Google-friendly static favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="shortcut icon" href="/favicon.ico">
+
+    <!-- Dynamic favicon for browsers and Apple devices -->
     {% if favicon_obj and favicon_obj.icon %}
-    <!-- Favicon for browsers and search engines -->
-    <link rel="shortcut icon" href="{{ favicon_obj.icon.url }}">
-    <link rel="icon" type="image/png" href="{{ favicon_obj.icon.url }}">
-    <link rel="apple-touch-icon" href="{{ favicon_obj.icon.url }}">
-{% else %}
-    <!-- Default fallback favicon -->
-    <link rel="shortcut icon" href="{% static 'core/favicon/favicon.svg' %}">
-    <link rel="icon" type="image/png" href="{% static 'core/favicon/favicon.svg' %}">
-    <link rel="apple-touch-icon" href="{% static 'core/favicon/favicon.svg' %}">
-{% endif %}
+        <link rel="icon" type="image/png" href="{{ favicon_obj.icon.url }}">
+        <link rel="apple-touch-icon" href="{{ favicon_obj.icon.url }}">
+    {% else %}
+        <!-- Fallback SVG for browsers -->
+        <link rel="icon" type="image/png" href="{% static 'core/favicon/favicon.svg' %}">
+        <link rel="apple-touch-icon" href="{% static 'core/favicon/favicon.svg' %}">
+    {% endif %}
+
+    
+
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
