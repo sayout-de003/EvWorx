@@ -1,0 +1,76 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %} - Admin Management Hub{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">Admin Management</h1>
+            <p class="mt-4 text-xl text-gray-500">Welcome to your central control panel. Manage repairs and orders with
+                ease.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Manage Repairs Card -->
+            <a href="{% url 'admin_repair_list' %}"
+                class="group relative bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-blue-700 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
+                </div>
+                <div class="p-8 md:p-12">
+                    <div
+                        class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors duration-300">
+                        <i
+                            class="fas fa-tools text-indigo-600 text-3xl group-hover:text-white transition-colors duration-300"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">On-Site Repair Queries</h2>
+                    <p class="text-gray-600 text-lg mb-6 leading-relaxed">
+                        Track, accept, and manage on-site vehicle repair requests.
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-700">
+                            {{ pending_repairs }} Pending Requests
+                        </span>
+                        <span
+                            class="text-indigo-600 font-bold group-hover:translate-x-2 transition-transform duration-300">
+                            Open Management <i class="fas fa-arrow-right ml-2"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Manage Orders Card -->
+            <a href="{% url 'admin_order_list' %}"
+                class="group relative bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-green-600 to-teal-700 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
+                </div>
+                <div class="p-8 md:p-12">
+                    <div
+                        class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-green-600 transition-colors duration-300">
+                        <i
+                            class="fas fa-shopping-bag text-green-600 text-3xl group-hover:text-white transition-colors duration-300"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">E-commerce Orders</h2>
+                    <p class="text-gray-600 text-lg mb-6 leading-relaxed">
+                        Manage product orders, update shipping status, and process payments.
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <span
+                            class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-700">
+                            {{ pending_orders }} New Orders
+                        </span>
+                        <span
+                            class="text-green-600 font-bold group-hover:translate-x-2 transition-transform duration-300">
+                            Open Management <i class="fas fa-arrow-right ml-2"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
