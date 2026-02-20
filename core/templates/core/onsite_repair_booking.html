@@ -1,136 +1,190 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %} - On-Site Repair Booking{% endblock %}
+{% block title %} - Premium On-Site Repair Booking{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <!-- Header Section -->
-            <div class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 px-8 py-10 text-center">
-                <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-700 rounded-full mb-6">
-                    <i class="fas fa-tools text-white text-3xl"></i>
-                </div>
-                <h1 class="text-4xl font-extrabold text-white tracking-tight mb-2">On-Site Repair Booking</h1>
-                <p class="text-gray-300 text-lg max-w-2xl mx-auto">
-                    Get your vehicle repaired at the comfort of your home. Fill out the form below and our professional
-                    technicians will reach out to you.
-                </p>
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-4xl">
+        <div class="text-center">
+            <h2 class="text-base font-semibold text-indigo-600 tracking-wide uppercase">Service Request</h2>
+            <p class="mt-1 text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">Doorstep EV
+                Repair</p>
+            <p class="max-w-xl mt-5 mx-auto text-xl text-gray-500">Book professional on-site support for your Ola,
+                Ather, or any EV. We bring the workshop to your home.</p>
+        </div>
+    </div>
+
+    <div class="mt-12 sm:mx-auto sm:w-full sm:max-w-4xl">
+        <div
+            class="bg-white py-12 px-6 shadow-2xl rounded-3xl sm:px-12 border border-gray-100 relative overflow-hidden">
+            <!-- Decorative Elements -->
+            <div class="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50">
+            </div>
+            <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50">
             </div>
 
-            <!-- Form Section -->
-            <form method="POST" class="px-8 py-10 space-y-8">
+            <form method="POST" class="space-y-10 relative z-10">
                 {% csrf_token %}
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Name -->
-                    <div class="space-y-2">
-                        <label for="{{ form.full_name.id_for_label }}"
-                            class="block text-sm font-semibold text-gray-700">
-                            Full Name <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.full_name }}
-                        {% if form.full_name.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.full_name.errors.0 }}</p>
-                        {% endif %}
+                <!-- Section 1: Personal Details -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div
+                            class="flex-shrink-0 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">Personal Information</h3>
                     </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        <div class="space-y-1">
+                            <label for="{{ form.full_name.id_for_label }}"
+                                class="block text-sm font-semibold text-gray-700">Full Name</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-id-card text-gray-400"></i>
+                                </div>
+                                {{ form.full_name }}
+                            </div>
+                            {% if form.full_name.errors %}<p class="text-red-500 text-xs italic mt-1">{{
+                                form.full_name.errors.0 }}</p>{% endif %}
+                        </div>
 
-                    <!-- Mobile Number -->
-                    <div class="space-y-2">
-                        <label for="{{ form.mobile_no.id_for_label }}"
-                            class="block text-sm font-semibold text-gray-700">
-                            Mobile Number <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.mobile_no }}
-                        {% if form.mobile_no.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.mobile_no.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Vehicle Type -->
-                    <div class="space-y-2">
-                        <label for="{{ form.vehicle_type.id_for_label }}"
-                            class="block text-sm font-semibold text-gray-700">
-                            Vehicle Type <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.vehicle_type }}
-                        {% if form.vehicle_type.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.vehicle_type.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Brand -->
-                    <div class="space-y-2">
-                        <label for="{{ form.brand.id_for_label }}" class="block text-sm font-semibold text-gray-700">
-                            Vehicle Brand <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.brand }}
-                        {% if form.brand.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.brand.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <!-- Model No -->
-                    <div class="space-y-2">
-                        <label for="{{ form.model_no.id_for_label }}" class="block text-sm font-semibold text-gray-700">
-                            Model Number <span class="text-red-500">*</span>
-                        </label>
-                        {{ form.model_no }}
-                        {% if form.model_no.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.model_no.errors.0 }}</p>
-                        {% endif %}
+                        <div class="space-y-1">
+                            <label for="{{ form.mobile_no.id_for_label }}"
+                                class="block text-sm font-semibold text-gray-700">Mobile Number</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-phone text-gray-400"></i>
+                                </div>
+                                {{ form.mobile_no }}
+                            </div>
+                            {% if form.mobile_no.errors %}<p class="text-red-500 text-xs italic mt-1">{{
+                                form.mobile_no.errors.0 }}</p>{% endif %}
+                        </div>
                     </div>
                 </div>
 
                 <hr class="border-gray-100">
 
-                <!-- Problem Details -->
-                <div class="space-y-2">
-                    <label for="{{ form.problem_details.id_for_label }}"
-                        class="block text-sm font-semibold text-gray-700">
-                        Detailed Problem in Vehicle <span class="text-red-500">*</span>
-                    </label>
-                    {{ form.problem_details }}
-                    {% if form.problem_details.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ form.problem_details.errors.0 }}</p>
-                    {% endif %}
+                <!-- Section 2: Vehicle Details -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div
+                            class="flex-shrink-0 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-motorcycle text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">Vehicle Information</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                        <div class="space-y-1">
+                            <label for="{{ form.vehicle_type.id_for_label }}"
+                                class="block text-sm font-semibold text-gray-700">Type</label>
+                            {{ form.vehicle_type }}
+                            {% if form.vehicle_type.errors %}<p class="text-red-500 text-xs italic mt-1">{{
+                                form.vehicle_type.errors.0 }}</p>{% endif %}
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="{{ form.brand.id_for_label }}"
+                                class="block text-sm font-semibold text-gray-700">Brand</label>
+                            {{ form.brand }}
+                            {% if form.brand.errors %}<p class="text-red-500 text-xs italic mt-1">{{ form.brand.errors.0
+                                }}</p>{% endif %}
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="{{ form.model_no.id_for_label }}"
+                                class="block text-sm font-semibold text-gray-700">Model No</label>
+                            {{ form.model_no }}
+                            {% if form.model_no.errors %}<p class="text-red-500 text-xs italic mt-1">{{
+                                form.model_no.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Parts Required -->
-                <div class="space-y-2">
-                    <label for="{{ form.parts_required.id_for_label }}"
-                        class="block text-sm font-semibold text-gray-700">
-                        Parts Required (Optional)
-                    </label>
-                    {{ form.parts_required }}
-                    {% if form.parts_required.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ form.parts_required.errors.0 }}</p>
-                    {% endif %}
+                <hr class="border-gray-100">
+
+                <!-- Section 3: Problem & Address -->
+                <div class="space-y-8">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div
+                            class="flex-shrink-0 w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-map-marker-alt text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900">Service Location & Issue</h3>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="{{ form.problem_details.id_for_label }}"
+                            class="block text-sm font-semibold text-gray-700">Problem Description</label>
+                        {{ form.problem_details }}
+                        {% if form.problem_details.errors %}<p class="text-red-500 text-xs italic mt-1">{{
+                            form.problem_details.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="{{ form.parts_required.id_for_label }}"
+                            class="block text-sm font-semibold text-gray-700">Parts Required <span
+                                class="text-gray-400 font-normal">(Optional)</span></label>
+                        {{ form.parts_required }}
+                        {% if form.parts_required.errors %}<p class="text-red-500 text-xs italic mt-1">{{
+                            form.parts_required.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="{{ form.address.id_for_label }}"
+                            class="block text-sm font-semibold text-gray-700">Service Address</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}<p class="text-red-500 text-xs italic mt-1">{{ form.address.errors.0
+                            }}</p>{% endif %}
+                    </div>
                 </div>
 
-                <!-- Address -->
-                <div class="space-y-2">
-                    <label for="{{ form.address.id_for_label }}" class="block text-sm font-semibold text-gray-700">
-                        Service Address <span class="text-red-500">*</span>
-                    </label>
-                    {{ form.address }}
-                    {% if form.address.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ form.address.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                <div class="pt-4">
+                <div class="pt-6">
                     <button type="submit"
-                        class="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all duration-300 transform hover:-translate-y-1">
-                        <i class="fas fa-calendar-check mr-2"></i> Confirm Booking
+                        class="w-full flex justify-center items-center py-4 px-8 border border-transparent rounded-2xl shadow-xl text-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:-translate-y-1 active:scale-95">
+                        <i class="fas fa-calendar-check mr-3"></i> Confirm Your Request
                     </button>
-                    <p class="text-center text-xs text-gray-500 mt-4">
-                        By submitting this form, you agree to our terms of service and privacy policy.
+                    <p class="mt-4 text-center text-sm text-gray-500">
+                        Our technicians typically respond within 30 minutes during business hours.
                     </p>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    /* Premium Input Styling */
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 1rem;
+        font-size: 1rem;
+        color: #111827;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control:focus {
+        outline: none;
+        background-color: #fff;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+    }
+
+    /* Padding for inputs with icons */
+    .relative .form-control {
+        padding-left: 3rem;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+</style>
 {% endblock %}

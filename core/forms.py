@@ -33,11 +33,11 @@ class OnSiteRepairBookingForm(forms.ModelForm):
         ]
         widgets = {
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your full name'}),
-            'vehicle_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Car, Bike'}),
-            'brand': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Tesla, Honda'}),
-            'model_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter model number'}),
+            'vehicle_type': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Electric Scooter, Electric Car'}),
+            'brand': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Ola, Ather, Tesla'}),
+            'model_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., S1 Pro, 450X, Model 3'}),
             'mobile_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter mobile number'}),
-            'problem_details': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describe the problem in detail'}),
-            'parts_required': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'List any parts required (optional)'}),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter your full address'}),
+            'problem_details': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describe the problem (e.g., Battery draining fast, Motor noise)'}),
+            'parts_required': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'List any parts required (optional, e.g., Brake pads, Mirror)'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter your full service address'}),
         }
