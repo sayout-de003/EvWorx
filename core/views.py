@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from .models import (
     User, Vehicle, VehicleType, Brand, Product, Cart, CartItem, 
     Order, OrderItem, Wishlist, Review, Coupon, Category, 
-    HeroSlider, BlogPost, DeliveryAddress, WebsiteLogo
+    HeroSlider, BlogPost, DeliveryAddress, WebsiteLogo, OnSiteRepairBooking
 )
 from .serializers import (
     UserSerializer, VehicleSerializer, VehicleTypeSerializer, 
@@ -27,7 +27,7 @@ from .serializers import (
     CartItemSerializer, OrderSerializer, OrderItemSerializer, 
     WishlistSerializer, ReviewSerializer, CouponSerializer
 )
-from .forms import SignupForm, LoginForm, VehicleForm, CartAddForm
+from .forms import SignupForm, LoginForm, VehicleForm, CartAddForm, OnSiteRepairBookingForm
 from .services import CartService
 
 def homepage(request):
@@ -671,3 +671,20 @@ def favicon_redirect(request):
         pass
     # fallback
     return redirect(settings.STATIC_URL + 'core/favicon/favicon.svg')
+
+def onsite_repair_booking(request):
+    if request.method == 'POST':
+        form = OnSiteRepairBookingForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            if request.user.is_authenticated:
+                booking.user = request.user
+            booking.save()
+            messages.success(request, "Your on-site repair booking request has been submitted successfully! We will contact you soon.")
+            return redirect('homepage')
+        else:
+            messages.error(request, "There was an error in your submission. Please check the form.")
+    else:
+        form = OnSiteRepairBookingForm()
+    
+    return render(request, 'core/onsite_repair_booking.html', {'form': form})

@@ -492,3 +492,23 @@ class Favicon(models.Model):
 
     def __str__(self):
         return self.name
+
+class OnSiteRepairBooking(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='repair_bookings')
+    full_name = models.CharField(max_length=255)
+    vehicle_type = models.CharField(max_length=100)
+    brand = models.CharField(max_length=100)
+    model_no = models.CharField(max_length=100)
+    mobile_no = models.CharField(max_length=15)
+    problem_details = models.TextField()
+    parts_required = models.TextField(blank=True, null=True)
+    address = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Repair Booking for {self.full_name} - {self.brand} {self.model_no}"
+
+    class Meta:
+        verbose_name = "On-Site Repair Booking"
+        verbose_name_plural = "On-Site Repair Bookings"
+        ordering = ['-created_at']

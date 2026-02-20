@@ -8,7 +8,7 @@ from .models import (
     Category, SubCategory, Product, ProductImage, BulkDiscountTier,
     Cart, CartItem, Order, OrderItem, Wishlist, Review,
     Coupon, DeliveryAddress, SellerInformation, GrievanceOfficer,
-    WebsiteLogo, Favicon, BlogPost
+    WebsiteLogo, Favicon, BlogPost, OnSiteRepairBooking
 )
 
 # ----------------- Custom User -----------------
@@ -197,3 +197,10 @@ class BlogPostAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'created_at')
     prepopulated_fields = {'slug': ('title',)}
     search_fields = ('title', 'content')
+
+@admin.register(OnSiteRepairBooking)
+class OnSiteRepairBookingAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'brand', 'model_no', 'mobile_no', 'created_at')
+    list_filter = ('brand', 'created_at', 'vehicle_type')
+    search_fields = ('full_name', 'mobile_no', 'brand', 'model_no', 'address')
+    readonly_fields = ('created_at',)
