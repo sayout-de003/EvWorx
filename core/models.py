@@ -166,8 +166,11 @@ class Manufacturer(models.Model):
 class Order(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
         ('Shipped', 'Shipped'),
-        ('Delivered', 'Delivered')
+        ('Delivered', 'Delivered'),
+        ('Cancelled', 'Cancelled')
     ]
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -494,6 +497,14 @@ class Favicon(models.Model):
         return self.name
 
 class OnSiteRepairBooking(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled')
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='repair_bookings')
     full_name = models.CharField(max_length=255)
     vehicle_type = models.CharField(max_length=100)
@@ -503,6 +514,8 @@ class OnSiteRepairBooking(models.Model):
     problem_details = models.TextField()
     parts_required = models.TextField(blank=True, null=True)
     address = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    admin_notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

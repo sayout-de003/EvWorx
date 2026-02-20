@@ -5,7 +5,10 @@ from core.views import (
     ProductViewSet, CartViewSet, OrderViewSet, WishlistViewSet, 
     ReviewViewSet, homepage, about, faq, blog, blog_detail, 
     signup, user_login, user_logout, catalog, garage, cart_view, 
-    wishlist_view, order_create, order_confirm, order_payment,verify_phone , product_detail , add_review,admin_orders_view, onsite_repair_booking
+    wishlist_view, order_create, order_confirm, order_payment, verify_phone, 
+    product_detail, add_review, admin_orders_view, onsite_repair_booking,
+    admin_management_hub, admin_repair_list, admin_repair_edit, 
+    admin_order_list, admin_order_edit
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -52,6 +55,13 @@ urlpatterns = [
 
 
     path('onsite-repair-booking/', onsite_repair_booking, name='onsite_repair_booking'),
+
+    # Admin Management
+    path('admin-management/', admin_management_hub, name='admin_management_hub'),
+    path('admin-management/repairs/', admin_repair_list, name='admin_repair_list'),
+    path('admin-management/repairs/<int:pk>/edit/', admin_repair_edit, name='admin_repair_edit'),
+    path('admin-management/orders/', admin_order_list, name='admin_order_list'),
+    path('admin-management/orders/<int:pk>/edit/', admin_order_edit, name='admin_order_edit'),
 
     # API
     path('api/', include(router.urls)),

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import User, Vehicle, Brand, VehicleType, OnSiteRepairBooking
+from .models import User, Vehicle, Brand, VehicleType, OnSiteRepairBooking, Order
 
 class SignupForm(UserCreationForm):
     phone_number = forms.CharField(max_length=15, required=False)
@@ -40,4 +40,27 @@ class OnSiteRepairBookingForm(forms.ModelForm):
             'problem_details': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describe the problem (e.g., Battery draining fast, Motor noise)'}),
             'parts_required': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'List any parts required (optional, e.g., Brake pads, Mirror)'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter your full service address'}),
+        }
+
+class AdminOnSiteRepairForm(forms.ModelForm):
+    class Meta:
+        model = OnSiteRepairBooking
+        fields = ['full_name', 'mobile_no', 'vehicle_type', 'brand', 'model_no', 'problem_details', 'parts_required', 'address', 'status', 'admin_notes']
+        widgets = {
+            field: forms.TextInput(attrs={'class': 'form-control'}) for field in ['full_name', 'mobile_no', 'vehicle_type', 'brand', 'model_no']
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            if not isinstance(self.fields[field].widget, forms.CheckboxInput):
+                self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+class AdminOrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['status', 'tracking_link']
+        widgets = {
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'tracking_link': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Optional tracking URL'}),
         }

@@ -247,8 +247,8 @@
                         Repair</a>
                     {% if user.is_authenticated %}
                     {% if user.is_staff %}
-                    <a href="{% url 'admin_orders' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-tools mr-2"></i>Manage Orders
+                    <a href="{% url 'admin_management_hub' %}" class="nav-link text-white font-medium">
+                        <i class="fas fa-user-shield mr-2"></i>Admin Panel
                     </a>
                     {% endif %}
                     <a href="{% url 'garage' %}" class="nav-link text-white font-medium">
@@ -292,8 +292,8 @@
                 <a href="{% url 'onsite_repair_booking' %}" class="nav-link text-white font-medium">On-Site Repair</a>
                 {% if user.is_authenticated %}
                 {% if user.is_staff %}
-                <a href="{% url 'admin_orders' %}" class="nav-link text-white font-medium">
-                    <i class="fas fa-tools mr-2"></i>Manage Orders
+                <a href="{% url 'admin_management_hub' %}" class="nav-link text-white font-medium">
+                    <i class="fas fa-user-shield mr-2"></i>Admin Panel
                 </a>
                 {% endif %}
                 <a href="{% url 'garage' %}" class="nav-link text-white font-medium">
@@ -396,6 +396,10 @@
                         <li><a href="{% url 'blog' %}" class="text-gray-400 footer-link">Blog</a></li>
                         <li><a href="{% url 'onsite_repair_booking' %}" class="text-gray-400 footer-link">On-Site
                                 Repair</a></li>
+                        {% if user.is_staff %}
+                        <li><a href="{% url 'admin_management_hub' %}" class="text-gray-400 footer-link">Admin Panel</a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </div>
 

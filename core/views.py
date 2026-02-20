@@ -27,7 +27,7 @@ from .serializers import (
     CartItemSerializer, OrderSerializer, OrderItemSerializer, 
     WishlistSerializer, ReviewSerializer, CouponSerializer
 )
-from .forms import SignupForm, LoginForm, VehicleForm, CartAddForm, OnSiteRepairBookingForm
+from .forms import SignupForm, LoginForm, VehicleForm, CartAddForm, OnSiteRepairBookingForm, AdminOnSiteRepairForm, AdminOrderForm
 from .services import CartService
 
 def homepage(request):
@@ -688,3 +688,90 @@ def onsite_repair_booking(request):
         form = OnSiteRepairBookingForm()
     
     return render(request, 'core/onsite_repair_booking.html', {'form': form})
+@staff_member_required
+def admin_management_hub(request):
+    """Main dashboard for staff members."""
+    pending_repairs = OnSiteRepairBooking.objects.filter(status='Pending').count()
+    pending_orders = Order.objects.filter(status='Pending').count()
+    
+    return render(request, 'core/admin_management_hub.html', {
+        'pending_repairs': pending_repairs,
+        'pending_orders': pending_orders,
+    })
+
+@staff_member_required
+def admin_repair_list(request):
+    """List repair bookings for admins."""
+    repair_bookings = OnSiteRepairBooking.objects.all().order_by('-created_at')
+    
+    if request.method == 'POST':
+        booking_id = request.POST.get('booking_id')
+        action = request.POST.get('action')
+        booking = get_object_or_404(OnSiteRepairBooking, id=booking_id)
+        
+        if action == 'accept':
+            booking.status = 'Accepted'
+            messages.success(request, f"Booking for {booking.full_name} accepted.")
+        elif action == 'reject':
+            booking.status = 'Rejected'
+            messages.warning(request, f"Booking for {booking.full_name} rejected.")
+        elif action == 'cancel':
+            booking.status = 'Cancelled'
+            messages.info(request, f"Booking for {booking.full_name} cancelled.")
+        
+        booking.save()
+        return redirect('admin_repair_list')
+        
+    return render(request, 'core/admin_repair_list.html', {'repair_bookings': repair_bookings})
+
+@staff_member_required
+def admin_repair_edit(request, pk):
+    """Detailed edit for a repair booking."""
+    booking = get_object_or_404(OnSiteRepairBooking, pk=pk)
+    if request.method == 'POST':
+        form = AdminOnSiteRepairForm(request.POST, instance=booking)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Repair booking updated successfully.")
+            return redirect('admin_repair_list')
+    else:
+        form = AdminOnSiteRepairForm(instance=booking)
+    
+    return render(request, 'core/admin_repair_edit.html', {'form': form, 'booking': booking})
+
+@staff_member_required
+def admin_order_list(request):
+    """List e-commerce orders for admins."""
+    orders = Order.objects.all().order_by('-created_at')
+    
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        action = request.POST.get('action')
+        order = get_object_or_404(Order, id=order_id)
+        
+        if action == 'accept':
+            order.status = 'Accepted'
+            messages.success(request, f"Order #{order.id} accepted.")
+        elif action == 'reject':
+            order.status = 'Rejected'
+            messages.warning(request, f"Order #{order.id} rejected.")
+        
+        order.save()
+        return redirect('admin_order_list')
+        
+    return render(request, 'core/admin_order_list.html', {'orders': orders})
+
+@staff_member_required
+def admin_order_edit(request, pk):
+    """Detailed edit for an order."""
+    order = get_object_or_404(Order, pk=pk)
+    if request.method == 'POST':
+        form = AdminOrderForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Order #{order.id} updated.")
+            return redirect('admin_order_list')
+    else:
+        form = AdminOrderForm(instance=order)
+    
+    return render(request, 'core/admin_order_edit.html', {'form': form, 'order': order})
