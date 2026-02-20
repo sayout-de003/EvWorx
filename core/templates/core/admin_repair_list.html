@@ -51,13 +51,13 @@
                 <div class="relative min-w-[200px]">
                     <select name="sort" onchange="this.form.submit()"
                         class="w-full pl-4 pr-10 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none appearance-none font-medium text-gray-700">
-                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First
+                        <option value="-created_at" {% if sort_by=='-created_at' %}selected{% endif %}>Newest First
                         </option>
-                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First
+                        <option value="created_at" {% if sort_by=='created_at' %}selected{% endif %}>Oldest First
                         </option>
-                        <option value="full_name" {% if sort_by == 'full_name' %}selected{% endif %}>Name (A-Z)</option>
-                        <option value="-full_name" {% if sort_by == '-full_name' %}selected{% endif %}>Name (Z-A)</option>
-                        <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
+                        <option value="full_name" {% if sort_by=='full_name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="-full_name" {% if sort_by=='-full_name' %}selected{% endif %}>Name (Z-A)</option>
+                        <option value="status" {% if sort_by=='status' %}selected{% endif %}>Status</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
                         <i class="fas fa-chevron-down text-sm"></i>
@@ -96,8 +96,8 @@
                                     {{ booking.created_at|date:"M d, Y H:i" }}</span>
                             </div>
                             <h3 class="text-2xl font-bold text-gray-900">{{ booking.full_name }}</h3>
-                            <p class="text-indigo-600 font-medium">{{ booking.brand }} {{ booking.model_no }} ({{
-                                booking.vehicle_type }})</p>
+                            <p class="text-indigo-600 font-medium">{{ booking.brand }} {{ booking.model_no }}
+                                ({{booking.vehicle_type }})</p>
                         </div>
 
                         <!-- Center: Contact & Problem -->
