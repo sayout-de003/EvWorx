@@ -7,7 +7,8 @@ from .models import (
     User, Vehicle, VehicleType, Brand, VehicleModel,
     Category, SubCategory, Product, ProductImage, BulkDiscountTier,
     Cart, CartItem, Order, OrderItem, Wishlist, Review,
-    Coupon, DeliveryAddress, SellerInformation, GrievanceOfficer
+    Coupon, DeliveryAddress, SellerInformation, GrievanceOfficer,
+    WebsiteLogo, Favicon, BlogPost
 )
 
 # ----------------- Custom User -----------------
@@ -78,20 +79,8 @@ class BulkDiscountInline(admin.TabularInline):
     model = BulkDiscountTier
     extra = 1
 
-# @admin.register(Product)
-# class ProductAdmin(admin.ModelAdmin):
-#     list_display = ('title', 'stock', 'stock_status_display', 'is_out_of_stock_manual')
-#     list_editable = ('is_out_of_stock_manual',)
-#     list_filter = ('brand', 'category', 'is_out_of_stock_manual')
-#     search_fields = ('title', 'part_number')
-#     inlines = [ProductImageInline, BulkDiscountInline]
-
-#     def stock_status_display(self, obj):
-#         return "Out of Stock" if obj.is_out_of_stock() else "In Stock"
-#     stock_status_display.short_description = "Stock Status"
 
 
-# from ckeditor.widgets import CKEditorWidget
 from django_ckeditor_5.widgets import CKEditor5Widget
 
 @admin.register(Product)
@@ -127,7 +116,6 @@ class OrderItemInline(admin.TabularInline):
     extra = 1
 
 # core/admin.py
-from django.contrib import admin
 from .models import HeroSlider
 
 @admin.register(HeroSlider)
@@ -188,7 +176,6 @@ class GrievanceOfficerAdmin(admin.ModelAdmin):
     search_fields = ['name', 'designation']
 
 
-from django.contrib import admin
 from .models import WebsiteLogo
 
 @admin.register(WebsiteLogo)
@@ -199,9 +186,14 @@ class WebsiteLogoAdmin(admin.ModelAdmin):
 
 
 
-from django.contrib import admin
 from .models import Favicon
 
 @admin.register(Favicon)
 class FaviconAdmin(admin.ModelAdmin):
     list_display = ('name', 'updated_at')
+
+@admin.register(BlogPost)
+class BlogPostAdmin(admin.ModelAdmin):
+    list_display = ('title', 'slug', 'created_at')
+    prepopulated_fields = {'slug': ('title',)}
+    search_fields = ('title', 'content')

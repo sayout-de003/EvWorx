@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alphine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${DB_NAME:-evault}
+      - POSTGRES_USER=${DB_USER:-evaultuser}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-evaultpass123}
+
+  redis:
+    image: redis:7-alpine
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME:-evault}
+      - DB_USER=${DB_USER:-evaultuser}
+      - DB_PASSWORD=${DB_PASSWORD:-evaultpass123}
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:

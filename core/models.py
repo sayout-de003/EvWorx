@@ -11,7 +11,7 @@ from django.utils.text import slugify
 class Brand(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     logo = models.ImageField(upload_to='brands/', blank=True, null=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
 
     def __str__(self):
         return self.name
@@ -19,7 +19,7 @@ class Brand(models.Model):
 
 # ----------------- BulkDiscountTier -----------------
 class BulkDiscountTier(models.Model):
-    discount_percentage = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)])
     min_quantity = models.PositiveIntegerField()
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='bulk_discounts')
 
@@ -83,8 +83,8 @@ class Category(models.Model):
 # ----------------- Coupon -----------------
 class Coupon(models.Model):
     active = models.BooleanField(default=True)
-    code = models.CharField(max_length=20, unique=True)
-    discount_percentage = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    code = models.CharField(max_length=20, unique=True, db_index=True)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0), MaxValueValidator(100)])
     valid_from = models.DateTimeField()
     valid_until = models.DateTimeField()
 
@@ -235,56 +235,6 @@ class OrderItem(models.Model):
 
 
 # ----------------- Product -----------------
-# class Product(models.Model):
-#     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='products')
-#     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-#     compatible_vehicle_models = models.ManyToManyField('VehicleModel', blank=True, related_name='products')
-#     compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
-#     country_of_origin = models.CharField(max_length=100, blank=True, null=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     description = models.TextField(blank=True)
-#     discount_percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
-#     is_out_of_stock_manual = models.BooleanField(default=False)
-#     main_image = models.ImageField(upload_to='products/', blank=True, null=True)
-#     manufacturer = models.ForeignKey('Manufacturer', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-#     mrp = models.DecimalField(max_digits=10, decimal_places=2)
-#     net_quantity = models.CharField(max_length=100, blank=True, null=True)
-#     part_number = models.CharField(max_length=100, unique=True, null=True)
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-#     return_policy = models.TextField(blank=True, null=True)
-#     seller = models.ForeignKey('SellerInformation', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
-#     slug = models.SlugField(unique=True, null=True, blank=True)
-#     stock = models.PositiveIntegerField(default=0)
-#     subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-#     title = models.CharField(max_length=200)
-#     updated_at = models.DateTimeField(auto_now=True)
-#     warranty_period = models.CharField(max_length=100, blank=True, null=True)
-#     warranty_terms = models.TextField(blank=True, null=True)
-
-#     class Meta:
-#         ordering = ['-created_at']
-
-#     def __str__(self):
-#         return self.title
-
-#     def is_out_of_stock(self):
-#         return self.stock == 0 or self.is_out_of_stock_manual
-
-#     def stock_status(self):
-#         return "Out of Stock" if self.is_out_of_stock() else "In Stock"
-
-#     def save(self, *args, **kwargs):
-#         if not self.slug:
-#             base_slug = slugify(self.title)
-#             slug = base_slug
-#             counter = 1
-#             while Product.objects.filter(slug=slug).exists():
-#                 slug = f"{base_slug}-{counter}"
-#                 counter += 1
-#             self.slug = slug
-#         super().save(*args, **kwargs)
-
-# from ckeditor.fields import RichTextField
 from django_ckeditor_5.fields import CKEditor5Field
 
 
@@ -296,10 +246,8 @@ class Product(models.Model):
     compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
     country_of_origin = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    # description = models.TextField(blank=True)
-    # description = RichTextField(blank=True, null=True)
     description = CKEditor5Field('Content', config_name='default', blank=True, null=True)
-    discount_percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     is_out_of_stock_manual = models.BooleanField(default=False)
     main_image = models.ImageField(upload_to='products/', blank=True, null=True)
     manufacturer = models.ForeignKey('Manufacturer', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
@@ -312,7 +260,7 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
     subcategory = models.ForeignKey('SubCategory', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     warranty_period = models.CharField(max_length=100, blank=True, null=True)
     warranty_terms = models.TextField(blank=True, null=True)
@@ -396,7 +344,7 @@ class Review(models.Model):
 # ----------------- SellerInformation -----------------
 class SellerInformation(models.Model):
     address = models.TextField()
-    commission_rate = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     gstin = models.CharField(max_length=15, blank=True, null=True)
     importer_details = models.TextField(blank=True, null=True)
     name = models.CharField(max_length=255)
@@ -513,16 +461,34 @@ class Wishlist(models.Model):
         return f"{self.product.title} (Wishlist of {self.user.username})"
 
 
-# models.py
-from django.db import models
+    def __str__(self):
+        return self.name
 
-class Favicon(models.Model):
-    name = models.CharField(max_length=100, default="Default Favicon")
-    icon = models.ImageField(upload_to='site/favicon/')
+# ----------------- Blog -----------------
+class BlogPost(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    content = CKEditor5Field('Content', config_name='extends')
+    image = models.ImageField(upload_to='blog/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = "Favicon"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+class Favicon(models.Model):
+    name = models.CharField(max_length=100, default="Favicon")
+    icon = models.ImageField(upload_to='favicon/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

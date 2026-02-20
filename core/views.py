@@ -1,516 +1,160 @@
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import JsonResponse
+from django.utils import timezone
+from decimal import Decimal
+import random
+
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import User, Vehicle, VehicleType, Brand, Product, Cart, CartItem, Order, OrderItem, Wishlist, Review, Coupon, Category, HeroSlider
-from .serializers import UserSerializer, VehicleSerializer, VehicleTypeSerializer, BrandSerializer, ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer, WishlistSerializer, ReviewSerializer, CouponSerializer
-from .models import WebsiteLogo
-from django.db.models import Q
-from django.utils import timezone
-from django.contrib import messages
-from django.core.paginator import Paginator
-from django.core.cache import cache
-from django.views.decorators.cache import cache_page
-from django_ratelimit.decorators import ratelimit
+
+from .models import (
+    User, Vehicle, VehicleType, Brand, Product, Cart, CartItem, 
+    Order, OrderItem, Wishlist, Review, Coupon, Category, 
+    HeroSlider, BlogPost, DeliveryAddress, WebsiteLogo
+)
+from .serializers import (
+    UserSerializer, VehicleSerializer, VehicleTypeSerializer, 
+    BrandSerializer, ProductSerializer, CartSerializer, 
+    CartItemSerializer, OrderSerializer, OrderItemSerializer, 
+    WishlistSerializer, ReviewSerializer, CouponSerializer
+)
+from .forms import SignupForm, LoginForm, VehicleForm, CartAddForm
+from .services import CartService
 
 def homepage(request):
-    products = Product.objects.filter(stock__gt=0).select_related('brand', 'category').order_by('-id')[:6] # Show 6 featured products
+    products = Product.objects.filter(stock__gt=0).select_related('brand', 'category').order_by('-id')[:6]
     categories = Category.objects.all()
     sliders = HeroSlider.objects.filter(active=True)
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
     return render(request, 'core/homepage.html', {
         'sliders': sliders,
         'products': products,
         'categories': categories,
-         'logo': active_logo
     })
 
 def about(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-    return render(request, 'core/about.html',
-    {
-         'logo': active_logo,
-    })
+    return render(request, 'core/about.html')
 
 def faq(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-    return render(request, 'core/faq.html',
-    {
-         'logo': active_logo,
-    }
-    )
+    return render(request, 'core/faq.html')
 
 def blog(request):
-    # Mock blog articles (in a real app, you'd use a Blog model)
-    articles = [
-        {'id': 1, 'title': 'EV Battery Maintenance', 'content': 'Learn how to maintain your EV battery...'},
-        {'id': 2, 'title': 'Choosing the Right Charger', 'content': 'Understand charger types...'},
-    ]
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-    return render(request, 'core/blog.html', {'articles': articles, 'logo': active_logo})
+    articles = BlogPost.objects.all()
+    return render(request, 'core/blog.html', {'articles': articles})
 
 def blog_detail(request, pk):
-    # Mock blog detail
-    articles = {
-        1: {'title': 'EV Battery Maintenance', 'content': 'Detailed guide on maintaining EV batteries...'},
-        2: {'title': 'Choosing the Right Charger', 'content': 'Comprehensive guide on charger types...'},
-    }
-    article = articles.get(pk, {})
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-    return render(request, 'core/blog_detail.html', {'article': article, 'logo': active_logo})
+    article = get_object_or_404(BlogPost, pk=pk)
+    return render(request, 'core/blog_detail.html', {'article': article})
 
 def signup(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
     if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-        phone_number = request.POST.get('phone_number', '')
-        is_technician = request.POST.get('is_technician', False) == 'on'
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists')
-            return render(request, 'core/signup.html')
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            phone_number=phone_number,
-            is_technician=is_technician
-        )
-        login(request, user)
-        return redirect('homepage')
-    return render(request, 'core/signup.html',
-    
-    {
-         'logo': active_logo,
-    }
-    )
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Account created successfully!")
+            return redirect('homepage')
+        else:
+            messages.error(request, "Registration failed. Please correct the errors.")
+    else:
+        form = SignupForm()
+    return render(request, 'core/signup.html', {'form': form})
 
 def user_login(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
             return redirect('homepage')
-        messages.error(request, 'Invalid credentials')
-    return render(request, 'core/login.html',
-    {
-         'logo': active_logo,
-    }
-    )
+        else:
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = LoginForm()
+    return render(request, 'core/login.html', {'form': form})
 
 def user_logout(request):
     logout(request)
     return redirect('homepage')
 
-# @login_required
+@login_required
 def garage(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-    vehicles = Vehicle.objects.filter(user=request.user)
+    vehicles = Vehicle.objects.filter(user=request.user).select_related('brand', 'model', 'type')
     if request.method == 'POST':
-        brand_id = request.POST['brand']
-        model = request.POST['model']
-        year = request.POST['year']
-        type_id = request.POST['type']
-        Vehicle.objects.create(
-            user=request.user,
-            brand_id=brand_id,
-            model=model,
-            year=year,
-            type_id=type_id
-        )
-        return redirect('garage')
+        form = VehicleForm(request.POST)
+        if form.is_valid():
+            vehicle = form.save(commit=False)
+            vehicle.user = request.user
+            vehicle.save()
+            messages.success(request, "Vehicle added to your garage!")
+            return redirect('garage')
+    else:
+        form = VehicleForm()
+    
     brands = Brand.objects.all()
     vehicle_types = VehicleType.objects.all()
-    return render(request, 'core/garage.html', {'vehicles': vehicles, 
-    'brands': brands, 
-    'vehicle_types': vehicle_types ,
-    'logo': active_logo,
+    return render(request, 'core/garage.html', {
+        'vehicles': vehicles, 
+        'brands': brands, 
+        'vehicle_types': vehicle_types,
+        'form': form
+    })
 
-     })
-
-# @login_required
-from decimal import Decimal
-
-# def cart_view(request):
-#     if request.user.is_authenticated:
-#         cart, _ = Cart.objects.get_or_create(user=request.user)
-#         if request.method == 'POST':
-#             product_id = request.POST['product_id']
-#             quantity = int(request.POST.get('quantity', 1))
-#             product = Product.objects.get(id=product_id)
-#             if product.stock < quantity:
-#                 messages.error(request, 'Insufficient stock')
-#             else:
-#                 cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-#                 cart_item.quantity = cart_item.quantity + quantity if not created else quantity
-#                 cart_item.save()
-#             return redirect('cart')
-#         return render(request, 'core/cart.html', {'cart': cart})
-    
-#     # Anonymous session-based cart
-#     cart = request.session.get('cart', {})
-
-#     if request.method == 'POST':
-#         product_id = request.POST['product_id']
-#         quantity = int(request.POST.get('quantity', 1))
-#         cart[product_id] = cart.get(product_id, 0) + quantity
-#         request.session['cart'] = cart
-#         messages.success(request, "Item added to cart")
-#         return redirect('cart')
-
-#     cart_items = []
-#     total_price = Decimal('0.00')
-#     for product_id, quantity in cart.items():
-#         try:
-#             product = Product.objects.get(id=product_id)
-#             subtotal = product.price * quantity
-#             total_price += subtotal
-#             cart_items.append({'product': product, 'quantity': quantity, 'subtotal': subtotal})
-#         except Product.DoesNotExist:
-#             continue
-
-#     return render(request, 'core/cart.html', {'cart_items': cart_items, 'total_price': total_price})
+@login_required
+def wishlist_view(request):
+    wishlist = Wishlist.objects.filter(user=request.user).select_related('product__brand', 'product__category')
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        product = get_object_or_404(Product, id=product_id)
+        Wishlist.objects.get_or_create(user=request.user, product=product)
+        messages.success(request, f"{product.title} added to wishlist.")
+        return redirect('wishlist')
+    return render(request, 'core/wishlist.html', {'wishlist': wishlist})
 
 
-# from decimal import Decimal
-# from django.shortcuts import render, redirect
-# from django.contrib import messages
-# from .models import Product, Cart, CartItem
-
-# #@ratelimit(key='ip', rate='50/h', method='POST')
-# def cart_view(request):
-#     try:
-#         active_logo = WebsiteLogo.objects.get(is_active=True)
-#     except WebsiteLogo.DoesNotExist:
-#         active_logo = None
-#     if request.user.is_authenticated:
-#         cart, _ = Cart.objects.get_or_create(user=request.user)
-
-#         if request.method == 'POST':
-#             product_id = request.POST.get('product_id')
-#             if not product_id or not product_id.isdigit():
-#                 messages.error(request, "Invalid product selected.")
-#                 return redirect('cart')
-
-#             try:
-#                 product = Product.objects.get(id=product_id)
-#             except Product.DoesNotExist:
-#                 messages.error(request, "Product not found.")
-#                 return redirect('cart')
-
-#             # DELETE ITEM
-#             if 'delete' in request.POST:
-#                 CartItem.objects.filter(cart=cart, product=product).delete()
-#                 messages.success(request, "Item removed from cart.")
-#                 return redirect('cart')
-
-#             # UPDATE QUANTITY
-#             if 'update' in request.POST:
-#                 quantity = int(request.POST.get('quantity', 1))
-#                 cart_item = CartItem.objects.filter(cart=cart, product=product).first()
-#                 if cart_item:
-#                     if quantity < 1:
-#                         cart_item.delete()
-#                         messages.success(request, "Item removed from cart.")
-#                     else:
-#                         cart_item.quantity = quantity
-#                         cart_item.save()
-#                         messages.success(request, "Cart updated.")
-#                 return redirect('cart')
-
-#             # DEFAULT: ADD TO CART
-#             quantity = int(request.POST.get('quantity', 1))
-#             if product.is_out_of_stock() or product.stock < quantity:
-#                 messages.error(request, 'This product is out of stock or does not have enough quantity.')
-#             else:
-#                 cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-#                 if not created:
-#                     cart_item.quantity += quantity
-#                 else:
-#                     cart_item.quantity = quantity
-#                 cart_item.save()
-#                 messages.success(request, "Item added to cart")
-#             return redirect('cart')
-
-#         # GET request
-#         cart_items = cart.items.select_related('product__brand', 'product__category').all()
-#         total_price = sum(item.get_total_price() for item in cart_items)
-
-#         return render(request, 'core/cart.html', {
-#             'cart_items': cart_items,
-#             'total_price': total_price,
-#             'logo': active_logo
-#         })
-
-#     else:
-#         # Anonymous user: session-based cart
-#         session_cart = request.session.get('cart', {})
-
-#         if request.method == 'POST':
-#             product_id = request.POST.get('product_id')
-#             if not product_id or not product_id.isdigit():
-#                 messages.error(request, "Invalid product selected.")
-#                 return redirect('cart')
-
-#             try:
-#                 product = Product.objects.get(id=int(product_id))
-#             except Product.DoesNotExist:
-#                 messages.error(request, "Product not found.")
-#                 return redirect('cart')
-
-#             product_id_str = str(product.id)
-
-#             # DELETE
-#             if 'delete' in request.POST:
-#                 if product_id_str in session_cart:
-#                     del session_cart[product_id_str]
-#                     request.session['cart'] = session_cart
-#                     request.session.modified = True
-#                     messages.success(request, "Item removed from cart.")
-#                 return redirect('cart')
-
-#             # UPDATE
-#             if 'update' in request.POST:
-#                 quantity = int(request.POST.get('quantity', 1))
-#                 if quantity < 1:
-#                     session_cart.pop(product_id_str, None)
-#                     messages.success(request, "Item removed from cart.")
-#                 else:
-#                     session_cart[product_id_str] = quantity
-#                     messages.success(request, "Cart updated.")
-#                 request.session['cart'] = session_cart
-#                 request.session.modified = True
-#                 return redirect('cart')
-
-#             # ADD
-#             quantity = int(request.POST.get('quantity', 1))
-#             if product.is_out_of_stock() or product.stock < quantity:
-#                 messages.error(request, 'This product is out of stock or does not have enough quantity.')
-#             else:
-#                 session_cart[product_id_str] = session_cart.get(product_id_str, 0) + quantity
-#                 request.session['cart'] = session_cart
-#                 request.session.modified = True
-#                 messages.success(request, "Item added to cart")
-
-#             return redirect('cart')
-
-#         # GET: Display session cart
-#         cart_items = []
-#         total_price = Decimal('0.00')
-#         for product_id, quantity in session_cart.items():
-#             try:
-#                 product = Product.objects.get(id=int(product_id))
-#                 subtotal = product.price * quantity
-#                 total_price += subtotal
-#                 cart_items.append({
-#                     'product': product,
-#                     'quantity': quantity,
-#                     'subtotal': subtotal
-#                 })
-#             except (Product.DoesNotExist, ValueError):
-#                 continue
-
-#         return render(request, 'core/cart.html', {
-#             'cart_items': cart_items,
-#             'total_price': total_price,
-#             'logo': active_logo
-#         })
-
-
-
-
-
-
-from decimal import Decimal
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Product, Cart, CartItem, WebsiteLogo
-# from django_ratelimit.decorators import ratelimit # Uncomment if you are using this
-
-#@ratelimit(key='ip', rate='50/h', method='POST')
 def cart_view(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-
-    # Get the URL to redirect back to, default to 'cart'
-    # We get this early, but only use it for the 'add' action
-    next_url = request.POST.get('next', 'cart')
-
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-
-        if request.method == 'POST':
-            product_id = request.POST.get('product_id')
-            if not product_id or not product_id.isdigit():
-                messages.error(request, "Invalid product selected.")
-                return redirect('cart')
-
-            try:
-                product = Product.objects.get(id=product_id)
-            except Product.DoesNotExist:
-                messages.error(request, "Product not found.")
-                return redirect('cart')
-
-            # DELETE ITEM
-            if 'delete' in request.POST:
-                CartItem.objects.filter(cart=cart, product=product).delete()
-                messages.success(request, "Item removed from cart.")
-                return redirect('cart') # Always redirect to cart on delete
-
-            # UPDATE QUANTITY
-            if 'update' in request.POST:
-                quantity = int(request.POST.get('quantity', 1))
-                cart_item = CartItem.objects.filter(cart=cart, product=product).first()
-                if cart_item:
-                    if quantity < 1:
-                        cart_item.delete()
-                        messages.success(request, "Item removed from cart.")
-                    else:
-                        cart_item.quantity = quantity
-                        cart_item.save()
-                        messages.success(request, "Cart updated.")
-                return redirect('cart') # Always redirect to cart on update
-
-            # DEFAULT: ADD TO CART
+    cart_items, total_price = CartService.get_cart_items_and_total(request)
+    
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        action = request.POST.get('action') # 'add', 'update', 'delete'
+        
+        if action == 'delete':
+            CartService.remove_from_cart(request, product_id)
+            messages.success(request, "Item removed from cart.")
+        elif action == 'update':
             quantity = int(request.POST.get('quantity', 1))
-            if product.is_out_of_stock() or product.stock < quantity:
-                messages.error(request, 'This product is out of stock or does not have enough quantity.')
-            else:
-                cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-                if not created:
-                    cart_item.quantity += quantity
+            CartService.update_cart_quantity(request, product_id, quantity)
+            messages.success(request, "Cart updated.")
+        else: # Default is add
+            form = CartAddForm(request.POST)
+            if form.is_valid():
+                quantity = form.cleaned_data['quantity']
+                success, msg = CartService.add_to_cart(request, product_id, quantity)
+                if success:
+                    messages.success(request, msg)
                 else:
-                    cart_item.quantity = quantity
-                cart_item.save()
-                messages.success(request, "Item added to cart")
-            
-            # *** MODIFIED PART ***
-            # Redirect to the 'next' URL (e.g., product page) if provided,
-            # otherwise default to the cart page.
-            return redirect(next_url)
-
-        # GET request
-        cart_items = cart.items.select_related('product__brand', 'product__category').all()
-        total_price = sum(item.get_total_price() for item in cart_items)
-
-        return render(request, 'core/cart.html', {
-            'cart_items': cart_items,
-            'total_price': total_price,
-            'logo': active_logo
-        })
-
-    else:
-        # Anonymous user: session-based cart
-        session_cart = request.session.get('cart', {})
-
-        if request.method == 'POST':
-            product_id = request.POST.get('product_id')
-            if not product_id or not product_id.isdigit():
-                messages.error(request, "Invalid product selected.")
-                return redirect('cart')
-
-            try:
-                product = Product.objects.get(id=int(product_id))
-            except Product.DoesNotExist:
-                messages.error(request, "Product not found.")
-                return redirect('cart')
-
-            product_id_str = str(product.id)
-
-            # DELETE
-            if 'delete' in request.POST:
-                if product_id_str in session_cart:
-                    del session_cart[product_id_str]
-                    request.session['cart'] = session_cart
-                    request.session.modified = True
-                    messages.success(request, "Item removed from cart.")
-                return redirect('cart') # Always redirect to cart on delete
-
-            # UPDATE
-            if 'update' in request.POST:
-                quantity = int(request.POST.get('quantity', 1))
-                if quantity < 1:
-                    session_cart.pop(product_id_str, None)
-                    messages.success(request, "Item removed from cart.")
-                else:
-                    session_cart[product_id_str] = quantity
-                    messages.success(request, "Cart updated.")
-                request.session['cart'] = session_cart
-                request.session.modified = True
-                return redirect('cart') # Always redirect to cart on update
-
-            # ADD
-            quantity = int(request.POST.get('quantity', 1))
-            if product.is_out_of_stock() or product.stock < quantity:
-                messages.error(request, 'This product is out of stock or does not have enough quantity.')
+                    messages.error(request, msg)
             else:
-                session_cart[product_id_str] = session_cart.get(product_id_str, 0) + quantity
-                request.session['cart'] = session_cart
-                request.session.modified = True
-                messages.success(request, "Item added to cart")
-            
-            # *** MODIFIED PART ***
-            # Redirect to the 'next' URL (e.g., product page) if provided,
-            # otherwise default to the cart page.
-            return redirect(next_url)
+                messages.error(request, "Invalid quantity provided.")
+        
+        next_url = request.POST.get('next', 'cart')
+        return redirect(next_url)
 
-        # GET: Display session cart
-        cart_items = []
-        total_price = Decimal('0.00')
-        for product_id, quantity in session_cart.items():
-            try:
-                product = Product.objects.get(id=int(product_id))
-                subtotal = product.price * quantity
-                total_price += subtotal
-                cart_items.append({
-                    'product': product,
-                    'quantity': quantity,
-                    'subtotal': subtotal
-                })
-            except (Product.DoesNotExist, ValueError):
-                continue
-
-        return render(request, 'core/cart.html', {
-            'cart_items': cart_items,
-            'total_price': total_price,
-            'logo': active_logo
-        })
+    return render(request, 'core/cart.html', {
+        'cart_items': cart_items,
+        'total_price': total_price,
+    })
 
 
-# @login_required
 def wishlist_view(request):
     try:
         active_logo = WebsiteLogo.objects.get(is_active=True)
@@ -537,38 +181,8 @@ def wishlist_view(request):
     wishlist_products = Product.objects.filter(id__in=wishlist_ids).select_related('brand', 'category')
     return render(request, 'core/wishlist.html', {'wishlist': wishlist_products, 'logo': active_logo})
 
-# def catalog(request):
-#     products = Product.objects.all().order_by('-id')
-#     vehicle_id = request.GET.get('vehicle_id')
-#     category = request.GET.get('category')
-#     brand_id = request.GET.get('brand')
-#     if vehicle_id:
-#         vehicle = Vehicle.objects.get(id=vehicle_id)
-#         products = products.filter(compatible_vehicle_types=vehicle.type)
-#     if category:
-#         products = products.filter(category=category)
-#     if brand_id:
-#         products = products.filter(brand_id=brand_id)
-#     brands = Brand.objects.all()
-#     vehicle_types = VehicleType.objects.all()
-#     vehicles = Vehicle.objects.filter(user=request.user) if request.user.is_authenticated else []
-#     return render(request, 'core/catalog.html', {
-#         'products': products,
-#         'brands': brands,
-#         'vehicle_types': vehicle_types,
-#         'vehicles': vehicles,
-#         'selected_vehicle': vehicle_id,
-#         'selected_category': category,
-#         'selected_brand': brand_id
-#     })
-
-from django.shortcuts import render
-from .models import Product, Brand, Vehicle, VehicleType, Category
-
-@cache_page(60 * 15)  # Cache for 15 minutes
-#@ratelimit(key='ip', rate='100/h', method='GET')
+@cache_page(60 * 15)
 def catalog(request):
-    # Use select_related and prefetch_related to reduce queries
     products = Product.objects.select_related('brand', 'category').prefetch_related('compatible_vehicle_types', 'compatible_vehicle_models').all().order_by('-id')
 
     vehicle_id = request.GET.get('vehicle_id')
@@ -599,6 +213,7 @@ def catalog(request):
         products = products.order_by('-price')
     elif sort_option == 'name_asc':
         products = products.order_by('title')
+        products = products.order_by('title')
     elif sort_option == 'name_desc':
         products = products.order_by('-title')
 
@@ -612,14 +227,8 @@ def catalog(request):
     vehicle_types = VehicleType.objects.all()
     vehicles = Vehicle.objects.filter(user=request.user) if request.user.is_authenticated else []
 
-    # Active logo for base template
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-
     return render(request, 'core/catalog.html', {
-        'products': page_obj.object_list, 
+        'products': page_obj.object_list,
         'page_obj': page_obj,
         'brands': brands,
         'categories': categories,
@@ -630,25 +239,9 @@ def catalog(request):
         'selected_brand': brand_id,
         'search_query': search_query,
         'selected_sort': sort_option,
-        'page_obj': page_obj,
-        'logo': active_logo
     })
 
-
-# @login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils import timezone
-from .models import Cart, Product, Order, OrderItem, Coupon
-from django.views.decorators.csrf import csrf_exempt
-from django.core.paginator import Paginator
-from django.views.decorators.cache import cache_page
-
 def order_create(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
     # Get cart items
     items = []
     if request.user.is_authenticated:
@@ -713,21 +306,13 @@ def order_create(request):
     return render(request, 'core/order_create.html', {
         'cart_items': items,
         'total_price': total_price,
-        'logo': active_logo
     })
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Review
-from django.contrib.auth.decorators import login_required
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug)
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-    return render(request, 'core/product_detail.html', {'product': product, 'logo': active_logo})
+    return render(request, 'core/product_detail.html', {'product': product})
 
 @login_required
 def add_review(request, product_id):
@@ -744,16 +329,7 @@ def add_review(request, product_id):
         messages.success(request, 'Review submitted successfully!')
         return redirect('product_detail', slug=product.slug)
     return redirect('product_detail', slug=product.slug)
-
-
-from decimal import Decimal
-from .models import DeliveryAddress, Coupon, Order, OrderItem, Product, Cart
-
 def order_confirm(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
     # Load cart again
     items = []
     if request.user.is_authenticated:
@@ -889,17 +465,9 @@ def order_confirm(request):
             'discount': discount,
             'total': total
         },
-        'logo': active_logo
     })
-from django.shortcuts import render, get_object_or_404
-from .models import Order
-from django.contrib.auth.decorators import login_required
 
 def order_payment(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
     if request.user.is_authenticated:
         # Get the most recent order by the user
         order = Order.objects.filter(user=request.user).order_by('-created_at').first()
@@ -917,14 +485,10 @@ def order_payment(request):
         'order': order,
         'amount': order.total_amount,
         'payment_options': ['UPI', 'QR Code', 'Card', 'Cash on Delivery'],
-        'logo': active_logo
     })
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import random
 
-otp_store = {}  # Ideally use a cache or DB
+otp_store = {}
 
 @csrf_exempt
 def verify_phone(request):
@@ -950,20 +514,9 @@ def verify_phone(request):
 
             return JsonResponse({'status': 'otp_sent'})
 
-# views.py
-
-from django.contrib.admin.views.decorators import staff_member_required
-from .models import Order, DeliveryAddress
-from django.views.decorators.csrf import csrf_protect
-
 @staff_member_required
 @csrf_protect
 def admin_orders_view(request):
-    try:
-        active_logo = WebsiteLogo.objects.get(is_active=True)
-    except WebsiteLogo.DoesNotExist:
-        active_logo = None
-    # Use select_related for both 'user' and 'delivery_address'
     orders = Order.objects.all().select_related('user', 'delivery_address').order_by('-created_at')
 
     if request.method == 'POST':
@@ -982,7 +535,7 @@ def admin_orders_view(request):
 
         return redirect('admin_orders')
 
-    return render(request, 'core/admin_orders.html', {'orders': orders, 'logo': active_logo})
+    return render(request, 'core/admin_orders.html', {'orders': orders})
 
 
 # Existing ViewSets...

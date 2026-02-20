@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,11 +32,14 @@ SECRET_KEY = env("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-import socket
+# Render-specific logic
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "192.168.1.4"]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 
@@ -48,9 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'ckeditor',
     'django_ckeditor_5',
-    # 'ckeditor_uploader',
     'core',
 ]
 
@@ -65,12 +67,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Security Headers for Production
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    X_FRAME_OPTIONS = 'DENY'
+
 ROOT_URLCONF = 'evault.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'core', 'templates')],
+        'DIRS': [BASE_DIR / 'core' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,7 +92,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                 'core.context_processors.favicon_context',
+                'core.context_processors.core_context',
             ],
         },
     },
@@ -140,12 +154,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "https://bacon-scholarships-loaded-bias.trycloudflare.com",
-    "https://rush-heads-handles-ata.trycloudflare.com",
-]
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:8000,http://127.0.0.1:8000', cast=lambda v: [s.strip() for s in v.split(',')])
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 
 
@@ -203,23 +214,19 @@ REST_FRAMEWORK = {
     }
 }
 
-import os
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 # Media files settings
-MEDIA_URL = '/media/'  # URL to serve media files
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Absolute path to media directory
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Static files settings
 STATIC_URL = '/static/'
-if not DEBUG:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    STORAGES = {
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        }
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     }
+}
 
 LOGIN_URL = '/login/'
 
@@ -292,37 +299,4 @@ CKEDITOR_5_CONFIGS = {
 }
 
 
-# settings.py
-import os
-import dj_database_url
-
-DEBUG = 'RENDER' not in os.environ  # Render sets RENDER env var in their environment
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "192.168.1.4", 'evworx.co.in', 'www.evworx.co.in', '93.127.206.199']
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-
-# CSRF for HTTPS on Render
-CSRF_TRUSTED_ORIGINS = []
-if RENDER_EXTERNAL_HOSTNAME:
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
-
-# -----------------------------
-# Static files settings
-# -----------------------------
-
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Always define STATIC_ROOT for collectstatic
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# If DEBUG is False, use compressed manifest storage
-if not DEBUG:
-    STORAGES = {
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        }
-    }
 
