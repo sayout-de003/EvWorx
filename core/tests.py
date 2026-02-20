@@ -26,17 +26,32 @@ class AdminManagementTest(TestCase):
         response = self.client.get(reverse('admin_management_hub'))
         self.assertEqual(response.status_code, 200)
 
-    def test_repair_accept_reject(self):
+    def test_repair_search(self):
         self.client.login(username='admin', password='password')
-        # Accept
-        self.client.post(reverse('admin_repair_list'), {'booking_id': self.repair_booking.id, 'action': 'accept'})
-        self.repair_booking.refresh_from_db()
-        self.assertEqual(self.repair_booking.status, 'Accepted')
+        # Create another booking
+        OnSiteRepairBooking.objects.create(
+            full_name='Searchable Name', mobile_no='0000000000', vehicle_type='Car',
+            brand='Tesla', model_no='Model 3', problem_details='Brakes', address='Road 2'
+        )
         
-        # Reject
-        self.client.post(reverse('admin_repair_list'), {'booking_id': self.repair_booking.id, 'action': 'reject'})
-        self.repair_booking.refresh_from_db()
-        self.assertEqual(self.repair_booking.status, 'Rejected')
+        # Search by name
+        response = self.client.get(reverse('admin_repair_list'), {'q': 'Searchable'})
+        self.assertEqual(len(response.context['repair_bookings']), 1)
+        self.assertEqual(response.context['repair_bookings'][0].full_name, 'Searchable Name')
+
+    def test_repair_status_filters(self):
+        self.client.login(username='admin', password='password')
+        # Mark existing as completed
+        self.repair_booking.status = 'Completed'
+        self.repair_booking.save()
+        
+        # Filter by unsolved (default)
+        response = self.client.get(reverse('admin_repair_list'), {'status': 'unsolved'})
+        self.assertEqual(len(response.context['repair_bookings']), 0)
+        
+        # Filter by solved
+        response = self.client.get(reverse('admin_repair_list'), {'status': 'solved'})
+        self.assertEqual(len(response.context['repair_bookings']), 1)
 
 class OnSiteRepairBookingTest(TestCase):
     def setUp(self):

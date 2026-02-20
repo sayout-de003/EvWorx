@@ -701,8 +701,34 @@ def admin_management_hub(request):
 
 @staff_member_required
 def admin_repair_list(request):
-    """List repair bookings for admins."""
-    repair_bookings = OnSiteRepairBooking.objects.all().order_by('-created_at')
+    """List repair bookings for admins with search, filter, and sort."""
+    search_query = request.GET.get('q', '')
+    status_filter = request.GET.get('status', 'unsolved')  # default to unsolved
+    sort_by = request.GET.get('sort', '-created_at')
+    
+    repair_bookings = OnSiteRepairBooking.objects.all()
+    
+    # 1. Search
+    if search_query:
+        repair_bookings = repair_bookings.filter(
+            Q(full_name__icontains=search_query) |
+            Q(mobile_no__icontains=search_query) |
+            Q(brand__icontains=search_query) |
+            Q(model_no__icontains=search_query)
+        )
+    
+    # 2. Filter
+    if status_filter == 'unsolved':
+        repair_bookings = repair_bookings.exclude(status__in=['Completed', 'Cancelled', 'Rejected'])
+    elif status_filter == 'solved':
+        repair_bookings = repair_bookings.filter(status__in=['Completed', 'Cancelled', 'Rejected'])
+    
+    # 3. Sort
+    valid_sorts = ['created_at', '-created_at', 'full_name', '-full_name', 'status', '-status']
+    if sort_by in valid_sorts:
+        repair_bookings = repair_bookings.order_by(sort_by)
+    else:
+        repair_bookings = repair_bookings.order_by('-created_at')
     
     if request.method == 'POST':
         booking_id = request.POST.get('booking_id')
@@ -711,18 +737,23 @@ def admin_repair_list(request):
         
         if action == 'accept':
             booking.status = 'Accepted'
-            messages.success(request, f"Booking for {booking.full_name} accepted.")
         elif action == 'reject':
             booking.status = 'Rejected'
-            messages.warning(request, f"Booking for {booking.full_name} rejected.")
         elif action == 'cancel':
             booking.status = 'Cancelled'
-            messages.info(request, f"Booking for {booking.full_name} cancelled.")
-        
+        elif action == 'solved':
+            booking.status = 'Completed'
+            
         booking.save()
-        return redirect('admin_repair_list')
+        messages.success(request, f"Status updated for {booking.full_name}.")
+        return redirect(f"{reverse('admin_repair_list')}?{request.GET.urlencode()}")
         
-    return render(request, 'core/admin_repair_list.html', {'repair_bookings': repair_bookings})
+    return render(request, 'core/admin_repair_list.html', {
+        'repair_bookings': repair_bookings,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'sort_by': sort_by
+    })
 
 @staff_member_required
 def admin_repair_edit(request, pk):
@@ -741,8 +772,35 @@ def admin_repair_edit(request, pk):
 
 @staff_member_required
 def admin_order_list(request):
-    """List e-commerce orders for admins."""
-    orders = Order.objects.all().order_by('-created_at')
+    """List e-commerce orders for admins with search, filter, and sort."""
+    search_query = request.GET.get('q', '')
+    status_filter = request.GET.get('status', 'undelivered')
+    sort_by = request.GET.get('sort', '-created_at')
+    
+    orders = Order.objects.all()
+    
+    # 1. Search
+    if search_query:
+        orders = orders.filter(
+            Q(id__icontains=search_query) |
+            Q(user__username__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(total_amount__icontains=search_query)
+        )
+    
+    # 2. Filter
+    if status_filter == 'undelivered':
+        orders = orders.exclude(status__in=['Delivered', 'Cancelled', 'Rejected'])
+    elif status_filter == 'delivered':
+        orders = orders.filter(status__in=['Delivered', 'Cancelled', 'Rejected'])
+    
+    # 3. Sort
+    valid_sorts = ['created_at', '-created_at', 'total_amount', '-total_amount', 'status', '-status']
+    if sort_by in valid_sorts:
+        orders = orders.order_by(sort_by)
+    else:
+        orders = orders.order_by('-created_at')
     
     if request.method == 'POST':
         order_id = request.POST.get('order_id')
@@ -751,15 +809,21 @@ def admin_order_list(request):
         
         if action == 'accept':
             order.status = 'Accepted'
-            messages.success(request, f"Order #{order.id} accepted.")
         elif action == 'reject':
             order.status = 'Rejected'
-            messages.warning(request, f"Order #{order.id} rejected.")
+        elif action == 'delivered':
+            order.status = 'Delivered'
         
         order.save()
-        return redirect('admin_order_list')
+        messages.success(request, f"Status updated for Order #{order.id}.")
+        return redirect(f"{reverse('admin_order_list')}?{request.GET.urlencode()}")
         
-    return render(request, 'core/admin_order_list.html', {'orders': orders})
+    return render(request, 'core/admin_order_list.html', {
+        'orders': orders,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'sort_by': sort_by
+    })
 
 @staff_member_required
 def admin_order_edit(request, pk):

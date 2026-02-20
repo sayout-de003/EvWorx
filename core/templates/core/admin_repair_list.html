@@ -6,7 +6,8 @@
 {% block content %}
 <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-        <div class="flex items-center justify-between mb-12">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div>
                 <a href="{% url 'admin_management_hub' %}"
                     class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
@@ -14,13 +15,64 @@
                 </a>
                 <h1 class="text-4xl font-extrabold text-gray-900 mt-2">Repair Request Management</h1>
             </div>
-            <div class="hidden md:block">
+            <div class="flex items-center space-x-4">
                 <span class="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 text-gray-600 font-medium">
-                    Total Requests: {{ repair_bookings.count }}
+                    Total: {{ repair_bookings.count }}
                 </span>
             </div>
         </div>
 
+        <!-- Search & Filters -->
+        <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 mb-8">
+            <form method="GET" class="flex flex-col lg:flex-row gap-6">
+                <!-- Search Bar -->
+                <div class="flex-1 relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ search_query }}"
+                        placeholder="Search by name, phone, or brand..."
+                        class="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none">
+                </div>
+
+                <!-- Status Tabs -->
+                <div class="flex bg-gray-100 p-1 rounded-2xl">
+                    <button type="submit" name="status" value="unsolved"
+                        class="px-6 py-2 rounded-xl text-sm font-bold transition-all {% if status_filter == 'unsolved' %} bg-white text-indigo-600 shadow-sm {% else %} text-gray-500 hover:text-gray-700 {% endif %}">
+                        Unsolved
+                    </button>
+                    <button type="submit" name="status" value="solved"
+                        class="px-6 py-2 rounded-xl text-sm font-bold transition-all {% if status_filter == 'solved' %} bg-white text-indigo-600 shadow-sm {% else %} text-gray-500 hover:text-gray-700 {% endif %}">
+                        Solved
+                    </button>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="relative min-w-[200px]">
+                    <select name="sort" onchange="this.form.submit()"
+                        class="w-full pl-4 pr-10 py-3 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none appearance-none font-medium text-gray-700">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Newest First
+                        </option>
+                        <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Oldest First
+                        </option>
+                        <option value="full_name" {% if sort_by == 'full_name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="-full_name" {% if sort_by == '-full_name' %}selected{% endif %}>Name (Z-A)</option>
+                        <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
+                        <i class="fas fa-chevron-down text-sm"></i>
+                    </div>
+                </div>
+
+                <!-- Apply Button (Mobile Only) -->
+                <button type="submit"
+                    class="lg:hidden bg-indigo-600 text-white font-bold py-3 rounded-2xl hover:bg-indigo-700 transition-colors">
+                    Apply Filters
+                </button>
+            </form>
+        </div>
+
+        <!-- Results List -->
         <div class="space-y-6">
             {% for booking in repair_bookings %}
             <div
@@ -33,14 +85,15 @@
                                 <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
                                     {% if booking.status == 'Pending' %} bg-yellow-100 text-yellow-800
                                     {% elif booking.status == 'Accepted' %} bg-green-100 text-green-800
-                                    {% elif booking.status == 'Rejected' %} bg-red-100 text-red-800
+                                    {% elif booking.status == 'Rejected' %} bg-red-50 text-red-500
                                     {% elif booking.status == 'In Progress' %} bg-blue-100 text-blue-800
-                                    {% elif booking.status == 'Completed' %} bg-gray-100 text-gray-800
+                                    {% elif booking.status == 'Completed' %} bg-green-500 text-white
+                                    {% elif booking.status == 'Cancelled' %} bg-gray-400 text-white
                                     {% else %} bg-gray-100 text-gray-800 {% endif %}">
                                     {{ booking.status }}
                                 </span>
-                                <span class="text-gray-400 text-sm"><i class="far fa-calendar-alt mr-1"></i> {{
-                                    booking.created_at|date:"M d, Y H:i" }}</span>
+                                <span class="text-gray-400 text-sm"><i class="far fa-calendar-alt mr-1"></i>
+                                    {{ booking.created_at|date:"M d, Y H:i" }}</span>
                             </div>
                             <h3 class="text-2xl font-bold text-gray-900">{{ booking.full_name }}</h3>
                             <p class="text-indigo-600 font-medium">{{ booking.brand }} {{ booking.model_no }} ({{
@@ -60,13 +113,14 @@
                         <div class="flex flex-wrap items-center gap-3">
                             <a href="{% url 'admin_repair_edit' booking.pk %}"
                                 class="px-6 py-2 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">
-                                <i class="fas fa-edit mr-2"></i> Edit/Full Details
+                                <i class="fas fa-edit mr-2"></i> Details
                             </a>
 
-                            {% if booking.status == 'Pending' %}
-                            <form method="POST" class="inline">
+                            <form method="POST" class="inline flex gap-2">
                                 {% csrf_token %}
                                 <input type="hidden" name="booking_id" value="{{ booking.id }}">
+
+                                {% if booking.status == 'Pending' %}
                                 <button type="submit" name="action" value="accept"
                                     class="px-6 py-2 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-colors shadow-md">
                                     Accept
@@ -75,26 +129,38 @@
                                     class="px-6 py-2 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-md">
                                     Reject
                                 </button>
+                                {% elif booking.status == 'Accepted' or booking.status == 'In Progress' %}
+                                <button type="submit" name="action" value="solved"
+                                    class="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md">
+                                    Mark Solved
+                                </button>
+                                {% endif %}
                             </form>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Expanded shadow info on mobile or just subtle footer -->
+                <!-- Footer Info -->
                 <div
                     class="bg-gray-50 px-8 py-3 flex items-center space-x-4 text-xs text-gray-400 border-t border-gray-100">
-                    <span><i class="fas fa-map-marker-alt mr-1"></i> {{ booking.address|truncatechars:50 }}</span>
+                    <span><i class="fas fa-map-marker-alt mr-1"></i> {{ booking.address|truncatechars:100 }}</span>
                     {% if booking.admin_notes %}
-                    <span class="text-indigo-400 font-medium"><i class="fas fa-sticky-note mr-1"></i> Has Admin
-                        Notes</span>
+                    <span class="text-indigo-400 font-medium"><i class="fas fa-sticky-note mr-1"></i> Admin Note: {{
+                        booking.admin_notes|truncatechars:50 }}</span>
                     {% endif %}
                 </div>
             </div>
             {% empty %}
-            <div class="text-center py-20 bg-white rounded-3xl shadow-lg border border-gray-100">
-                <i class="fas fa-tools text-6xl text-gray-200 mb-4"></i>
-                <h3 class="text-2xl font-bold text-gray-500">No repair requests found.</h3>
+            <div class="text-center py-24 bg-white rounded-3xl shadow-lg border border-gray-100">
+                <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-search text-4xl text-gray-200"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">No repair requests found</h3>
+                <p class="text-gray-500">Try adjusting your filters or search query to find what you're looking for.</p>
+                {% if search_query or status_filter != 'unsolved' %}
+                <a href="{% url 'admin_repair_list' %}"
+                    class="inline-block mt-6 text-indigo-600 font-bold hover:underline">Clear all filters</a>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
