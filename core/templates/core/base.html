@@ -245,6 +245,7 @@
                     <a href="{% url 'homepage' %}" class="nav-link text-white font-medium">Home</a>
                     <a href="{% url 'onsite_repair_booking' %}" class="nav-link text-white font-medium">On-Site
                         Repair</a>
+                    <a href="{% url 'catalog' %}" class="nav-link text-white font-medium">Catalog</a>
                     {% if user.is_authenticated %}
                     {% if user.is_staff %}
                     <a href="{% url 'admin_management_hub' %}" class="nav-link text-white font-medium">
