@@ -137,14 +137,18 @@ def cart_view(request):
         else: # Default is add
             form = CartAddForm(request.POST)
             if form.is_valid():
-                quantity = form.cleaned_data['quantity']
+                product_id = form.cleaned_data['product_id']
+                quantity = form.cleaned_data.get('quantity') or 1
                 success, msg = CartService.add_to_cart(request, product_id, quantity)
                 if success:
                     messages.success(request, msg)
                 else:
                     messages.error(request, msg)
             else:
-                messages.error(request, "Invalid quantity provided.")
+                # Log form errors for better debugging if needed
+                error_msg = "Invalid data provided. " + str(form.errors.as_text())
+                messages.error(request, error_msg)
+
         
         next_url = request.POST.get('next', 'cart')
         return redirect(next_url)

@@ -135,7 +135,7 @@
             </div>
             <div class="p-5">
                 <h3 class="font-semibold text-lg text-gray-800 truncate">{{ product.title }}</h3>
-                <p class="text-sm text-gray-500 mb-3">{{ product.description|truncatewords:10 }}</p>
+                <p class="text-sm text-gray-500 mb-3">{{ product.description|striptags|truncatewords:10 }}</p>
                 <div class="flex justify-between items-center">
                     <span class="text-blue-600 font-extrabold text-xl">₹{{ product.price }}</span>
                     <form method="post" action="{% url 'cart' %}">

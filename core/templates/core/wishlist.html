@@ -1,27 +1,27 @@
 {% extends 'core/base.html' %}
 {% block title %}Wishlist{% endblock %}
 {% block content %}
-    <h1 class="text-3xl font-bold mb-4">Wishlist</h1>
-    {% if wishlist %}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {% for item in wishlist %}
-                <div class="bg-white p-4 rounded shadow">
-                    {% if item.product.image %}
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-full h-48 object-cover mb-2">
-                    {% endif %}
-                    <h3 class="text-xl font-bold">{{ item.product.title }}</h3>
-                    <p>{{ item.product.description|truncatewords:20 }}</p>
-                    <p class="text-green-600 font-bold">₹{{ item.product.price }}</p>
-                    <form action="{% url 'cart' %}" method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="product_id" value="{{ item.product.id }}">
-                        <input type="number" name="quantity" value="1" min="1" class="w-16 p-1 border">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Add to Cart</button>
-                    </form>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>Your wishlist is empty.</p>
-    {% endif %}
+<h1 class="text-3xl font-bold mb-4">Wishlist</h1>
+{% if wishlist %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {% for item in wishlist %}
+    <div class="bg-white p-4 rounded shadow">
+        {% if item.product.image %}
+        <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}" class="w-full h-48 object-cover mb-2">
+        {% endif %}
+        <h3 class="text-xl font-bold">{{ item.product.title }}</h3>
+        <p>{{ item.product.description|striptags|truncatewords:20 }}</p>
+        <p class="text-green-600 font-bold">₹{{ item.product.price }}</p>
+        <form action="{% url 'cart' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+            <input type="number" name="quantity" value="1" min="1" class="w-16 p-1 border">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Add to Cart</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>Your wishlist is empty.</p>
+{% endif %}
 {% endblock %}
