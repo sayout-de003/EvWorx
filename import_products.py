@@ -93,7 +93,7 @@ def import_data(source):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import products from CSV or Google Sheet.")
-    parser.add_argument("source", nargs="?", default="https://docs.google.com/spreadsheets/d/1rKBHhhgj4LLQCAhQ_ptjn8bM8Q2o8aU3/edit?usp=sharing", 
+    parser.add_argument("source", nargs="?", default="https://docs.google.com/spreadsheets/d/1rKBHhhgj4LLQCAhQ_ptjn8bM8Q2o8aU3/edit?usp=sharing&ouid=114467264217272608941&rtpof=true&sd=true", 
                         help="URL of the Google Sheet or path to a local CSV file.")
     
     args = parser.parse_args()
