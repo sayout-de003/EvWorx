@@ -100,6 +100,20 @@ def import_data(source, image_dir=None):
     else:
         print(f"Loading data from local file: {source}")
     
+    # Pre-validation for image directory
+    if image_dir:
+        if not os.path.exists(image_dir):
+            print(f"\nWARNING: Directory '{image_dir}' NOT FOUND.")
+            print(f"Images will NOT be imported via fallback. Please create the folder and upload images first.")
+            image_dir = None
+        else:
+            files = [f for f in os.listdir(image_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))]
+            if not files:
+                print(f"\nWARNING: Directory '{image_dir}' is EMPTY or contains no valid images.")
+                print(f"Please upload JPG/PNG files to this folder.")
+            else:
+                print(f"\n[OK] Found {len(files)} potential images in '{image_dir}'")
+
     try:
         df = pd.read_csv(source)
     except Exception as e:
@@ -112,6 +126,7 @@ def import_data(source, image_dir=None):
         return
     
     products_with_no_image = 0
+    images_matched = 0
     
     for index, row in df.iterrows():
         try:
@@ -155,16 +170,17 @@ def import_data(source, image_dir=None):
                 if local_path:
                     print(f"  [√] Found local image for {part_no}: {os.path.basename(local_path)}")
                     img_file = download_image(local_path)
+                    images_matched += 1
 
             if img_file:
-                # Always save if image found (allows updating missing images)
+                # Always save if image found
                 product.main_image.save(img_file.name, img_file, save=False)
             elif not product.main_image:
                 products_with_no_image += 1
                 if not image_dir:
-                    print(f"  [!] No photo URL found for {part_no}. Use --image-dir to provide local images.")
+                    print(f"  [!] No photo URL for {part_no}. Use --image-dir flag.")
                 else:
-                    print(f"  [!] No image found for {part_no} in {image_dir}")
+                    print(f"  [!] No image file for {part_no} in '{image_dir}'")
             
             product.save()
             print(f"{'[Created]' if created else '[Updated]'}: {product_title}")
@@ -172,12 +188,18 @@ def import_data(source, image_dir=None):
         except Exception as e:
             print(f"Error at row {index}: {e}")
 
+    print(f"\n--- IMPORT SUMMARY ---")
+    print(f"Total Rows Processed: {len(df)}")
+    print(f"Images Successfully Matched: {images_matched}")
+    print(f"Products Still Missing Image: {products_with_no_image}")
+    
     if products_with_no_image > 0:
-        print(f"\n--- IMPORT SUMMARY ---")
-        print(f"Total products updated/created. however, {products_with_no_image} products have NO image.")
-        print(f"NOTE: Google Sheets embedded images cannot be exported via CSV.")
-        print(f"To fix this, upload your images to a folder (e.g., 'product_images/') and run:")
-        print(f"python import_products.py --image-dir product_images/")
+        print(f"\n[!] ALERT: {products_with_no_image} products still have NO image.")
+        print(f"Google Sheets images are 'embedded' and cannot be downloaded automatically.")
+        print(f"To fix this:")
+        print(f"1. Create a folder: mkdir -p product_images")
+        print(f"2. Upload images to it (name them by Part Number like 'EVCK-001.jpg')")
+        print(f"3. Run: python import_products.py --image-dir product_images/")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import products from CSV or Google Sheet.")
