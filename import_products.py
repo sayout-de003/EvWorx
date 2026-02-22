@@ -8,10 +8,10 @@ from decimal import Decimal
 
 # Setup Django Environment
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project_name.settings') # Replace with your actual settings path
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'evault.settings')
 django.setup()
 
-from your_app.models import Product, Brand, Category, Manufacturer # Replace 'your_app' with your app name
+from core.models import Product, Brand, Category, Manufacturer
 
 def download_image(url):
     """Helper to download image from URL and return a Django File object"""
