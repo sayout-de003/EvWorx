@@ -3,10 +3,11 @@ import sys
 import argparse
 import pandas as pd
 import requests
+import re
 from io import BytesIO
 from django.core.files import File
 from django.utils.text import slugify
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 # Setup Django Environment
 import django
@@ -15,12 +16,44 @@ django.setup()
 
 from core.models import Product, Brand, Category, Manufacturer
 
+def clean_numeric(value):
+    """Extracts numeric parts from strings like '5 SET' or '10.5%'"""
+    if pd.isna(value) or value is None:
+        return None
+    # Extract numbers including decimal point
+    matches = re.findall(r"[-+]?\d*\.\d+|\d+", str(value))
+    return matches[0] if matches else None
+
+def to_decimal(value, default=0):
+    clean = clean_numeric(value)
+    if clean is None:
+        return Decimal(str(default))
+    try:
+        return Decimal(clean)
+    except (InvalidOperation, ValueError):
+        return Decimal(str(default))
+
+def to_int(value, default=0):
+    clean = clean_numeric(value)
+    if clean is None:
+        return int(default)
+    try:
+        return int(float(clean)) # float first handles cases like '5.0'
+    except (ValueError, TypeError):
+        return int(default)
+
 def download_image(url):
     """Helper to download image from URL and return a Django File object"""
+    if not url or pd.isna(url) or str(url).lower() == 'nan':
+        return None
     try:
-        response = requests.get(url, timeout=10)
+        url_str = str(url).strip()
+        if not url_str.startswith('http'):
+            return None
+            
+        response = requests.get(url_str, timeout=10)
         if response.status_code == 200:
-            file_name = url.split("/")[-1].split("?")[0] # Basic filename extraction
+            file_name = url_str.split("/")[-1].split("?")[0] # Basic filename extraction
             if not file_name:
                 file_name = "product_image.jpg"
             return File(BytesIO(response.content), name=file_name)
@@ -53,34 +86,35 @@ def import_data(source):
     
     for index, row in df.iterrows():
         try:
-            # 1. Handle Brand & Category (Create if doesn't exist)
-            # Assuming your sheet has columns for these. If not, we use defaults.
+            # 1. Handle Brand & Category
             brand_obj, _ = Brand.objects.get_or_create(name="Default Brand")
             cat_obj, _ = Category.objects.get_or_create(name="General")
 
             # 2. Map Excel Columns to Model Fields
-            # Note: Ensure the string keys match your CSV headers exactly
-            product_title = str(row['Item']).strip()
+            product_title = str(row.get('Item', '')).strip()
+            part_no = str(row.get('PART NO', '')).strip()
             
+            if not product_title or product_title.lower() == 'nan':
+                continue # Skip empty rows
+
             # Use update_or_create to prevent duplicates based on Part Number
             product, created = Product.objects.update_or_create(
-                part_number=str(row['PART NO']).strip(),
+                part_number=part_no,
                 defaults={
                     'title': product_title,
-                    'hsn_code': str(row['HSN CODE']),
-                    'stock': int(row['QUANTITY']),
-                    'gst_percentage': Decimal(str(row['GST']).replace('%', '')),
-                    'price': Decimal(str(row['Dealer basic PRICE'])),
-                    'mrp': Decimal(str(row['MRP'])),
+                    'hsn_code': str(row.get('HSN CODE', '')),
+                    'stock': to_int(row.get('QUANTITY')),
+                    'gst_percentage': to_decimal(row.get('GST')),
+                    'price': to_decimal(row.get('Dealer basic PRICE')),
+                    'mrp': to_decimal(row.get('MRP')),
                     'brand': brand_obj,
                     'category': cat_obj,
-                    # 'price' in your model is Dealer Basic, 'mrp' is MRP
                 }
             )
 
             # 3. Handle Product Photo
             image_url = row.get('PHOTOS')
-            if image_url and not product.main_image:
+            if image_url and not pd.isna(image_url) and not product.main_image:
                 img_file = download_image(image_url)
                 if img_file:
                     product.main_image.save(img_file.name, img_file, save=False)
