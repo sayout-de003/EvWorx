@@ -1,4 +1,6 @@
 import os
+import sys
+import argparse
 import pandas as pd
 import requests
 from io import BytesIO
@@ -26,12 +28,28 @@ def download_image(url):
         print(f"Failed to download image {url}: {e}")
     return None
 
-def import_data(csv_url):
-    # Convert Google Sheet URL to Export CSV link
-    if "edit?usp=sharing" in csv_url:
-        csv_url = csv_url.replace("edit?usp=sharing", "export?format=csv")
+def import_data(source):
+    # Convert Google Sheet URL to Export CSV link if it is a URL
+    if source.startswith('http'):
+        if "edit" in source:
+            source = source.split("edit")[0] + "export?format=csv"
+        elif "pubhtml" in source:
+            source = source.split("pubhtml")[0] + "pub?output=csv"
+        
+        print(f"Fetching data from: {source}")
+    else:
+        print(f"Loading data from local file: {source}")
     
-    df = pd.read_csv(csv_url)
+    try:
+        df = pd.read_csv(source)
+    except Exception as e:
+        if "401" in str(e):
+            print("\nERROR: HTTP 401 Unauthorized.")
+            print("If you are using a Google Sheet, make sure it is shared as 'Anyone with the link can view'.")
+            print("Alternatively, download the CSV and run the script with: python import_products.py path/to/your/file.csv")
+        else:
+            print(f"\nERROR: Could not read source: {e}")
+        return
     
     for index, row in df.iterrows():
         try:
@@ -74,5 +92,9 @@ def import_data(csv_url):
             print(f"Error at row {index}: {e}")
 
 if __name__ == "__main__":
-    SHEET_URL = "https://docs.google.com/spreadsheets/d/1rKBHhhgj4LLQCAhQ_ptjn8bM8Q2o8aU3/edit?usp=sharing"
-    import_data(SHEET_URL)
+    parser = argparse.ArgumentParser(description="Import products from CSV or Google Sheet.")
+    parser.add_argument("source", nargs="?", default="https://docs.google.com/spreadsheets/d/1rKBHhhgj4LLQCAhQ_ptjn8bM8Q2o8aU3/edit?usp=sharing", 
+                        help="URL of the Google Sheet or path to a local CSV file.")
+    
+    args = parser.parse_args()
+    import_data(args.source)
