@@ -74,7 +74,7 @@ def download_image(url):
                 with open(url_str, 'rb') as f:
                     return File(BytesIO(f.read()), name=os.path.basename(url_str))
             except Exception as e:
-                print(f"Failed to read local image {url_str}: {e}")
+                print(f"    [!] Failed to read local image {url_str}: {e}")
         return None
 
     try:
@@ -85,7 +85,7 @@ def download_image(url):
                 file_name = "product_image.jpg"
             return File(BytesIO(response.content), name=file_name)
     except Exception as e:
-        print(f"Failed to download image {url_str}: {e}")
+        print(f"    [!] Failed to download image {url_str}: {e}")
     return None
 
 def import_data(source, image_dir=None):
@@ -111,13 +111,15 @@ def import_data(source, image_dir=None):
             print(f"\nERROR: Could not read source: {e}")
         return
     
+    products_with_no_image = 0
+    
     for index, row in df.iterrows():
         try:
             # 1. Handle Brand & Category
             brand_obj, _ = Brand.objects.get_or_create(name="Default Brand")
             cat_obj, _ = Category.objects.get_or_create(name="General")
 
-            # 2. Map Excel Columns to Model Fields
+            # 2. Map Columns to Model Fields
             product_title = str(row.get('Item', '')).strip()
             part_no = str(row.get('PART NO', '')).strip()
             
@@ -147,21 +149,35 @@ def import_data(source, image_dir=None):
             if image_url and not pd.isna(image_url) and str(image_url).startswith('http'):
                 img_file = download_image(image_url)
             
-            # Fallback to local image directory if no URL image found
+            # Fallback to local image directory
             if not img_file and image_dir:
                 local_path = find_local_image(image_dir, part_no)
                 if local_path:
-                    print(f"  Found local image for {part_no}: {os.path.basename(local_path)}")
+                    print(f"  [√] Found local image for {part_no}: {os.path.basename(local_path)}")
                     img_file = download_image(local_path)
 
-            if img_file and not product.main_image:
+            if img_file:
+                # Always save if image found (allows updating missing images)
                 product.main_image.save(img_file.name, img_file, save=False)
+            elif not product.main_image:
+                products_with_no_image += 1
+                if not image_dir:
+                    print(f"  [!] No photo URL found for {part_no}. Use --image-dir to provide local images.")
+                else:
+                    print(f"  [!] No image found for {part_no} in {image_dir}")
             
             product.save()
-            print(f"{'Created' if created else 'Updated'}: {product_title}")
+            print(f"{'[Created]' if created else '[Updated]'}: {product_title}")
 
         except Exception as e:
             print(f"Error at row {index}: {e}")
+
+    if products_with_no_image > 0:
+        print(f"\n--- IMPORT SUMMARY ---")
+        print(f"Total products updated/created. however, {products_with_no_image} products have NO image.")
+        print(f"NOTE: Google Sheets embedded images cannot be exported via CSV.")
+        print(f"To fix this, upload your images to a folder (e.g., 'product_images/') and run:")
+        print(f"python import_products.py --image-dir product_images/")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import products from CSV or Google Sheet.")
