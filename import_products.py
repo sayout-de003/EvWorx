@@ -170,8 +170,11 @@ def import_data(source, image_dir=None):
             product_title = str(row.get('Item', '')).strip()
             part_no = str(row.get('PART NO', '')).strip()
             
-            if not product_title or product_title.lower() == 'nan' or product_title == 'None':
-                continue # Skip empty rows
+            # Skip empty rows or header rows that slipped through
+            if not product_title or product_title.lower() in ['nan', 'none', 'item']:
+                continue 
+            if part_no.lower() in ['part no', 'nan', 'none']:
+                continue
 
             # Use update_or_create to prevent duplicates based on Part Number
             product, created = Product.objects.update_or_create(
