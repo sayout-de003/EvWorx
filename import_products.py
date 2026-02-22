@@ -89,40 +89,72 @@ def download_image(url):
     return None
 
 def import_data(source, image_dir=None):
-    # Convert Google Sheet URL to Export CSV link if it is a URL
+    use_excel = False
+    # Convert Google Sheet URL to Export link
+    # We prefer Excel (.xlsx) because it preserves embedded images
     if source.startswith('http'):
-        if "edit" in source:
-            source = source.split("edit")[0] + "export?format=csv"
+        if "edit" in source or "usp=sharing" in source:
+            source = source.split("edit")[0].split("?")[0] + "export?format=xlsx"
+            use_excel = True
         elif "pubhtml" in source:
-            source = source.split("pubhtml")[0] + "pub?output=csv"
+            source = source.split("pubhtml")[0] + "pub?output=xlsx"
+            use_excel = True
         
         print(f"Fetching data from: {source}")
+    elif source.lower().endswith('.xlsx'):
+        use_excel = True
+        print(f"Loading data from local Excel file: {source}")
     else:
-        print(f"Loading data from local file: {source}")
+        print(f"Loading data from local CSV file: {source}")
     
     # Pre-validation for image directory
     if image_dir:
         if not os.path.exists(image_dir):
             print(f"\nWARNING: Directory '{image_dir}' NOT FOUND.")
-            print(f"Images will NOT be imported via fallback. Please create the folder and upload images first.")
             image_dir = None
         else:
             files = [f for f in os.listdir(image_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))]
-            if not files:
-                print(f"\nWARNING: Directory '{image_dir}' is EMPTY or contains no valid images.")
-                print(f"Please upload JPG/PNG files to this folder.")
-            else:
+            if files:
                 print(f"\n[OK] Found {len(files)} potential images in '{image_dir}'")
 
+    image_map = {} # Maps row index to image file data
+    
     try:
-        df = pd.read_csv(source)
-    except Exception as e:
-        if "401" in str(e):
-            print("\nERROR: HTTP 401 Unauthorized.")
-            print("If you are using a Google Sheet, make sure it is shared as 'Anyone with the link can view'.")
-            print("Alternatively, download the CSV and run the script with: python import_products.py path/to/your/file.csv")
+        if use_excel:
+            import openpyxl
+            from openpyxl.drawing.image import Image as OpenpyxlImage
+            
+            # Download to memory if it's a URL
+            if source.startswith('http'):
+                response = requests.get(source)
+                file_content = BytesIO(response.content)
+            else:
+                file_content = source
+                
+            wb = openpyxl.load_workbook(file_content, data_only=True)
+            ws = wb.active
+            
+            # Extract images and their anchors
+            print(f"Extracting embedded images from Excel...")
+            for image in ws._images:
+                # anchor._from.row is 0-indexed row
+                row_idx = image.anchor._from.row
+                image_map[row_idx] = image._data()
+            
+            # Convert worksheet to DataFrame
+            data = ws.values
+            cols = next(data)
+            df = pd.DataFrame(data, columns=cols)
+            # Adjust row index for image_map because we skipped the header row
+            # If the image was on row 2 (index 1), and header was row 1 (index 0), 
+            # now row 2 is index 0 in our new df.
+            image_map = {k - 1: v for k, v in image_map.items()}
+            
         else:
-            print(f"\nERROR: Could not read source: {e}")
+            df = pd.read_csv(source)
+            
+    except Exception as e:
+        print(f"\nERROR: Could not read source: {e}")
         return
     
     products_with_no_image = 0
@@ -138,7 +170,7 @@ def import_data(source, image_dir=None):
             product_title = str(row.get('Item', '')).strip()
             part_no = str(row.get('PART NO', '')).strip()
             
-            if not product_title or product_title.lower() == 'nan':
+            if not product_title or product_title.lower() == 'nan' or product_title == 'None':
                 continue # Skip empty rows
 
             # Use update_or_create to prevent duplicates based on Part Number
@@ -160,11 +192,23 @@ def import_data(source, image_dir=None):
             image_url = row.get('PHOTOS')
             img_file = None
             
-            # Try URL first
+            # Priority 1: Direct URL from sheet (if any)
             if image_url and not pd.isna(image_url) and str(image_url).startswith('http'):
                 img_file = download_image(image_url)
             
-            # Fallback to local image directory
+            # Priority 2: Extracted from Excel row
+            if not img_file and index in image_map:
+                try:
+                    img_data = image_map[index]
+                    # We don't know the extension for sure from binary data easily without extra libs, 
+                    # but usually it's png or jpg in Excel.
+                    img_file = File(BytesIO(img_data), name=f"{part_no}.png")
+                    print(f"  [√] Extracted embedded image for {part_no}")
+                    images_matched += 1
+                except Exception as e:
+                    print(f"    [!] Failed to process extracted image for {part_no}: {e}")
+
+            # Priority 3: Fallback to local image directory
             if not img_file and image_dir:
                 local_path = find_local_image(image_dir, part_no)
                 if local_path:
@@ -173,14 +217,11 @@ def import_data(source, image_dir=None):
                     images_matched += 1
 
             if img_file:
-                # Always save if image found
                 product.main_image.save(img_file.name, img_file, save=False)
             elif not product.main_image:
                 products_with_no_image += 1
-                if not image_dir:
-                    print(f"  [!] No photo URL for {part_no}. Use --image-dir flag.")
-                else:
-                    print(f"  [!] No image file for {part_no} in '{image_dir}'")
+                if not use_excel and not image_dir:
+                    print(f"  [!] No photo URL for {part_no}. Hint: Use a Google Sheet URL or provided --image-dir.")
             
             product.save()
             print(f"{'[Created]' if created else '[Updated]'}: {product_title}")
@@ -190,21 +231,18 @@ def import_data(source, image_dir=None):
 
     print(f"\n--- IMPORT SUMMARY ---")
     print(f"Total Rows Processed: {len(df)}")
-    print(f"Images Successfully Matched: {images_matched}")
+    print(f"Images Successfully Matched/Extracted: {images_matched}")
     print(f"Products Still Missing Image: {products_with_no_image}")
     
     if products_with_no_image > 0:
-        print(f"\n[!] ALERT: {products_with_no_image} products still have NO image.")
-        print(f"Google Sheets images are 'embedded' and cannot be downloaded automatically.")
-        print(f"To fix this:")
-        print(f"1. Create a folder: mkdir -p product_images")
-        print(f"2. Upload images to it (name them by Part Number like 'EVCK-001.jpg')")
-        print(f"3. Run: python import_products.py --image-dir product_images/")
+        print(f"\n[!] NOTE: {products_with_no_image} products still have NO image.")
+        if not use_excel:
+            print(f"TIP: Use the direct Google Sheet URL instead of a CSV file to extract images automatically!")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Import products from CSV or Google Sheet.")
-    parser.add_argument("source", nargs="?", default="https://docs.google.com/spreadsheets/d/1rKBHhhgj4LLQCAhQ_ptjn8bM8Q2o8aU3/edit?usp=sharing&ouid=114467264217272608941&rtpof=true&sd=true", 
-                        help="URL of the Google Sheet or path to a local CSV file.")
+    parser = argparse.ArgumentParser(description="Import products from Excel or Google Sheet.")
+    parser.add_argument("source", nargs="?", default="https://docs.google.com/spreadsheets/d/1rKBHhhgj4LLQCAhQ_ptjn8bM8Q2o8aU3/edit?usp=sharing", 
+                        help="URL of the Google Sheet or path to a local XLSX/CSV file.")
     parser.add_argument("--image-dir", help="Optional local directory to look for product images (named by Part Number).")
     
     args = parser.parse_args()
