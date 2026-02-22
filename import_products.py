@@ -42,15 +42,42 @@ def to_int(value, default=0):
     except (ValueError, TypeError):
         return int(default)
 
+def find_local_image(image_dir, part_number):
+    """Finds a local image matching the part number (e.g., EVCK-001.jpg)"""
+    if not image_dir or not part_number:
+        return None
+    
+    extensions = ['.jpg', '.jpeg', '.png', '.webp']
+    for ext in extensions:
+        # Try exact match, then sanitized match
+        file_path = os.path.join(image_dir, f"{part_number}{ext}")
+        if os.path.exists(file_path):
+            return file_path
+        
+        # Try sanitized name (no special chars)
+        sanitized = re.sub(r'[^a-zA-Z0-9]', '', str(part_number))
+        file_path = os.path.join(image_dir, f"{sanitized}{ext}")
+        if os.path.exists(file_path):
+            return file_path
+    return None
+
 def download_image(url):
     """Helper to download image from URL and return a Django File object"""
     if not url or pd.isna(url) or str(url).lower() == 'nan':
         return None
+    
+    url_str = str(url).strip()
+    if not url_str.startswith('http'):
+        # If it's a local file path (passed from import_data fallback)
+        if os.path.exists(url_str):
+            try:
+                with open(url_str, 'rb') as f:
+                    return File(BytesIO(f.read()), name=os.path.basename(url_str))
+            except Exception as e:
+                print(f"Failed to read local image {url_str}: {e}")
+        return None
+
     try:
-        url_str = str(url).strip()
-        if not url_str.startswith('http'):
-            return None
-            
         response = requests.get(url_str, timeout=10)
         if response.status_code == 200:
             file_name = url_str.split("/")[-1].split("?")[0] # Basic filename extraction
@@ -58,10 +85,10 @@ def download_image(url):
                 file_name = "product_image.jpg"
             return File(BytesIO(response.content), name=file_name)
     except Exception as e:
-        print(f"Failed to download image {url}: {e}")
+        print(f"Failed to download image {url_str}: {e}")
     return None
 
-def import_data(source):
+def import_data(source, image_dir=None):
     # Convert Google Sheet URL to Export CSV link if it is a URL
     if source.startswith('http'):
         if "edit" in source:
@@ -114,10 +141,21 @@ def import_data(source):
 
             # 3. Handle Product Photo
             image_url = row.get('PHOTOS')
-            if image_url and not pd.isna(image_url) and not product.main_image:
+            img_file = None
+            
+            # Try URL first
+            if image_url and not pd.isna(image_url) and str(image_url).startswith('http'):
                 img_file = download_image(image_url)
-                if img_file:
-                    product.main_image.save(img_file.name, img_file, save=False)
+            
+            # Fallback to local image directory if no URL image found
+            if not img_file and image_dir:
+                local_path = find_local_image(image_dir, part_no)
+                if local_path:
+                    print(f"  Found local image for {part_no}: {os.path.basename(local_path)}")
+                    img_file = download_image(local_path)
+
+            if img_file and not product.main_image:
+                product.main_image.save(img_file.name, img_file, save=False)
             
             product.save()
             print(f"{'Created' if created else 'Updated'}: {product_title}")
@@ -129,6 +167,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Import products from CSV or Google Sheet.")
     parser.add_argument("source", nargs="?", default="https://docs.google.com/spreadsheets/d/1rKBHhhgj4LLQCAhQ_ptjn8bM8Q2o8aU3/edit?usp=sharing&ouid=114467264217272608941&rtpof=true&sd=true", 
                         help="URL of the Google Sheet or path to a local CSV file.")
+    parser.add_argument("--image-dir", help="Optional local directory to look for product images (named by Part Number).")
     
     args = parser.parse_args()
-    import_data(args.source)
+    import_data(args.source, image_dir=args.image_dir)
