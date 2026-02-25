@@ -191,8 +191,14 @@ class Order(models.Model):
         return f"Order {self.id} (Guest)"
 
     def calculate_total(self, save=True):
-        subtotal = sum(item.get_total_price() for item in self.items.all())
-        gst = subtotal * Decimal('0.18')
+        subtotal = Decimal('0.00')
+        gst = Decimal('0.00')
+        for item in self.items.select_related('product').all():
+            item_subtotal = item.get_total_price()
+            subtotal += item_subtotal
+            # Calculate GST based on product's specific percentage
+            gst += item_subtotal * (item.product.gst_percentage / Decimal('100'))
+
         delivery = self.delivery_charge or Decimal('50.00')
         total = subtotal + gst + delivery
 
@@ -200,7 +206,7 @@ class Order(models.Model):
             total *= Decimal(1 - self.coupon.discount_percentage / 100)
 
         self.subtotal = subtotal
-        self.gst = gst
+        self.gst = gst.quantize(Decimal('0.01'))
         self.total_amount = total.quantize(Decimal('0.01'))
 
         if save:

@@ -369,10 +369,16 @@ def order_confirm(request):
         except Coupon.DoesNotExist:
             coupon = None
 
-    # Calculate subtotal
-    subtotal = Decimal(0)
-    order_items = []
+    # Create Order (with placeholder totals, will compute below)
+    order = Order.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        status='Pending',
+        coupon=coupon,
+        delivery_charge=Decimal('50.00'),
+    )
 
+    # Create Order Items and collect info for display
+    order_items_list = []
     for item in items:
         if request.user.is_authenticated:
             product = item.product
@@ -383,37 +389,13 @@ def order_confirm(request):
             quantity = item['quantity']
             price = product.price
 
-        subtotal += price * quantity
-        order_items.append((product, quantity, price))
-
-    gst = subtotal * Decimal('0.18')
-    delivery = Decimal('50.00')
-    total = subtotal + gst + delivery
-
-    discount = Decimal(0)
-    if coupon:
-        discount = total * Decimal(coupon.discount_percentage / 100)
-        total -= discount
-
-    # Create Order
-    order = Order.objects.create(
-        user=request.user if request.user.is_authenticated else None,
-        status='Pending',
-        coupon=coupon,
-        subtotal=subtotal,
-        gst=gst,
-        delivery_charge=delivery,
-        total_amount=total
-    )
-
-    # Create Order Items
-    for product, quantity, price in order_items:
         OrderItem.objects.create(
             order=order,
             product=product,
             quantity=quantity,
             price=price
         )
+        order_items_list.append((product, quantity, price))
 
     # Save Address
     DeliveryAddress.objects.create(
@@ -429,6 +411,16 @@ def order_confirm(request):
         landmark=address_data.get('landmark'),
         verified=False
     )
+
+    # Calculate final totals using the model method (dynamic GST)
+    order.calculate_total(save=True)
+
+    # Calculate discount for display if coupon exists
+    discount = Decimal(0)
+    if order.coupon:
+        # Re-calculating discount for UI breakdown
+        base_total = order.subtotal + order.gst + order.delivery_charge
+        discount = base_total * Decimal(order.coupon.discount_percentage / 100)
 
     # Prepare cart items for template display
     cart_items = []
@@ -463,11 +455,11 @@ def order_confirm(request):
         'order': order,
         'address': address_data,
         'total_breakdown': {
-            'subtotal': subtotal,
-            'gst': gst,
-            'delivery': delivery,
+            'subtotal': order.subtotal,
+            'gst': order.gst,
+            'delivery': order.delivery_charge,
             'discount': discount,
-            'total': total
+            'total': order.total_amount
         },
     })
 
