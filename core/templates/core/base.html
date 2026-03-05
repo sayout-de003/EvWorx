@@ -334,8 +334,9 @@
                     <div class="flex items-center">
                         <i
                             class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %} text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-500 mr-3 text-lg"></i>
-                        <p class="text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-700 font-medium">{{
-                            message }}</p>
+                        <p class="text-{% if message.tags == 'error' %}red{% else %}green{% endif %}-700 font-medium">
+
+                            {{ message }}</p>
                     </div>
                 </div>
             </div>

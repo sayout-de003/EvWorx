@@ -747,6 +747,20 @@ def admin_management_hub(request):
     repair_counts = [item['count'] for item in repair_types]
 
     import json
+    # 0. Global Search Handling
+    q = request.GET.get('q', '').strip()
+    if q:
+        # Check if it's a direct ID or specific prefix
+        if q.upper().startswith('ORD_') or q.isdigit():
+            clean_id = q.replace('ORD_', '')
+            return redirect(f"{reverse('admin_order_list')}?q={clean_id}")
+        if q.upper().startswith('REQ_'):
+            clean_id = q.replace('REQ_', '')
+            return redirect(f"{reverse('admin_repair_list')}?q={clean_id}")
+            
+        # Generic search -> Redirect to Order list by default with the query
+        return redirect(f"{reverse('admin_order_list')}?q={q}")
+
     context = {
         'total_revenue': total_revenue,
         'today_revenue': today_revenue,
