@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum, Count
+from datetime import timedelta
 from django.core.paginator import Paginator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
@@ -682,14 +683,72 @@ def onsite_repair_booking(request):
     return render(request, 'core/onsite_repair_booking.html', {'form': form})
 @staff_member_required
 def admin_management_hub(request):
-    """Main dashboard for staff members."""
+    """Advanced Premium Dashboard for staff members."""
+    today = timezone.now().date()
+    yesterday = today - timedelta(days=1)
+    seven_days_ago = today - timedelta(days=7)
+    
+    # 1. Financials (only from Delivered orders)
+    delivered_orders = Order.objects.filter(status='Delivered')
+    total_revenue = delivered_orders.aggregate(res=Sum('total_amount'))['res'] or Decimal('0.00')
+    
+    today_revenue = delivered_orders.filter(updated_at__date=today).aggregate(res=Sum('total_amount'))['res'] or Decimal('0.00')
+    
+    # Revenue Growth Calculation (last 7 days vs previous 7 days)
+    last_7_revenue = delivered_orders.filter(updated_at__date__gte=seven_days_ago).aggregate(res=Sum('total_amount'))['res'] or Decimal('0.00')
+    prev_7_start = today - timedelta(days=14)
+    prev_7_revenue = delivered_orders.filter(updated_at__date__gte=prev_7_start, updated_at__date__lt=seven_days_ago).aggregate(res=Sum('total_amount'))['res'] or Decimal('0.00')
+    
+    growth_percentage = 0
+    if prev_7_revenue > 0:
+        growth_percentage = ((last_7_revenue - prev_7_revenue) / prev_7_revenue) * 100
+
+    # 2. Operations Pulse
     pending_repairs = OnSiteRepairBooking.objects.filter(status='Pending').count()
     pending_orders = Order.objects.filter(status='Pending').count()
+    active_repairs = OnSiteRepairBooking.objects.exclude(status__in=['Completed', 'Cancelled', 'Rejected']).count()
+    new_customers_week = User.objects.filter(date_joined__gte=seven_days_ago).count()
     
-    return render(request, 'core/admin_management_hub.html', {
+    # 3. Smart Alerts
+    low_stock_products = Product.objects.filter(stock__lt=5).select_related('brand', 'category').order_by('stock')[:5]
+    
+    # 4. Recent Activity (Unified)
+    recent_orders = Order.objects.all().select_related('user').order_by('-created_at')[:5]
+    recent_repairs = OnSiteRepairBooking.objects.all().order_by('-created_at')[:5]
+    
+    # 5. Chart Data: Sales Trend (Last 7 Days)
+    sales_trend_labels = []
+    sales_trend_data = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        rev = delivered_orders.filter(updated_at__date=day).aggregate(res=Sum('total_amount'))['res'] or Decimal('0.00')
+        sales_trend_labels.append(day.strftime('%b %d'))
+        sales_trend_data.append(float(rev))
+        
+    # 6. Chart Data: Repair breakdown
+    repair_types = OnSiteRepairBooking.objects.values('vehicle_type').annotate(count=Count('id')).order_by('-count')
+    repair_labels = [item['vehicle_type'] for item in repair_types]
+    repair_counts = [item['count'] for item in repair_types]
+
+    import json
+    context = {
+        'total_revenue': total_revenue,
+        'today_revenue': today_revenue,
+        'growth_percentage': round(growth_percentage, 1),
         'pending_repairs': pending_repairs,
         'pending_orders': pending_orders,
-    })
+        'active_repairs': active_repairs,
+        'new_customers_week': new_customers_week,
+        'low_stock_products': low_stock_products,
+        'recent_orders': recent_orders,
+        'recent_repairs': recent_repairs,
+        'sales_trend_labels': json.dumps(sales_trend_labels),
+        'sales_trend_data': json.dumps(sales_trend_data),
+        'repair_labels': json.dumps(repair_labels),
+        'repair_counts': json.dumps(repair_counts),
+    }
+    
+    return render(request, 'core/admin_management_hub.html', context)
 
 @staff_member_required
 def admin_repair_list(request):

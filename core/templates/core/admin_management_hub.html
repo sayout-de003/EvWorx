@@ -1,76 +1,382 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %} - Admin Management Hub{% endblock %}
+{% block title %} - Admin Intelligence Dashboard{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl">Admin Management</h1>
-            <p class="mt-4 text-xl text-gray-500">Welcome to your central control panel. Manage repairs and orders with
-                ease.</p>
+<div class="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
+
+    <!-- Sidebar / Quick Nav -->
+    <aside class="w-full lg:w-64 bg-white border-r border-gray-200 p-6 lg:min-h-screen">
+        <div class="mb-10">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Management Hub</p>
+            <nav class="space-y-1">
+                <a href="{% url 'admin_management_hub' %}"
+                    class="flex items-center px-4 py-3 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl transition-all duration-200">
+                    <i class="fas fa-chart-line mr-3"></i> Dashboard
+                </a>
+                <a href="{% url 'admin_order_list' %}"
+                    class="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-indigo-600 rounded-xl transition-all duration-200">
+                    <i class="fas fa-shopping-bag mr-3"></i> Orders
+                    <span class="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">{{ pending_orders
+                        }}</span>
+                </a>
+                <a href="{% url 'admin_repair_list' %}"
+                    class="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-indigo-600 rounded-xl transition-all duration-200">
+                    <i class="fas fa-tools mr-3"></i> Repairs
+                    <span class="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">{{ pending_repairs
+                        }}</span>
+                </a>
+                <a href="/admin/"
+                    class="flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-indigo-600 rounded-xl transition-all duration-200">
+                    <i class="fas fa-cog mr-3"></i> Core Settings
+                </a>
+            </nav>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Manage Repairs Card -->
-            <a href="{% url 'admin_repair_list' %}"
-                class="group relative bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-                <div
-                    class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-blue-700 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
-                </div>
-                <div class="p-8 md:p-12">
-                    <div
-                        class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-colors duration-300">
-                        <i
-                            class="fas fa-tools text-indigo-600 text-3xl group-hover:text-white transition-colors duration-300"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">On-Site Repair Queries</h2>
-                    <p class="text-gray-600 text-lg mb-6 leading-relaxed">
-                        Track, accept, and manage on-site vehicle repair requests.
-                    </p>
-                    <div class="flex items-center justify-between">
-                        <span
-                            class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-700">
-                            {{ pending_repairs }} Pending Requests
-                        </span>
-                        <span
-                            class="text-indigo-600 font-bold group-hover:translate-x-2 transition-transform duration-300">
-                            Open Management <i class="fas fa-arrow-right ml-2"></i>
-                        </span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Manage Orders Card -->
-            <a href="{% url 'admin_order_list' %}"
-                class="group relative bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-                <div
-                    class="absolute inset-0 bg-gradient-to-br from-green-600 to-teal-700 opacity-0 group-hover:opacity-10 transition-opacity duration-300">
-                </div>
-                <div class="p-8 md:p-12">
-                    <div
-                        class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-green-600 transition-colors duration-300">
-                        <i
-                            class="fas fa-shopping-bag text-green-600 text-3xl group-hover:text-white transition-colors duration-300"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">E-commerce Orders</h2>
-                    <p class="text-gray-600 text-lg mb-6 leading-relaxed">
-                        Manage product orders, update shipping status, and process payments.
-                    </p>
-                    <div class="flex items-center justify-between">
-                        <span
-                            class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-700">
-                            {{ pending_orders }} New Orders
-                        </span>
-                        <span
-                            class="text-green-600 font-bold group-hover:translate-x-2 transition-transform duration-300">
-                            Open Management <i class="fas fa-arrow-right ml-2"></i>
-                        </span>
-                    </div>
-                </div>
-            </a>
+        <div class="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200">
+            <p class="text-xs font-medium opacity-80 mb-2">Business Health</p>
+            <h4 class="text-lg font-bold mb-4">System Pulse</h4>
+            <div class="flex items-center text-sm mb-2">
+                <span class="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
+                Everything running smooth
+            </div>
+            <p class="text-xs opacity-70">Last updated: Just now</p>
         </div>
-    </div>
+    </aside>
+
+    <!-- Main Dashboard -->
+    <main class="flex-1 p-6 lg:p-10">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Intelligence Dashboard</h1>
+                <p class="text-gray-500 mt-1">Good morning, <span class="text-indigo-600 font-semibold">{{
+                        request.user.username }}</span>. Here's what's happening today.</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button
+                    class="bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all flex items-center">
+                    <i class="fas fa-download mr-2 text-gray-400"></i> Export Report
+                </button>
+                <div
+                    class="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-100">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            <!-- Total Revenue Card -->
+            <div
+                class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-wallet text-xl"></i>
+                    </div>
+                    <span
+                        class="flex items-center text-xs font-bold {% if growth_percentage >= 0 %}text-green-500{% else %}text-red-500{% endif %} bg-{% if growth_percentage >= 0 %}green{% else %}red{% endif %}-50 px-2 py-1 rounded-full">
+                        <i class="fas fa-arrow-{% if growth_percentage >= 0 %}up{% else %}down{% endif %} mr-1"></i> {{
+                        growth_percentage }}%
+                    </span>
+                </div>
+                <p class="text-sm font-medium text-gray-500">Total revenue</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">₹{{ total_revenue }}</h3>
+                <p class="text-xs text-gray-400 mt-2">₹{{ today_revenue }} earned today</p>
+            </div>
+
+            <!-- Orders Card -->
+            <div
+                class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                    </div>
+                    <span class="text-xs font-bold text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+                        {{ pending_orders }} Pending
+                    </span>
+                </div>
+                <p class="text-sm font-medium text-gray-500">Active Orders</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ pending_orders }}</h3>
+                <a href="{% url 'admin_order_list' %}"
+                    class="text-xs text-indigo-600 font-semibold mt-2 inline-block hover:underline">Manage orders <i
+                        class="fas fa-chevron-right ml-1"></i></a>
+            </div>
+
+            <!-- Repairs Card -->
+            <div
+                class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-tools text-xl"></i>
+                    </div>
+                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full animate-pulse">
+                        {{ active_repairs }} Ongoing
+                    </span>
+                </div>
+                <p class="text-sm font-medium text-gray-500">Repairs in Shop</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ active_repairs }}</h3>
+                <a href="{% url 'admin_repair_list' %}"
+                    class="text-xs text-blue-600 font-semibold mt-2 inline-block hover:underline">Track status <i
+                        class="fas fa-chevron-right ml-1"></i></a>
+            </div>
+
+            <!-- Users Card -->
+            <div
+                class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-1">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-user-plus text-xl"></i>
+                    </div>
+                    <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                        +{{ new_customers_week }}
+                    </span>
+                </div>
+                <p class="text-sm font-medium text-gray-500">New Customers</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ new_customers_week }}</h3>
+                <p class="text-xs text-gray-400 mt-2">Joined this past week</p>
+            </div>
+        </div>
+
+        <!-- Middle Section: Charts -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+            <!-- Sales Trend Graph -->
+            <div class="xl:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-900">Revenue Stream</h4>
+                        <p class="text-sm text-gray-500">Sales performance across last 7 days</p>
+                    </div>
+                    <select class="bg-gray-50 border-none text-sm font-medium rounded-lg focus:ring-0">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                    </select>
+                </div>
+                <div class="h-64">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Repair Distribution -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                <h4 class="text-xl font-bold text-gray-900 mb-2">Repair Pulse</h4>
+                <p class="text-sm text-gray-500 mb-6">Bookings breakdown by vehicle type</p>
+                <div class="h-48 flex items-center justify-center">
+                    <canvas id="repairChart"></canvas>
+                </div>
+                <!-- Mini legends -->
+                <div class="mt-8 grid grid-cols-2 gap-4">
+                    {% for label in repair_labels|slice:":4" %}
+                    <div class="flex items-center">
+                        <div class="w-2.5 h-2.5 rounded-full bg-indigo-500 mr-2"></div>
+                        <span class="text-xs font-medium text-gray-600">{{ label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section: Alerts & Activity -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Low Stock Alerts -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 border-l-4 border-l-red-500">
+                <div class="flex items-center justify-between mb-6">
+                    <h4 class="text-xl font-bold text-gray-900">Inventory Heat</h4>
+                    <span class="bg-red-50 text-red-600 px-2 py-0.5 rounded text-xs font-bold">CRITICAL</span>
+                </div>
+                {% if low_stock_products %}
+                <div class="space-y-4">
+                    {% for p in low_stock_products %}
+                    <div
+                        class="flex items-center p-3 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
+                        <img src="{% if p.main_image %}{{ p.main_image.url }}{% else %}{% static 'core/img/no-image.png' %}{% endif %}"
+                            class="w-10 h-10 rounded-lg object-cover mr-4">
+                        <div class="flex-1">
+                            <p class="text-sm font-bold text-gray-900 truncate">{{ p.title }}</p>
+                            <p class="text-xs text-gray-500">{{ p.brand.name }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold text-red-600">{{ p.stock }} left</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="/admin/core/product/"
+                    class="mt-6 block text-center py-2 text-sm font-semibold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all">Refill
+                    Stock</a>
+                {% else %}
+                <div class="text-center py-10">
+                    <i class="fas fa-check-circle text-4xl text-green-200 mb-4"></i>
+                    <p class="text-gray-500 italic">Inventory is healthy</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Activity Unified Feed -->
+            <div class="xl:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+                <h4 class="text-xl font-bold text-gray-900 mb-6">Recent Activity</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                <th class="pb-4 pr-4">Event</th>
+                                <th class="pb-4 pr-4">Details</th>
+                                <th class="pb-4 pr-4">Time</th>
+                                <th class="pb-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            {% for order in recent_orders %}
+                            <tr class="group hover:bg-gray-50/50 transition-all">
+                                <td class="py-4 pr-4">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-xs mr-3">
+                                            <i class="fas fa-shopping-bag"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">New Order</p>
+                                            <p class="text-xs text-gray-500">#{{ order.id }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 pr-4">
+                                    <p class="text-sm text-gray-700">₹{{ order.total_amount }} • {{
+                                        order.user.username|default:"Guest" }}</p>
+                                </td>
+                                <td class="py-4 pr-4 text-xs text-gray-500">{{ order.created_at|timesince }} ago</td>
+                                <td class="py-4">
+                                    <span
+                                        class="px-2 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase 
+                                        {% if order.status == 'Pending' %}bg-yellow-50 text-yellow-600{% elif order.status == 'Delivered' %}bg-green-50 text-green-600{% else %}bg-gray-50 text-gray-600{% endif %}">
+                                        {{ order.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            {% for repair in recent_repairs %}
+                            <tr class="group hover:bg-gray-50/50 transition-all">
+                                <td class="py-4 pr-4">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs mr-3">
+                                            <i class="fas fa-wrench"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">Repair Req</p>
+                                            <p class="text-xs text-gray-500">{{ repair.brand }} {{ repair.model_no }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-4 pr-4">
+                                    <p class="text-sm text-gray-700">{{ repair.full_name }} • {{ repair.vehicle_type }}
+                                    </p>
+                                </td>
+                                <td class="py-4 pr-4 text-xs text-gray-500">{{ repair.created_at|timesince }} ago</td>
+                                <td class="py-4">
+                                    <span
+                                        class="px-2 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase 
+                                        {% if repair.status == 'Pending' %}bg-yellow-50 text-yellow-600{% elif repair.status == 'Completed' %}bg-green-50 text-green-600{% else %}bg-gray-50 text-gray-600{% endif %}">
+                                        {{ repair.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Sales Trend Chart
+        const salesChartCanvas = document.getElementById('salesChart');
+        if (salesChartCanvas) {
+            new Chart(salesChartCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {{ sales_trend_labels| safe }
+    },
+        datasets: [{
+            label: 'Revenue (₹)',
+            data: {{ sales_trend_data| safe }},
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79, 70, 229, 0.05)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: '#4f46e5',
+        pointHoverRadius: 6
+                    }]
+                },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                padding: 12,
+                backgroundColor: '#fff',
+                titleColor: '#000',
+                bodyColor: '#666',
+                borderColor: '#eee',
+                borderWidth: 1
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { display: false },
+                ticks: { color: '#9ca3af', font: { size: 10 } }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#9ca3af', font: { size: 10 } }
+            }
+        }
+    }
+            });
+        }
+
+    // Repair Distribution Chart
+    const repairChartCanvas = document.getElementById('repairChart');
+    if (repairChartCanvas) {
+        new Chart(repairChartCanvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ repair_labels| safe }},
+    datasets: [{
+        data: {{ repair_counts| safe }},
+        backgroundColor: [
+        '#4f46e5', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b'
+    ],
+        borderWidth: 0,
+        hoverOffset: 10
+                    }]
+                },
+    options: {
+        responsive: true,
+            maintainAspectRatio: false,
+                cutout: '75%',
+                    plugins: {
+            legend: { display: false }
+        }
+    }
+            });
+        }
+    });
+</script>
 {% endblock %}
