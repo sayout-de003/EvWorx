@@ -10,17 +10,21 @@
     body {
         font-family: 'Inter', sans-serif;
     }
+
     .main-bg {
         background: radial-gradient(circle at top right, #e2e8f0 0%, #f0f4f8 100%);
     }
+
     .card-shadow {
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
+
     .card-shadow:hover {
         transform: translateY(-8px);
         box-shadow: 0 30px 40px -8px rgba(0, 0, 0, 0.15), 0 15px 15px -8px rgba(0, 0, 0, 0.08);
     }
+
     .btn-primary {
         background: linear-gradient(to right, #3b82f6, #4f46e5);
         color: white;
@@ -30,25 +34,30 @@
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
     }
+
     .btn-primary:hover {
         background: linear-gradient(to right, #2563eb, #4338ca);
         transform: scale(1.05);
         box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
     }
+
     .btn-disabled {
         background-color: #d1d5db;
         color: #9ca3af;
         cursor: not-allowed;
     }
+
     .review-card {
         border-left: 4px solid #3b82f6;
         transition: border-left 0.3s ease;
     }
+
     .review-card:hover {
         border-left: 4px solid #4f46e5;
     }
+
     .star-rating {
-      color: #f59e0b;
+        color: #f59e0b;
     }
 </style>
 
@@ -59,49 +68,72 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-3xl p-8 card-shadow">
                 {% if product.main_image %}
-                    <img src="{{ product.main_image.url }}" alt="{{ product.title }}"
-                         class="w-full h-auto max-h-[500px] object-contain rounded-2xl shadow-lg transform transition-transform duration-300 hover:scale-[1.01]">
+                <img id="main-product-image" src="{{ product.main_image.url }}" alt="{{ product.title }}"
+                    class="w-full h-auto max-h-[500px] object-contain rounded-2xl shadow-lg transform transition-transform duration-300 hover:scale-[1.01]">
                 {% else %}
-                    <div class="w-full h-64 bg-gray-200 flex items-center justify-center rounded-2xl text-gray-500 font-medium">
-                        No Image Available
-                    </div>
+                <div
+                    class="w-full h-64 bg-gray-200 flex items-center justify-center rounded-2xl text-gray-500 font-medium">
+                    No Image Available
+                </div>
                 {% endif %}
 
                 <!-- Additional Images -->
                 {% if product.images.all %}
-                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-6">
-                        {% for image in product.images.all %}
-                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.title }}"
-                                 class="w-full h-24 object-cover rounded-xl shadow-md cursor-pointer hover:scale-105 transition-transform duration-200">
-                        {% endfor %}
-                    </div>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-6">
+                    {% for image in product.images.all %}
+                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.title }}"
+                        class="product-thumbnail w-full h-24 object-cover rounded-xl shadow-md cursor-pointer hover:scale-105 transition-transform duration-200 border-2 border-transparent hover:border-blue-500"
+                        onclick="updateMainImage(this)">
+                    {% endfor %}
+                </div>
                 {% endif %}
             </div>
         </div>
+
+        <script>
+            function updateMainImage(thumbnail) {
+                const mainImage = document.getElementById('main-product-image');
+                if (mainImage) {
+                    mainImage.src = thumbnail.src;
+
+                    // Optional: Highlight active thumbnail
+                    document.querySelectorAll('.product-thumbnail').forEach(el => {
+                        el.classList.remove('border-blue-500');
+                        el.classList.add('border-transparent');
+                    });
+                    thumbnail.classList.add('border-blue-500');
+                    thumbnail.classList.remove('border-transparent');
+                }
+            }
+        </script>
 
         <!-- Product Info -->
         <div class="bg-white rounded-3xl p-8 card-shadow flex flex-col justify-between">
             <div>
                 <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">{{ product.title }}</h1>
-                <p class="text-gray-500 text-sm mb-2">Part Number: <span class="text-gray-700 font-medium">{{ product.part_number|default:"N/A" }}</span></p>
-                <p class="text-gray-500 text-sm mb-4">Brand: <span class="text-gray-700 font-medium">{{ product.brand.name }}</span></p>
+                <p class="text-gray-500 text-sm mb-2">Part Number: <span class="text-gray-700 font-medium">{{
+                        product.part_number|default:"N/A" }}</span></p>
+                <p class="text-gray-500 text-sm mb-4">Brand: <span class="text-gray-700 font-medium">{{
+                        product.brand.name }}</span></p>
 
                 <!-- Price -->
                 <div class="mb-6">
                     {% if product.discount_percentage > 0 %}
-                        <div class="flex items-center space-x-3">
-                            <span class="text-3xl font-extrabold text-teal-600">₹{{ product.price|floatformat:2 }}</span>
-                            <span class="text-lg text-gray-400 line-through">₹{{ product.original_price|floatformat:2 }}</span>
-                            <span class="bg-rose-100 text-rose-600 tag-pill font-bold">({{ product.discount_percentage }}% OFF)</span>
-                        </div>
-                    {% else %}
+                    <div class="flex items-center space-x-3">
                         <span class="text-3xl font-extrabold text-teal-600">₹{{ product.price|floatformat:2 }}</span>
+                        <span class="text-lg text-gray-400 line-through">₹{{ product.original_price|floatformat:2
+                            }}</span>
+                        <span class="bg-rose-100 text-rose-600 tag-pill font-bold">({{ product.discount_percentage }}%
+                            OFF)</span>
+                    </div>
+                    {% else %}
+                    <span class="text-3xl font-extrabold text-teal-600">₹{{ product.price|floatformat:2 }}</span>
                     {% endif %}
                     <p class="text-sm font-semibold mt-2">
                         {% if product.stock > 0 %}
-                            <span class="text-teal-600">In Stock: {{ product.stock }} units</span>
+                        <span class="text-teal-600">In Stock: {{ product.stock }} units</span>
                         {% else %}
-                            <span class="text-rose-500">Out of Stock</span>
+                        <span class="text-rose-500">Out of Stock</span>
                         {% endif %}
                     </p>
                 </div>
@@ -112,16 +144,16 @@
                 {% csrf_token %}
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 <input type="hidden" name="next" value="{{ request.path }}">
-                
+
                 <label for="quantity" class="text-gray-700 font-medium">Quantity:</label>
                 <input type="number" name="quantity" value="1" min="1" id="quantity"
-                       class="w-20 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
-            
+                    class="w-20 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+
                 <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">
                     <i class="fas fa-cart-plus mr-2"></i> Add to Cart
                 </button>
             </form>
-            
+
         </div>
     </div>
 
@@ -135,106 +167,112 @@
             </div>
         </div>
 
-       <!-- Specifications & Discounts -->
-<div class="bg-white rounded-3xl p-8 card-shadow">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Specifications</h2>
-    <ul class="list-disc pl-6 space-y-2 text-gray-600">
-        <li><strong class="text-gray-800">Category:</strong> {{ product.category.name|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">Subcategory:</strong> {{ product.subcategory.name|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">Brand:</strong> {{ product.brand.name|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">SKU/Code:</strong> {{ product.sku|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">Price:</strong> ₹{{ product.price|floatformat:2 }}</li>
-        <li><strong class="text-gray-800">Available Stock:</strong> {{ product.stock|default:"Out of stock" }}</li>
-        <li><strong class="text-gray-800">Weight:</strong> {{ product.weight|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">Dimensions:</strong> {{ product.dimensions|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">Material:</strong> {{ product.material|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">Color:</strong> {{ product.color|default:"Not specified" }}</li>
-        <li><strong class="text-gray-800">Warranty:</strong> {{ product.warranty|default:"Not specified" }}</li>
-        <!-- <li><strong class="text-gray-800">Created on:</strong> {{ product.created_at|date:"F d, Y" }}</li> -->
-        <!-- <li><strong class="text-gray-800">Last Updated:</strong> {{ product.updated_at|date:"F d, Y" }}</li> -->
-    </ul>
-
-    {% if product.bulk_discounts.all %}
-        <div class="mt-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Bulk Discounts</h2>
+        <!-- Specifications & Discounts -->
+        <div class="bg-white rounded-3xl p-8 card-shadow">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Specifications</h2>
             <ul class="list-disc pl-6 space-y-2 text-gray-600">
-                {% for discount in product.bulk_discounts.all %}
+                <li><strong class="text-gray-800">Category:</strong> {{ product.category.name|default:"Not specified" }}
+                </li>
+                <li><strong class="text-gray-800">Subcategory:</strong> {{ product.subcategory.name|default:"Not
+                    specified" }}</li>
+                <li><strong class="text-gray-800">Brand:</strong> {{ product.brand.name|default:"Not specified" }}</li>
+                <li><strong class="text-gray-800">SKU/Code:</strong> {{ product.sku|default:"Not specified" }}</li>
+                <li><strong class="text-gray-800">Price:</strong> ₹{{ product.price|floatformat:2 }}</li>
+                <li><strong class="text-gray-800">Available Stock:</strong> {{ product.stock|default:"Out of stock" }}
+                </li>
+                <li><strong class="text-gray-800">Weight:</strong> {{ product.weight|default:"Not specified" }}</li>
+                <li><strong class="text-gray-800">Dimensions:</strong> {{ product.dimensions|default:"Not specified" }}
+                </li>
+                <li><strong class="text-gray-800">Material:</strong> {{ product.material|default:"Not specified" }}</li>
+                <li><strong class="text-gray-800">Color:</strong> {{ product.color|default:"Not specified" }}</li>
+                <li><strong class="text-gray-800">Warranty:</strong> {{ product.warranty|default:"Not specified" }}</li>
+                <!-- <li><strong class="text-gray-800">Created on:</strong> {{ product.created_at|date:"F d, Y" }}</li> -->
+                <!-- <li><strong class="text-gray-800">Last Updated:</strong> {{ product.updated_at|date:"F d, Y" }}</li> -->
+            </ul>
+
+            {% if product.bulk_discounts.all %}
+            <div class="mt-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Bulk Discounts</h2>
+                <ul class="list-disc pl-6 space-y-2 text-gray-600">
+                    {% for discount in product.bulk_discounts.all %}
                     <li>{{ discount.discount_percentage }}% off on {{ discount.min_quantity }}+ units</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-
-    
-
-    {% if product.features.all %}
-        <div class="mt-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Key Features</h2>
-            <ul class="list-disc pl-6 space-y-2 text-gray-600">
-                {% for feature in product.features.all %}
-                    <li>{{ feature.name }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
-</div>
-
-
-    <!-- Compatible Vehicles -->
-    <div class="max-w-7xl mx-auto mt-8 bg-white rounded-3xl p-8 card-shadow">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Compatible Vehicles</h2>
-        {% if product.compatible_vehicle_types.all or product.compatible_vehicle_models.all %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {% for vehicle_type in product.compatible_vehicle_types.all %}
-                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-shadow">
-                        <p class="font-medium text-gray-700">{{ vehicle_type.name }} ({{ vehicle_type.type }})</p>
-                    </div>
-                {% empty %}
-                    <!-- No vehicle types, but check models below -->
-                {% endfor %}
-                {% for vehicle_model in product.compatible_vehicle_models.all %}
-                    <div class="border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-shadow">
-                        <p class="font-medium text-gray-700">{{ vehicle_model.brand.name }} {{ vehicle_model.name }}</p>
-                        <p class="text-sm text-gray-500">Type: {{ vehicle_model.type.name }}</p>
-                    </div>
-                {% empty %}
-                    <!-- No vehicle models, but check types above -->
-                {% endfor %}
+                    {% endfor %}
+                </ul>
             </div>
-        {% else %}
-            <p class="text-gray-600">No specific compatibility information available.</p>
-        {% endif %}
-    </div>
+            {% endif %}
 
-    <!-- Reviews -->
-    <div class="max-w-7xl mx-auto mt-8 bg-white rounded-3xl p-8 card-shadow">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Customer Reviews</h2>
-        <div class="space-y-6">
-            {% if product.review_set.all %}
-                {% for review in product.review_set.all %}
-                    <div class="review-card bg-gray-50 rounded-xl p-5 shadow-sm">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <i class="fas fa-user-circle text-xl text-gray-400"></i>
-                            <p class="font-medium text-gray-800">{{ review.user.username }} -
-                                <span class="star-rating">{{ review.rating }}/5</span>
-                            </p>
-                            <span class="ml-auto text-sm text-gray-500">{{ review.created_at|date:"F d, Y" }}</span>
-                        </div>
-                        <p class="text-gray-600 mt-1">{{ review.comment|default:"No comment provided." }}</p>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-gray-600">No reviews yet. Be the first to review this product.</p>
+
+
+            {% if product.features.all %}
+            <div class="mt-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Key Features</h2>
+                <ul class="list-disc pl-6 space-y-2 text-gray-600">
+                    {% for feature in product.features.all %}
+                    <li>{{ feature.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
             {% endif %}
         </div>
 
-        <!-- Add Review -->
-        {% if request.user.is_authenticated %}
-            <form method="POST" action="{% url 'add_review' product_id=product.id %}" class="mt-8 pt-6 border-t border-gray-200 space-y-4">
+
+        <!-- Compatible Vehicles -->
+        <div class="max-w-7xl mx-auto mt-8 bg-white rounded-3xl p-8 card-shadow">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Compatible Vehicles</h2>
+            {% if product.compatible_vehicle_types.all or product.compatible_vehicle_models.all %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for vehicle_type in product.compatible_vehicle_types.all %}
+                <div class="border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-shadow">
+                    <p class="font-medium text-gray-700">{{ vehicle_type.name }} ({{ vehicle_type.type }})</p>
+                </div>
+                {% empty %}
+                <!-- No vehicle types, but check models below -->
+                {% endfor %}
+                {% for vehicle_model in product.compatible_vehicle_models.all %}
+                <div class="border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-shadow">
+                    <p class="font-medium text-gray-700">{{ vehicle_model.brand.name }} {{ vehicle_model.name }}</p>
+                    <p class="text-sm text-gray-500">Type: {{ vehicle_model.type.name }}</p>
+                </div>
+                {% empty %}
+                <!-- No vehicle models, but check types above -->
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-600">No specific compatibility information available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Reviews -->
+        <div class="max-w-7xl mx-auto mt-8 bg-white rounded-3xl p-8 card-shadow">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Customer Reviews</h2>
+            <div class="space-y-6">
+                {% if product.review_set.all %}
+                {% for review in product.review_set.all %}
+                <div class="review-card bg-gray-50 rounded-xl p-5 shadow-sm">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-user-circle text-xl text-gray-400"></i>
+                        <p class="font-medium text-gray-800">{{ review.user.username }} -
+                            <span class="star-rating">{{ review.rating }}/5</span>
+                        </p>
+                        <span class="ml-auto text-sm text-gray-500">{{ review.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <p class="text-gray-600 mt-1">{{ review.comment|default:"No comment provided." }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-gray-600">No reviews yet. Be the first to review this product.</p>
+                {% endif %}
+            </div>
+
+            <!-- Add Review -->
+            {% if request.user.is_authenticated %}
+            <form method="POST" action="{% url 'add_review' product_id=product.id %}"
+                class="mt-8 pt-6 border-t border-gray-200 space-y-4">
                 {% csrf_token %}
                 <div>
                     <label for="rating" class="block text-sm font-medium text-gray-700">Rating</label>
-                    <select name="rating" id="rating" class="w-full p-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 text-gray-700 font-medium">
+                    <select name="rating" id="rating"
+                        class="w-full p-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 text-gray-700 font-medium">
                         <option value="5">5 Stars</option>
                         <option value="4">4 Stars</option>
                         <option value="3">3 Stars</option>
@@ -245,17 +283,18 @@
                 <div>
                     <label for="comment" class="block text-sm font-medium text-gray-700">Comment</label>
                     <textarea name="comment" id="comment" rows="4"
-                              class="w-full p-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 text-gray-700 font-medium"></textarea>
+                        class="w-full p-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 text-gray-700 font-medium"></textarea>
                 </div>
                 <button type="submit" class="btn-primary w-full sm:w-auto">
                     Submit Review
                 </button>
             </form>
-        {% else %}
+            {% else %}
             <p class="text-gray-600 mt-4">
-                Please <a href="{% url 'login' %}" class="text-blue-500 font-semibold hover:underline">log in</a> to write a review.
+                Please <a href="{% url 'login' %}" class="text-blue-500 font-semibold hover:underline">log in</a> to
+                write a review.
             </p>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
-</div>
-{% endblock %}
+    {% endblock %}

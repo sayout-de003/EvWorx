@@ -255,7 +255,7 @@ class Product(models.Model):
     compatible_vehicle_types = models.ManyToManyField('VehicleType', blank=True, related_name='products')
     country_of_origin = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    description = CKEditor5Field('Content', config_name='default', blank=True, null=True)
+    description = CKEditor5Field('Content', config_name='extends', blank=True, null=True)
     discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     is_out_of_stock_manual = models.BooleanField(default=False)
     main_image = models.ImageField(upload_to='products/', blank=True, null=True)
