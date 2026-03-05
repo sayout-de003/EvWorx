@@ -190,23 +190,47 @@
                 {% if low_stock_products %}
                 <div class="space-y-4">
                     {% for p in low_stock_products %}
-                    <div
-                        class="flex items-center p-3 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100">
-                        <img src="{% if p.main_image %}{{ p.main_image.url }}{% else %}{% static 'core/img/no-image.png' %}{% endif %}"
-                            class="w-10 h-10 rounded-lg object-cover mr-4">
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-gray-900 truncate">{{ p.title }}</p>
-                            <p class="text-xs text-gray-500">{{ p.brand.name }}</p>
+                    <a href="{% url 'admin:core_product_change' p.id %}"
+                        class="flex items-center p-4 rounded-2xl bg-white hover:bg-red-50 transition-all duration-300 border border-gray-100 hover:border-red-200 group shadow-sm hover:shadow-md transform hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="{% if p.main_image %}{{ p.main_image.url }}{% else %}{% static 'core/img/no-image.png' %}{% endif %}"
+                                class="w-12 h-12 rounded-xl object-cover mr-4 transition-transform group-hover:scale-110">
+                            {% if p.stock == 0 %}
+                            <div
+                                class="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-white animate-ping">
+                            </div>
+                            {% endif %}
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm font-bold text-red-600">{{ p.stock }} left</p>
+                        <div class="flex-1 min-w-0">
+                            <p
+                                class="text-sm font-bold text-gray-900 truncate group-hover:text-red-700 transition-colors uppercase tracking-tight">
+                                {{ p.title }}</p>
+                            <div class="flex items-center mt-0.5">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-2">{{
+                                    p.brand.name }}</span>
+                                <span class="w-1 h-1 bg-gray-300 rounded-full mr-2"></span>
+                                <span class="text-[10px] font-medium text-gray-500">{{ p.category.name }}</span>
+                            </div>
                         </div>
-                    </div>
+                        <div class="text-right pl-4">
+                            <p
+                                class="text-lg font-black {% if p.stock == 0 %}text-red-600 animate-pulse{% else %}text-red-500{% endif %}">
+                                {{ p.stock }}
+                                <span
+                                    class="text-[10px] block font-bold uppercase tracking-tighter opacity-70">Remaining</span>
+                            </p>
+                        </div>
+                        <div class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fas fa-chevron-right text-red-300 text-xs"></i>
+                        </div>
+                    </a>
                     {% endfor %}
                 </div>
                 <a href="/admin/core/product/"
-                    class="mt-6 block text-center py-2 text-sm font-semibold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all">Refill
-                    Stock</a>
+                    class="mt-8 flex items-center justify-center py-3 px-6 text-sm font-bold text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 hover:shadow-indigo-200 group">
+                    <span>Manage Full Inventory</span>
+                    <i class="fas fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+                </a>
                 {% else %}
                 <div class="text-center py-10">
                     <i class="fas fa-check-circle text-4xl text-green-200 mb-4"></i>
