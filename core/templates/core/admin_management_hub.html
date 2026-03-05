@@ -60,8 +60,8 @@
                     </ol>
                 </nav>
                 <h1 class="text-4xl font-black text-gray-900 tracking-tight">Business Intelligence</h1>
-                <p class="text-gray-500 mt-1">Insights for <span class="text-indigo-600 font-bold">{{
-                        request.user.username }}</span> • <span id="current-date"></span></p>
+                <p class="text-gray-500 mt-1">Insights for <span class="text-indigo-600 font-bold">
+                        {{ request.user.username }}</span> • <span id="current-date"></span></p>
             </div>
             <div class="flex items-center space-x-3">
                 <div class="hidden md:flex flex-col text-right mr-4">
@@ -402,7 +402,10 @@
         function updateDate() {
             const now = new Date();
             const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+            const dateEl = document.getElementById('current-date');
+            if (dateEl) {
+                dateEl.textContent = now.toLocaleDateString('en-US', options);
+            }
         }
         updateDate();
 
@@ -414,7 +417,8 @@
         // 1. Sales Trend Chart (Line)
         const salesCtx = document.getElementById('salesChart');
         if (salesCtx) {
-            const gradient = salesCtx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+            const salesCanvas = salesCtx.getContext('2d');
+            const gradient = salesCanvas.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(79, 70, 229, 0.2)');
             gradient.addColorStop(1, 'rgba(79, 70, 229, 0.0)');
 
