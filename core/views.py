@@ -707,7 +707,22 @@ def admin_management_hub(request):
     pending_repairs = OnSiteRepairBooking.objects.filter(status='Pending').count()
     pending_orders = Order.objects.filter(status='Pending').count()
     active_repairs = OnSiteRepairBooking.objects.exclude(status__in=['Completed', 'Cancelled', 'Rejected']).count()
+    total_customers = User.objects.filter(is_active=True).count()
     new_customers_week = User.objects.filter(date_joined__gte=seven_days_ago).count()
+    
+    # 2.1 Order Status Breakdown
+    order_status_counts = Order.objects.values('status').annotate(count=Count('id'))
+    status_labels = [item['status'] for item in order_status_counts]
+    status_data = [item['count'] for item in order_status_counts]
+
+    # 2.2 Top Selling Products
+    top_selling_products = Product.objects.annotate(
+        total_sold=Sum('order_items__quantity', filter=Q(order_items__order__status='Delivered'))
+    ).filter(total_sold__gt=0).order_by('-total_sold')[:5]
+
+    # 2.3 Financial Metrics
+    total_orders_count = Order.objects.filter(status='Delivered').count()
+    avg_order_value = total_revenue / total_orders_count if total_orders_count > 0 else Decimal('0.00')
     
     # 3. Smart Alerts
     low_stock_products = Product.objects.filter(stock__lt=5).select_related('brand', 'category').order_by('stock')[:5]
@@ -738,10 +753,15 @@ def admin_management_hub(request):
         'pending_repairs': pending_repairs,
         'pending_orders': pending_orders,
         'active_repairs': active_repairs,
+        'total_customers': total_customers,
         'new_customers_week': new_customers_week,
         'low_stock_products': low_stock_products,
         'recent_orders': recent_orders,
         'recent_repairs': recent_repairs,
+        'top_selling_products': top_selling_products,
+        'avg_order_value': round(avg_order_value, 2),
+        'status_labels': json.dumps(status_labels),
+        'status_data': json.dumps(status_data),
         'sales_trend_labels': json.dumps(sales_trend_labels),
         'sales_trend_data': json.dumps(sales_trend_data),
         'repair_labels': json.dumps(repair_labels),
