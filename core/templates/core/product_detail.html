@@ -111,10 +111,12 @@
         <div class="bg-white rounded-3xl p-8 card-shadow flex flex-col justify-between">
             <div>
                 <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">{{ product.title }}</h1>
-                <p class="text-gray-500 text-sm mb-2">Part Number: <span class="text-gray-700 font-medium">{{
-                        product.part_number|default:"N/A" }}</span></p>
-                <p class="text-gray-500 text-sm mb-4">Brand: <span class="text-gray-700 font-medium">{{
-                        product.brand.name }}</span></p>
+                <p class="text-gray-500 text-sm mb-2">Part Number: <span class="text-gray-700 font-medium">
+
+                        {{ product.part_number|default:"N/A" }}</span></p>
+                <p class="text-gray-500 text-sm mb-4">Brand: <span class="text-gray-700 font-medium">
+
+                        {{ product.brand.name }}</span></p>
 
                 <!-- Price -->
                 <div class="mb-6">
@@ -173,8 +175,9 @@
             <ul class="list-disc pl-6 space-y-2 text-gray-600">
                 <li><strong class="text-gray-800">Category:</strong> {{ product.category.name|default:"Not specified" }}
                 </li>
-                <li><strong class="text-gray-800">Subcategory:</strong> {{ product.subcategory.name|default:"Not
-                    specified" }}</li>
+                <li><strong class="text-gray-800">Subcategory:</strong>
+                    {{ product.subcategory.name|default:"Not Specified" }}</li>
+                s
                 <li><strong class="text-gray-800">Brand:</strong> {{ product.brand.name|default:"Not specified" }}</li>
                 <li><strong class="text-gray-800">SKU/Code:</strong> {{ product.sku|default:"Not specified" }}</li>
                 <li><strong class="text-gray-800">Price:</strong> ₹{{ product.price|floatformat:2 }}</li>
