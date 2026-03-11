@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from decimal import Decimal
 import random
+import urllib.parse
 
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
@@ -21,7 +22,8 @@ from rest_framework.response import Response
 from .models import (
     User, Vehicle, VehicleType, Brand, Product, Cart, CartItem, 
     Order, OrderItem, Wishlist, Review, Coupon, Category, 
-    HeroSlider, BlogPost, DeliveryAddress, WebsiteLogo, OnSiteRepairBooking
+    HeroSlider, BlogPost, DeliveryAddress, WebsiteLogo, OnSiteRepairBooking, StoreSettings,
+    WhatsAppQuery, WhatsAppQueryItem
 )
 from .serializers import (
     UserSerializer, VehicleSerializer, VehicleTypeSerializer, 
@@ -161,6 +163,77 @@ def cart_view(request):
     })
 
 
+@csrf_exempt
+def cart_api(request):
+    """
+    AJAX API for cart operations.
+    Actions: 'add', 'update', 'delete', 'get'
+    """
+    if request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON data.'}, status=400)
+        
+        action = data.get('action')
+        product_id = data.get('product_id')
+        
+        if action == 'delete':
+            CartService.remove_from_cart(request, product_id)
+            message = "Item removed from cart."
+            success = True
+        elif action == 'update':
+            quantity = int(data.get('quantity', 1))
+            success, message = CartService.update_cart_quantity(request, product_id, quantity)
+        elif action == 'add':
+            quantity = int(data.get('quantity', 1))
+            success, message = CartService.add_to_cart(request, product_id, quantity)
+        else:
+            return JsonResponse({'success': False, 'message': 'Unknown action.'}, status=400)
+    else:
+        # GET request just returns current cart state
+        success = True
+        message = ""
+
+    # Fetch updated cart state
+    cart_items_raw, total_price = CartService.get_cart_items_and_total(request)
+    
+    # Format cart items for JSON response
+    items = []
+    cart_count = 0
+    for item in cart_items_raw:
+        if request.user.is_authenticated:
+            # item is a CartItem object
+            product = item.product
+            quantity = item.quantity
+            subtotal = float(item.get_total_price())
+        else:
+            # item is a dict
+            product = item['product']
+            quantity = item['quantity']
+            subtotal = float(item['subtotal'])
+        
+        cart_count += quantity
+        items.append({
+            'product_id': product.id,
+            'title': product.title,
+            'price': float(product.price),
+            'quantity': quantity,
+            'subtotal': subtotal,
+            'image_url': product.main_image.url if product.main_image else None,
+            'slug': product.slug
+        })
+
+    return JsonResponse({
+        'success': success,
+        'message': message,
+        'items': items,
+        'total_price': float(total_price),
+        'cart_count': cart_count
+    })
+
+
 def wishlist_view(request):
     try:
         active_logo = WebsiteLogo.objects.get(is_active=True)
@@ -280,20 +353,18 @@ def order_create(request):
 
     # Handle form POST
     if request.method == 'POST':
-        # Store address in session
-        request.session['address_data'] = {
-            'full_name': request.POST['full_name'],
-            'phone': request.POST['phone'],
-            'email': request.POST.get('email'),
-            'pincode': request.POST['pincode'],
-            'city': request.POST['city'],
-            'district': request.POST['district'],
-            'state': request.POST['state'],
-            'local_address': request.POST['local_address'],
-            'landmark': request.POST.get('landmark'),
-        }
+        full_name = request.POST['full_name']
+        phone = request.POST['phone']
+        email = request.POST.get('email')
+        pincode = request.POST['pincode']
+        city = request.POST['city']
+        district = request.POST['district']
+        state = request.POST['state']
+        local_address = request.POST['local_address']
+        landmark = request.POST.get('landmark')
 
-        # Validate and store coupon
+        # Create Order
+        coupon = None
         coupon_code = request.POST.get('coupon_code')
         if coupon_code:
             try:
@@ -302,12 +373,75 @@ def order_create(request):
                     valid_from__lte=timezone.now(),
                     valid_until__gte=timezone.now()
                 )
-                request.session['applied_coupon'] = coupon.code
             except Coupon.DoesNotExist:
                 messages.error(request, 'Invalid or expired coupon')
                 return redirect('order_create')
 
-        return redirect('order_confirm')
+        # Create WhatsApp Query
+        query = WhatsAppQuery.objects.create(
+            customer_name=full_name,
+            phone=phone,
+            email=email,
+            address=local_address,
+            city=city,
+            district=district,
+            state=state,
+            pincode=pincode,
+            status='PENDING'
+        )
+
+        # Create Query Items and collect info for WhatsApp
+        product_details_text = ""
+        for item in items:
+            if request.user.is_authenticated:
+                product = item.product
+                quantity = item.quantity
+                price = product.price
+            else:
+                product = item['product']
+                quantity = item['quantity']
+                price = product.price
+
+            WhatsAppQueryItem.objects.create(
+                query=query,
+                product=product,
+                quantity=quantity,
+                price=price,
+                subtotal=price * quantity
+            )
+            product_details_text += f"\nProduct: {product.title}\nQuantity: {quantity}\nPrice: ₹{price}\n"
+
+        # Update query message and total
+        query.query_message = product_details_text
+        query.calculate_total()
+
+        # Clear cart
+        if request.user.is_authenticated:
+            Cart.objects.filter(user=request.user).delete()
+        else:
+            request.session['cart'] = {}
+
+        # Get Store Settings for WhatsApp number
+        settings = StoreSettings.get_solo()
+        wa_number = settings.whatsapp_number or '9641609686'
+        
+        # Construct WhatsApp Message
+        message = f"New Inquiry from {settings.site_name}\n\n"
+        message += f"Reference ID: #{query.id}\n"
+        message += "Customer Details\n"
+        message += f"Name: {full_name}\n"
+        message += f"Phone: {phone}\n"
+        message += f"Address: {local_address}, {city}, {state} - {pincode}\n\n"
+        message += "Inquiry Details\n"
+        message += "--------------------\n"
+        message += product_details_text
+        message += f"\nTotal: ₹{query.total_amount}\n\n"
+        message += "Please confirm this order."
+
+        encoded_message = urllib.parse.quote(message)
+        wa_url = f"https://wa.me/{wa_number}?text={encoded_message}"
+
+        return redirect(wa_url)
 
     return render(request, 'core/order_create.html', {
         'cart_items': items,
@@ -335,135 +469,6 @@ def add_review(request, product_id):
         messages.success(request, 'Review submitted successfully!')
         return redirect('product_detail', slug=product.slug)
     return redirect('product_detail', slug=product.slug)
-def order_confirm(request):
-    # Load cart again
-    items = []
-    if request.user.is_authenticated:
-        try:
-            cart = Cart.objects.get(user=request.user)
-            items = list(cart.items.select_related('product__brand', 'product__category').all())
-        except Cart.DoesNotExist:
-            items = []
-    else:
-        session_cart = request.session.get('cart', {})
-        for product_id, quantity in session_cart.items():
-            try:
-                product = Product.objects.get(id=product_id)
-                items.append({'product': product, 'quantity': quantity})
-            except Product.DoesNotExist:
-                continue
-
-    if not items:
-        messages.error(request, "Cart is empty")
-        return redirect("cart")
-
-    # Address & coupon from session
-    address_data = request.session.get('address_data')
-    if not address_data:
-        messages.error(request, "Address details are missing.")
-        return redirect("order_create")
-
-    coupon = None
-    coupon_code = request.session.get('applied_coupon')
-    if coupon_code:
-        try:
-            coupon = Coupon.objects.get(code=coupon_code, active=True)
-        except Coupon.DoesNotExist:
-            coupon = None
-
-    # Create Order (with placeholder totals, will compute below)
-    order = Order.objects.create(
-        user=request.user if request.user.is_authenticated else None,
-        status='Pending',
-        coupon=coupon,
-        delivery_charge=Decimal('50.00'),
-    )
-
-    # Create Order Items and collect info for display
-    order_items_list = []
-    for item in items:
-        if request.user.is_authenticated:
-            product = item.product
-            quantity = item.quantity
-            price = product.price
-        else:
-            product = item['product']
-            quantity = item['quantity']
-            price = product.price
-
-        OrderItem.objects.create(
-            order=order,
-            product=product,
-            quantity=quantity,
-            price=price
-        )
-        order_items_list.append((product, quantity, price))
-
-    # Save Address
-    DeliveryAddress.objects.create(
-        order=order,
-        full_name=address_data['full_name'],
-        phone=address_data['phone'],
-        email=address_data.get('email'),
-        pincode=address_data['pincode'],
-        city=address_data['city'],
-        district=address_data['district'],
-        state=address_data['state'],
-        local_address=address_data['local_address'],
-        landmark=address_data.get('landmark'),
-        verified=False
-    )
-
-    # Calculate final totals using the model method (dynamic GST)
-    order.calculate_total(save=True)
-
-    # Calculate discount for display if coupon exists
-    discount = Decimal(0)
-    if order.coupon:
-        # Re-calculating discount for UI breakdown
-        base_total = order.subtotal + order.gst + order.delivery_charge
-        discount = base_total * Decimal(order.coupon.discount_percentage / 100)
-
-    # Prepare cart items for template display
-    cart_items = []
-    if request.user.is_authenticated:
-        cart_items = list(cart.items.all())
-    else:
-        # Create a simple class for anonymous user cart items
-        class CartItemLike:
-            def __init__(self, product, quantity):
-                self.product = product
-                self.quantity = quantity
-            
-            def get_total_price(self):
-                return self.product.price * self.quantity
-        
-        # Convert session cart items to CartItem-like objects for template
-        for item in items:
-            cart_items.append(CartItemLike(item['product'], item['quantity']))
-
-    # Clear cart
-    if request.user.is_authenticated:
-        cart.items.all().delete()
-    else:
-        request.session['cart'] = {}
-
-    # Clear session data
-    request.session.pop('address_data', None)
-    request.session.pop('applied_coupon', None)
-
-    return render(request, 'core/order_confirm.html', {
-        'cart_items': cart_items,
-        'order': order,
-        'address': address_data,
-        'total_breakdown': {
-            'subtotal': order.subtotal,
-            'gst': order.gst,
-            'delivery': order.delivery_charge,
-            'discount': discount,
-            'total': order.total_amount
-        },
-    })
 
 def order_payment(request):
     if request.user.is_authenticated:
@@ -486,31 +491,7 @@ def order_payment(request):
     })
 
 
-otp_store = {}
 
-@csrf_exempt
-def verify_phone(request):
-    if request.method == 'POST':
-        phone = request.POST.get('phone')
-        otp = request.POST.get('otp')
-
-        if otp:
-            # Verify OTP
-            saved_otp = otp_store.get(phone)
-            if saved_otp and otp == saved_otp:
-                del otp_store[phone]
-                return JsonResponse({'status': 'verified'})
-            else:
-                return JsonResponse({'status': 'error', 'message': 'Invalid OTP'})
-        else:
-            # Send OTP
-            generated_otp = str(random.randint(100000, 999999))
-            otp_store[phone] = generated_otp
-
-            # TODO: Integrate actual SMS sending here
-            print(f"OTP for {phone} is {generated_otp}")  # For testing
-
-            return JsonResponse({'status': 'otp_sent'})
 
 @staff_member_required
 @csrf_protect

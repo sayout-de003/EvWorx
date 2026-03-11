@@ -203,6 +203,23 @@
             transform: scale(1.2);
             color: #ebf1ef;
         }
+        
+        #cart-drawer-overlay {
+            z-index: 9999999 !important;
+        }
+        #cart-drawer {
+            z-index: 10000000 !important;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.2) !important;
+        }
+
+        body.cart-open .main-content {
+            z-index: 0 !important;
+            position: relative;
+        }
+
+        body.cart-open nav {
+            z-index: 0 !important;
+        }
     </style>
 </head>
 
@@ -253,9 +270,11 @@
                     </a>
                     {% endif %}
 
-                    <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-shopping-cart mr-2"></i>Cart
-                    </a>
+                    <button onclick="window.toggleCartDrawer();" class="nav-link text-white font-medium flex items-center">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Cart
+                        <span class="cart-count hidden ml-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                    </button>
                     <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
                         <i class="fas fa-heart mr-2"></i>Wishlist
                     </a>
@@ -263,9 +282,11 @@
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
                     </a>
                     {% else %}
-                    <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                        <i class="fas fa-shopping-cart mr-2"></i>Cart
-                    </a>
+                    <button onclick="window.toggleCartDrawer();" class="nav-link text-white font-medium flex items-center">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Cart
+                        <span class="cart-count hidden ml-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                    </button>
                     <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
                         <i class="fas fa-heart mr-2"></i>Wishlist
                     </a>
@@ -296,9 +317,11 @@
                 </a>
                 {% endif %}
 
-                <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                    <i class="fas fa-shopping-cart mr-2"></i>Cart
-                </a>
+                <button onclick="window.toggleCartDrawer();" class="nav-link text-white font-medium flex items-center">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Cart
+                    <span class="cart-count hidden ml-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                </button>
                 <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
                     <i class="fas fa-heart mr-2"></i>Wishlist
                 </a>
@@ -306,9 +329,11 @@
                     <i class="fas fa-sign-out-alt mr-2"></i>Logout
                 </a>
                 {% else %}
-                <a href="{% url 'cart' %}" class="nav-link text-white font-medium">
-                    <i class="fas fa-shopping-cart mr-2"></i>Cart
-                </a>
+                <button onclick="window.toggleCartDrawer();" class="nav-link text-white font-medium flex items-center">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Cart
+                    <span class="cart-count hidden ml-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                </button>
                 <a href="{% url 'wishlist' %}" class="nav-link text-white font-medium">
                     <i class="fas fa-heart mr-2"></i>Wishlist
                 </a>
@@ -515,6 +540,8 @@
         });
     </script>
 
+    {% include 'core/includes/cart_drawer.html' %}
+    <script src="{% static 'core/js/cart_drawer.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 

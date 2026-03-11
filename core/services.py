@@ -94,3 +94,50 @@ class CartService:
                     continue
         
         return cart_items, total_price
+
+
+def convert_query_to_order(query_id):
+    from .models import Order, OrderItem, DeliveryAddress, WhatsAppQuery
+    from django.db import transaction
+    
+    query = WhatsAppQuery.objects.get(id=query_id)
+
+    with transaction.atomic():
+        # 1. Create Order
+        order = Order.objects.create(
+            user=None,  # Inquiries are typically treated as guest orders until linked
+            status='Pending',
+            total_amount=query.total_amount
+        )
+
+        # 2. Copy customer info to DeliveryAddress
+        DeliveryAddress.objects.create(
+            order=order,
+            full_name=query.customer_name,
+            phone=query.phone,
+            email=query.email,
+            local_address=query.address,
+            city=query.city,
+            district=query.district or "",
+            state=query.state or "",
+            pincode=query.pincode,
+            verified=True
+        )
+
+        # 3. Copy query items to OrderItems
+        for item in query.items.all():
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity,
+                price=item.price
+            )
+        
+        # 4. Recalculate total (handles GST and other model logic)
+        order.calculate_total(save=True)
+
+        # 5. Mark query as accepted
+        query.status = 'ACCEPT_AS_ORDER'
+        query.save()
+
+        return order

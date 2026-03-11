@@ -1,0 +1,57 @@
+<!-- Cart Drawer -->
+<div id="cart-drawer-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden transition-opacity duration-300 opacity-0"></div>
+<div id="cart-drawer" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col">
+    <!-- Header -->
+    <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+        <h2 class="text-xl font-bold text-gray-800">Your Cart</h2>
+        <button id="close-cart-drawer" class="text-gray-500 hover:text-gray-800 focus:outline-none p-2">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Scrollable Items Area -->
+    <div id="cart-drawer-items" class="flex-grow overflow-y-auto p-4 space-y-4">
+        <!-- Items will be injected here by JS -->
+        <div class="flex flex-col items-center justify-center h-40 text-gray-500">
+            <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+            <p>Your cart is empty</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 border-t bg-gray-50 space-y-4">
+        <div class="flex justify-between items-center">
+            <span class="text-gray-600 font-medium">Subtotal</span>
+            <span id="cart-drawer-total" class="text-xl font-bold text-teal-600">₹0.00</span>
+        </div>
+        <p class="text-xs text-gray-500 text-center italic">Shipping and taxes calculated at checkout</p>
+        <div class="grid grid-cols-1 gap-2">
+            <a href="{% url 'cart' %}" class="w-full text-center py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition">View Full Cart</a>
+            <a href="{% url 'order_create' %}" class="w-full text-center py-3 bg-teal-600 text-white rounded-lg font-bold hover:bg-teal-700 transition shadow-md">Checkout Now</a>
+        </div>
+    </div>
+</div>
+
+<template id="cart-item-template">
+    <div class="flex gap-4 p-3 bg-white border rounded-xl shadow-sm hover:shadow-md transition">
+        <div class="w-20 h-20 flex-shrink-0">
+            <img src="" alt="" class="cart-item-image w-full h-full object-cover rounded-lg border">
+        </div>
+        <div class="flex-grow flex flex-col justify-between">
+            <div class="flex justify-between items-start">
+                <h3 class="cart-item-title font-semibold text-gray-800 text-sm line-clamp-2"></h3>
+                <button class="remove-item text-gray-400 hover:text-red-500 transition ml-2">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                </button>
+            </div>
+            <div class="flex justify-between items-center mt-2">
+                <div class="flex items-center border rounded-lg bg-gray-50">
+                    <button class="qty-minus px-2 py-1 text-gray-500 hover:text-teal-600 transition">-</button>
+                    <span class="cart-item-qty px-2 py-1 font-medium text-xs">1</span>
+                    <button class="qty-plus px-2 py-1 text-gray-500 hover:text-teal-600 transition">+</button>
+                </div>
+                <span class="cart-item-price font-bold text-gray-900 text-sm"></span>
+            </div>
+        </div>
+    </div>
+</template>

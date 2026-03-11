@@ -1,0 +1,55 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    {% if original.status != 'ACCEPT_AS_ORDER' and original.id %}
+    <div class="submit-row">
+        <input type="submit" value="Convert to Order" name="_convert_to_order" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script type="text/javascript">
+    (function($) {
+        $(document).ready(function() {
+            function updateSubtotal(row) {
+                var qty = parseFloat(row.find('input[name$="-quantity"]').val()) || 0;
+                var price = parseFloat(row.find('input[name$="-price"]').val()) || 0;
+                var subtotal = qty * price;
+                row.find('.field-get_subtotal p').text(subtotal.toFixed(2));
+                updateTotal();
+            }
+
+            function updateTotal() {
+                var total = 0;
+                $('.inline-related tbody tr').each(function() {
+                    if (!$(this).hasClass('empty-form')) {
+                        var sub = parseFloat($(this).find('.field-get_subtotal p').text()) || 0;
+                        total += sub;
+                    }
+                });
+                $('#id_total_amount').val(total.toFixed(2));
+            }
+
+            $(document).on('formset:added', function(event, $row, formsetName) {
+                if (formsetName === 'items') {
+                    $row.find('input[name$="-quantity"], input[name$="-price"]').on('input', function() {
+                        updateSubtotal($row);
+                    });
+                }
+            });
+
+            $('.inline-related input[name$="-quantity"], .inline-related input[name$="-price"]').on('input', function() {
+                var row = $(this).closest('tr');
+                updateSubtotal(row);
+            });
+            
+            // Initial call to ensure everything is correct
+            updateTotal();
+        });
+    })(django.jQuery);
+</script>
+{% endblock %}

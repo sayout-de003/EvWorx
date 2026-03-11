@@ -241,6 +241,63 @@ class OrderItem(models.Model):
         return self.price * self.quantity
 
 
+# ----------------- WhatsAppQuery -----------------
+class WhatsAppQuery(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('ACCEPT_AS_ORDER', 'Accepted as Order'),
+        ('REJECTED', 'Rejected'),
+        ('CUSTOMER_CONTACTED', 'Customer Contacted'),
+        ('WAITING_PAYMENT', 'Waiting Payment'),
+        ('CONFIRMED', 'Confirmed'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+    customer_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=15)
+    email = models.EmailField(blank=True, null=True)
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    district = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pincode = models.CharField(max_length=10)
+    query_message = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    class Meta:
+        verbose_name = "WhatsApp Query"
+        verbose_name_plural = "WhatsApp Queries"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Query {self.id} - {self.customer_name}"
+
+    def calculate_total(self):
+        total = sum(item.subtotal for item in self.items.all())
+        self.total_amount = total
+        self.save()
+        return total
+
+
+# ----------------- WhatsAppQueryItem -----------------
+class WhatsAppQueryItem(models.Model):
+    query = models.ForeignKey(WhatsAppQuery, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        self.subtotal = Decimal(str(self.price)) * self.quantity
+        super().save(*args, **kwargs)
+        # We don't call calculate_total here to avoid recursion if calculate_total saves.
+        # But we want the total to be updated.
+    
+    def __str__(self):
+        return f"{self.product.title} x{self.quantity}"
+
+
 
 
 # ----------------- Product -----------------
@@ -531,3 +588,27 @@ class OnSiteRepairBooking(models.Model):
         verbose_name = "On-Site Repair Booking"
         verbose_name_plural = "On-Site Repair Bookings"
         ordering = ['-created_at']
+
+
+# ----------------- Store Settings -----------------
+class StoreSettings(models.Model):
+    whatsapp_number = models.CharField(max_length=15, default='9641609686')
+    site_name = models.CharField(max_length=100, default='EVWORX')
+    support_email = models.EmailField(default='support@evworx.co.in')
+
+    class Meta:
+        verbose_name = "Store Settings"
+        verbose_name_plural = "Store Settings"
+
+    def __str__(self):
+        return self.site_name
+
+    def save(self, *args, **kwargs):
+        if not self.pk and StoreSettings.objects.exists():
+            raise ValidationError("There can be only one StoreSettings instance")
+        return super(StoreSettings, self).save(*args, **kwargs)
+
+    @classmethod
+    def get_solo(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj

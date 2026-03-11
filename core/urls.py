@@ -4,8 +4,8 @@ from core.views import (
     UserViewSet, VehicleViewSet, VehicleTypeViewSet, BrandViewSet,  
     ProductViewSet, CartViewSet, OrderViewSet, WishlistViewSet, 
     ReviewViewSet, homepage, about, faq, blog, blog_detail, 
-    signup, user_login, user_logout, catalog, garage, cart_view, 
-    wishlist_view, order_create, order_confirm, order_payment, verify_phone, 
+    signup, user_login, user_logout, catalog, garage, cart_view, cart_api,
+    wishlist_view, order_create, order_payment, 
     product_detail, add_review, admin_orders_view, onsite_repair_booking,
     admin_management_hub, admin_repair_list, admin_repair_edit, 
     admin_order_list, admin_order_edit
@@ -44,13 +44,12 @@ urlpatterns = [
     # Authenticated user pages
     path('garage/', garage, name='garage'),
     path('cart/', cart_view, name='cart'),
+    path('cart/api/', cart_api, name='cart_api'),
     path('wishlist/', wishlist_view, name='wishlist'),
     path('order/', order_create, name='order_create'),
 
     # path('order/', views.order_create, name='order_create'),
-    path('order/confirm/', order_confirm, name='order_confirm'),
     path('order/payment/',order_payment, name='order_payment'),
-    path('verify-phone/', verify_phone, name='verify_phone'),
     path('staff/orders/', admin_orders_view, name='admin_orders'), 
 
 

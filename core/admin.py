@@ -1,3 +1,4 @@
+from django.shortcuts import redirect
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.urls import reverse
@@ -8,8 +9,10 @@ from .models import (
     Category, SubCategory, Product, ProductImage, BulkDiscountTier,
     Cart, CartItem, Order, OrderItem, Wishlist, Review,
     Coupon, DeliveryAddress, SellerInformation, GrievanceOfficer,
-    WebsiteLogo, Favicon, BlogPost, OnSiteRepairBooking
+    WebsiteLogo, Favicon, BlogPost, OnSiteRepairBooking, StoreSettings,
+    WhatsAppQuery, WhatsAppQueryItem
 )
+from .services import convert_query_to_order
 
 # ----------------- Custom User -----------------
 class CustomUserAdmin(UserAdmin):
@@ -142,6 +145,79 @@ class OrderAdmin(admin.ModelAdmin):
         return obj.delivery_address.full_name + ", " + obj.delivery_address.city + ", " + obj.delivery_address.state
     delivery_address.short_description = 'Delivery Address'
 
+
+# ----------------- WhatsApp Query -----------------
+class WhatsAppQueryItemInline(admin.TabularInline):
+    model = WhatsAppQueryItem
+    extra = 1
+    fields = ['product', 'quantity', 'price', 'get_subtotal']
+    readonly_fields = ['get_subtotal']
+
+    def get_subtotal(self, obj):
+        if obj.id:
+            return obj.price * obj.quantity
+        return "N/A"
+    get_subtotal.short_description = 'Subtotal'
+
+@admin.register(WhatsAppQuery)
+class WhatsAppQueryAdmin(admin.ModelAdmin):
+    list_display = ['id', 'customer_name', 'phone', 'product_count', 'total_amount', 'status', 'created_at']
+    list_editable = ['status']
+    list_filter = ['status', 'created_at']
+    search_fields = ['customer_name', 'phone']
+    inlines = [WhatsAppQueryItemInline]
+    actions = ['accept_as_order', 'reject_query', 'mark_pending', 'mark_waiting_payment', 'mark_customer_contacted', 'mark_cancelled']
+    change_form_template = 'admin/whatsapp_query_change_form.html'
+
+    def product_count(self, obj):
+        return obj.items.count()
+    product_count.short_description = 'Products count'
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        # Recalculate total after inline items are saved
+        form.instance.calculate_total()
+
+    def response_change(self, request, obj):
+        if "_convert_to_order" in request.POST:
+            if obj.status != 'ACCEPT_AS_ORDER':
+                convert_query_to_order(obj.id)
+                self.message_user(request, f"Query {obj.id} successfully converted to Order.")
+            else:
+                self.message_user(request, "This query has already been converted.", level="warning")
+            return redirect('admin:core_whatsappquery_changelist')
+        return super().response_change(request, obj)
+
+    def accept_as_order(self, request, queryset):
+        count = 0
+        for query in queryset:
+            if query.status != 'ACCEPT_AS_ORDER':
+                convert_query_to_order(query.id)
+                count += 1
+        if count > 0:
+            self.message_user(request, f"{count} queries converted to orders.")
+    accept_as_order.short_description = "Accept as Order"
+
+    def reject_query(self, request, queryset):
+        queryset.update(status='REJECTED')
+    reject_query.short_description = "Reject Query"
+
+    def mark_pending(self, request, queryset):
+        queryset.update(status='PENDING')
+    mark_pending.short_description = "Mark Pending"
+
+    def mark_waiting_payment(self, request, queryset):
+        queryset.update(status='WAITING_PAYMENT')
+    mark_waiting_payment.short_description = "Mark Waiting Payment"
+
+    def mark_customer_contacted(self, request, queryset):
+        queryset.update(status='CUSTOMER_CONTACTED')
+    mark_customer_contacted.short_description = "Customer Contacted"
+
+    def mark_cancelled(self, request, queryset):
+        queryset.update(status='CANCELLED')
+    mark_cancelled.short_description = "Mark Cancelled"
+
 # ----------------- Other Models -----------------
 @admin.register(Wishlist)
 class WishlistAdmin(admin.ModelAdmin):
@@ -204,3 +280,14 @@ class OnSiteRepairBookingAdmin(admin.ModelAdmin):
     list_filter = ('brand', 'created_at', 'vehicle_type')
     search_fields = ('full_name', 'mobile_no', 'brand', 'model_no', 'address')
     readonly_fields = ('created_at',)
+
+
+@admin.register(StoreSettings)
+class StoreSettingsAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        if StoreSettings.objects.exists():
+            return False
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -108,28 +108,6 @@
     box-shadow: 0 15px 30px rgba(124,92,240,0.3);
   }
 
-  .btn-verify {
-    background: linear-gradient(135deg, #7c5cf0, #5a3ce4);
-    color: #fff;
-    font-weight: 600;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-
-  .btn-verify:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(124,92,240,0.3);
-  }
-
-  .phone-group {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-  }
 
   .order-summary {
     position: sticky;
@@ -163,13 +141,7 @@
     color: #111827;
   }
 
-  #otp-section {
-    margin-top: 10px;
-    padding: 12px;
-    background: #f9fafb;
-    border-radius: 12px;
-    border: 1px solid #d1d5db;
-  }
+
 
   @media (max-width: 1024px) {
     .checkout-grid {
@@ -192,7 +164,7 @@
     <!-- Checkout Form -->
     <div class="checkout-form">
       <h2>Delivery Information</h2>
-      <form method="POST" id="order-form" onsubmit="return checkPhoneVerified(event)">
+      <form method="POST" id="order-form">
         {% csrf_token %}
 
         <div class="form-group">
@@ -200,21 +172,9 @@
           <input type="text" name="full_name" id="full_name" placeholder="Full Name" required>
         </div>
 
-        <div class="form-group phone-group">
-          <div class="flex-1">
-            <label for="phone">Mobile Number</label>
-            <input type="text" name="phone" id="phone" placeholder="Mobile Number" maxlength="10" required>
-          </div>
-          <button type="button" id="verify-btn" onclick="showOtpForm()" class="btn-verify" disabled>Verify 🔒</button>
-        </div>
-
-        <!-- OTP Form (hidden initially) -->
-        <div id="otp-section" style="display:none;">
-          <div class="form-group">
-            <label for="otp">Enter OTP</label>
-            <input type="text" id="otp" name="otp" placeholder="6-digit OTP" maxlength="6">
-          </div>
-          <button type="button" class="btn-verify" onclick="submitOtp()">Submit OTP ✅</button>
+        <div class="form-group">
+          <label for="phone">Mobile Number</label>
+          <input type="text" name="phone" id="phone" placeholder="Mobile Number" maxlength="10" required>
         </div>
 
         <div class="form-group">
@@ -252,7 +212,7 @@
           <input type="text" name="landmark" id="landmark" placeholder="Landmark">
         </div>
 
-        <button type="submit" class="btn">Continue to Confirmation</button>
+        <button type="submit" class="btn">Order via WhatsApp</button>
       </form>
     </div>
 
@@ -274,47 +234,6 @@
 </div>
 
 <script>
-  let phoneVerified = false;
-
-  function validatePhoneInput() {
-    const phoneInput = document.getElementById('phone');
-    const verifyBtn = document.getElementById('verify-btn');
-    const phone = phoneInput.value.trim();
-    verifyBtn.disabled = !/^\d{10}$/.test(phone);
-  }
-
-  function showOtpForm() {
-    alert("OTP sent to your phone number!");
-    document.getElementById('otp-section').style.display = 'block';
-  }
-
-  function submitOtp() {
-    const otp = document.getElementById('otp').value.trim();
-
-    // This should be replaced with backend verification
-    if (/^\d{5,6}$/.test(otp)) {
-      phoneVerified = true;
-      alert("Phone verified successfully!");
-      document.getElementById('otp-section').style.display = 'none';
-      document.getElementById('verify-btn').innerText = "Verified ✅";
-      document.getElementById('verify-btn').disabled = true;
-      document.getElementById('phone').readOnly = true;
-    } else {
-      alert("Invalid OTP. Please try again.");
-    }
-  }
-
-  function checkPhoneVerified(event) {
-    if (!phoneVerified) {
-      event.preventDefault();
-      alert("Please verify your phone before continuing.");
-      return false;
-    }
-    return true;
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('phone').addEventListener('input', validatePhoneInput);
-  });
+  // WhatsApp order flow integrated into backend POST
 </script>
 {% endblock %}
