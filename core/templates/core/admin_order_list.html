@@ -81,8 +81,8 @@
                                 {% else %} bg-indigo-50 text-indigo-600 {% endif %}">
                                 {{ order.status }}
                             </span>
-                            <span class="text-[10px] font-bold text-gray-400 font-mono">#{{ order.id }} • {{
-                                order.created_at|date:"M d, H:i" }}</span>
+                            <span class="text-[10px] font-bold text-gray-400 font-mono">
+                                #{{ order.id }} • {{ order.created_at|date:"M d, H:i" }}</span>
                         </div>
                         <h3 class="text-xl font-black text-gray-900 leading-tight">
                             {% if order.user %}{{ order.user.get_full_name|default:order.user.username }}{% else %}Guest
@@ -93,14 +93,14 @@
 
                     <!-- Order Summary -->
                     <div class="flex-1 border-l-0 xl:border-l xl:border-r border-gray-100 xl:px-8">
-                        <p class="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest">Payload ({{
-                            order.items.count }} items)</p>
+                        <p class="text-[10px] font-black text-gray-400 mb-3 uppercase tracking-widest">
+                            Payload ({{ order.items.count }} items)</p>
                         <div class="flex flex-wrap gap-2">
                             {% for item in order.items.all %}
                             <span
                                 class="inline-flex items-center px-2.5 py-1 bg-gray-50 rounded-lg text-[10px] font-bold text-gray-600 border border-gray-100">
-                                {{ item.product.title|truncatechars:20 }} <span class="ml-1 opacity-50">x{{
-                                    item.quantity }}</span>
+                                {{ item.product.title|truncatechars:20 }} <span class="ml-1 opacity-50">
+                                    x{{ item.quantity }}</span>
                             </span>
                             {% endfor %}
                         </div>
