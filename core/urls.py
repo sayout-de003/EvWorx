@@ -8,7 +8,7 @@ from core.views import (
     wishlist_view, order_create, order_payment, 
     product_detail, add_review, admin_orders_view, onsite_repair_booking,
     admin_management_hub, admin_repair_list, admin_repair_edit, 
-    admin_order_list, admin_order_edit
+    admin_order_list, admin_order_edit, admin_whatsapp_query_list
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -61,6 +61,7 @@ urlpatterns = [
     path('admin-management/repairs/<int:pk>/edit/', admin_repair_edit, name='admin_repair_edit'),
     path('admin-management/orders/', admin_order_list, name='admin_order_list'),
     path('admin-management/orders/<int:pk>/edit/', admin_order_edit, name='admin_order_edit'),
+    path('admin-management/whatsapp-queries/', admin_whatsapp_query_list, name='admin_whatsapp_query_list'),
 
     # API
     path('api/', include(router.urls)),

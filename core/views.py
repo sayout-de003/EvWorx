@@ -893,6 +893,64 @@ def admin_order_list(request):
     })
 
 @staff_member_required
+def admin_whatsapp_query_list(request):
+    """List WhatsApp queries for admins with search, filter, and sort."""
+    from .services import convert_query_to_order
+    
+    search_query = request.GET.get('q', '')
+    status_filter = request.GET.get('status', 'unconverted')
+    sort_by = request.GET.get('sort', '-created_at')
+    
+    queries = WhatsAppQuery.objects.all()
+    
+    # 1. Search
+    if search_query:
+        queries = queries.filter(
+            Q(id__icontains=search_query) |
+            Q(customer_name__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(total_amount__icontains=search_query)
+        )
+    
+    # 2. Filter
+    if status_filter == 'unconverted':
+        queries = queries.exclude(status__in=['ACCEPT_AS_ORDER', 'REJECTED', 'CANCELLED'])
+    elif status_filter == 'converted':
+        queries = queries.filter(status='ACCEPT_AS_ORDER')
+    
+    # 3. Sort
+    valid_sorts = ['created_at', '-created_at', 'total_amount', '-total_amount', 'status', '-status']
+    if sort_by in valid_sorts:
+        queries = queries.order_by(sort_by)
+    else:
+        queries = queries.order_by('-created_at')
+    
+    if request.method == 'POST':
+        query_id = request.POST.get('query_id')
+        action = request.POST.get('action')
+        query = get_object_or_404(WhatsAppQuery, id=query_id)
+        
+        if action == 'convert':
+            if query.status != 'ACCEPT_AS_ORDER':
+                convert_query_to_order(query.id)
+                messages.success(request, f"Query #{query.id} successfully converted to Order.")
+            else:
+                messages.warning(request, f"Query #{query.id} has already been converted.")
+        elif action == 'reject':
+            query.status = 'REJECTED'
+            query.save()
+            messages.success(request, f"Query #{query.id} has been rejected.")
+        
+        return redirect(f"{reverse('admin_whatsapp_query_list')}?{request.GET.urlencode()}")
+        
+    return render(request, 'core/admin_whatsapp_query_list.html', {
+        'queries': queries,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'sort_by': sort_by
+    })
+
+@staff_member_required
 def admin_order_edit(request, pk):
     """Detailed edit for an order."""
     order = get_object_or_404(Order, pk=pk)
