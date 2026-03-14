@@ -595,6 +595,8 @@ class StoreSettings(models.Model):
     whatsapp_number = models.CharField(max_length=15, default='9641609686')
     site_name = models.CharField(max_length=100, default='EVWORX')
     support_email = models.EmailField(default='support@evworx.co.in')
+    enquiry_number = models.CharField(max_length=15, default='1-800-EVWORX', help_text="Number for business enquiries")
+    enquiry_email = models.EmailField(default='enquiry@evworx.co.in', help_text="Email for business enquiries")
 
     class Meta:
         verbose_name = "Store Settings"
