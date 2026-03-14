@@ -13,8 +13,13 @@ class CartService:
     @staticmethod
     def add_to_cart(request, product_id, quantity, cart=None):
         product = get_object_or_404(Product, id=product_id)
+        
+        # Enforce MOQ
+        if quantity < product.moq:
+            quantity = product.moq
+
         if product.is_out_of_stock() or product.stock < quantity:
-            return False, "Insufficient stock."
+            return False, f"Insufficient stock. Available: {product.stock}"
 
         if request.user.is_authenticated:
             if not cart:
@@ -48,9 +53,18 @@ class CartService:
 
     @staticmethod
     def update_cart_quantity(request, product_id, quantity, cart=None):
+        product = get_object_or_404(Product, id=product_id)
+        
         if quantity < 1:
             CartService.remove_from_cart(request, product_id, cart)
             return True, "Item removed."
+
+        # Enforce MOQ
+        if quantity < product.moq:
+            return False, f"Minimum order quantity for {product.title} is {product.moq}."
+
+        if product.stock < quantity:
+            return False, f"Insufficient stock. Available: {product.stock}"
 
         if request.user.is_authenticated:
             if not cart:

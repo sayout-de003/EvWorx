@@ -19,6 +19,7 @@
                 <div>
                     <h2 class="text-xl font-semibold text-gray-900">{{ item.product.title }}</h2>
                     <p class="text-gray-500 mt-1">Price: ₹{{ item.product.price }}</p>
+                    <p class="text-indigo-600 text-sm font-medium">MOQ: {{ item.product.moq }} units</p>
                     <p class="text-gray-600">Subtotal: ₹{{ item.subtotal }}</p>
                 </div>
             </div>
@@ -29,7 +30,7 @@
                     <input type="hidden" name="action" value="update">
                     <input type="hidden" name="update" value="1">
                     <input type="hidden" name="product_id" value="{{ item.product.id }}">
-                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="{{ item.product.moq }}"
                         class="w-16 px-2 py-1 border rounded focus:outline-none">
                     <button type="submit"
                         class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Update</button>
