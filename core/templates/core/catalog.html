@@ -73,13 +73,13 @@
 
                         <select name="sort" class="flex-[2] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">Default</option>
-                            <option value="price_asc" {% if selected_sort=='price_asc' %}selected{% endif %}>Price: Low
+                            <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Price: Low
                                 to High</option>
-                            <option value="price_desc" {% if selected_sort=='price_desc' %}selected{% endif %}>Price:
+                            <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Price:
                                 High to Low</option>
-                            <option value="name_asc" {% if selected_sort=='name_asc' %}selected{% endif %}>Name: A to Z
+                            <option value="name_asc" {% if selected_sort == 'name_asc' %}selected{% endif %}>Name: A to Z
                             </option>
-                            <option value="name_desc" {% if selected_sort=='name_desc' %}selected{% endif %}>Name: Z to
+                            <option value="name_desc" {% if selected_sort == 'name_desc' %}selected{% endif %}>Name: Z to
                                 A</option>
                         </select>
 
