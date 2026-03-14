@@ -47,8 +47,7 @@
                         <select name="vehicle_id" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">All Vehicles</option>
                             {% for vehicle in vehicles %}
-                            <option value="{{ vehicle.id }}" {% if selected_vehicle==vehicle.id|stringformat:"s"
-                                %}selected{% endif %}>
+                            <option value="{{ vehicle.id }}" {% if selected_vehicle == vehicle.id|stringformat:"s" %}selected{% endif %}>
                                 {{ vehicle.brand.name }} {{ vehicle.model }} ({{ vehicle.year }})
                             </option>
                             {% endfor %}
@@ -57,8 +56,7 @@
                         <select name="category" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">All Categories</option>
                             {% for category in categories %}
-                            <option value="{{ category.id }}" {% if selected_category==category.id|stringformat:"s"
-                                %}selected{% endif %}>
+                            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
                                 {{ category.name }}
                             </option>
                             {% endfor %}
@@ -67,8 +65,7 @@
                         <select name="brand" class="flex-[3] p-3 bg-white border-2 border-gray-200 rounded-xl">
                             <option value="">All Brands</option>
                             {% for brand in brands %}
-                            <option value="{{ brand.id }}" {% if selected_brand==brand.id|stringformat:"s" %}selected{%
-                                endif %}>
+                            <option value="{{ brand.id }}" {% if selected_brand == brand.id|stringformat:"s" %}selected{% endif %}>
                                 {{ brand.name }}
                             </option>
                             {% endfor %}
@@ -151,18 +148,18 @@
             {% endif %}
 
             {% for num in page_obj.paginator.page_range %}
-            {% if num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:"-2" and num <=
-                page_obj.number|add:"2" %} {% if num==page_obj.number %} <span
-                class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm sm:text-base">{{ num }}</span>
+            {% if num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                {% if num == page_obj.number %}
+                    <span class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm sm:text-base">{{ num }}</span>
                 {% else %}
                 <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}{% if selected_vehicle %}&vehicle_id={{ selected_vehicle }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}"
                     class="px-3 py-2 bg-gray-200 rounded-lg text-sm sm:text-base">{{ num }}</a>
                 {% endif %}
                 {% elif num == 2 and page_obj.number > 4 %}
                 <span class="px-3 py-2 text-gray-500">…</span>
-                {% elif num == page_obj.paginator.num_pages|add:-1 and page_obj.number <
-                    page_obj.paginator.num_pages|add:-3 %} <span class="px-3 py-2 text-gray-500">…</span>
-                    {% endif %}
+                {% elif num == page_obj.paginator.num_pages|add:-1 and page_obj.number < page_obj.paginator.num_pages|add:-3 %}
+                    <span class="px-3 py-2 text-gray-500">…</span>
+                {% endif %}
                     {% endfor %}
 
                     {% if page_obj.has_next %}
