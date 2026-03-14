@@ -1,4 +1,4 @@
-from .models import WebsiteLogo, Favicon
+from .models import WebsiteLogo, Favicon, StoreSettings
 
 def core_context(request):
     """
@@ -10,8 +10,10 @@ def core_context(request):
         active_logo = None
     
     favicon = Favicon.objects.first()
+    store_settings = StoreSettings.get_solo()
         
     return {
         'logo': active_logo,
         'favicon_obj': favicon,
+        'store_settings': store_settings,
     }
