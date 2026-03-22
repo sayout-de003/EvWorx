@@ -294,8 +294,8 @@
                         <td class="py-4 font-mono text-xs text-indigo-500 font-bold">#{{ order.id }}</td>
                         <td class="py-4">
                             <p class="text-xs font-bold text-gray-700">₹{{ order.total_amount }}</p>
-                            <p class="text-[9px] text-gray-400 font-bold uppercase">{{
-                                order.user.username|default:"Guest" }}</p>
+                            <p class="text-[9px] text-gray-400 font-bold uppercase">
+                                {{ order.user.username|default:"Guest" }}</p>
                         </td>
                         <td class="py-4 text-[10px] font-bold text-gray-400 italic">{{ order.created_at|timesince }}
                         </td>
@@ -373,93 +373,94 @@
             new Chart(salesCtx, {
                 type: 'line',
                 data: {
-                    labels: {{ sales_trend_labels|safe|default:"[]" }},
-                    datasets: [{
-                        label: 'Revenue',
-                        data: {{ sales_trend_data|safe|default:"[]" }},
-                        borderColor: '#4f46e5',
-                        borderWidth: 4,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#4f46e5',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        fill: true,
-                        backgroundColor: gradient,
-                        tension: 0.4
+                    labels: {{ sales_trend_labels| safe |default: "[]" }
+    },
+        datasets: [{
+            label: 'Revenue',
+            data: {{ sales_trend_data| safe |default: "[]" }},
+        borderColor: '#4f46e5',
+        borderWidth: 4,
+        pointBackgroundColor: '#ffffff',
+        pointBorderColor: '#4f46e5',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: true,
+        backgroundColor: gradient,
+        tension: 0.4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#111827',
-                            padding: 12,
-                            cornerRadius: 12,
-                            titleFont: { size: 12 },
-                            bodyFont: { size: 12 }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#f1f5f9', borderDash: [5, 5] },
-                            ticks: { callback: function (value) { return '₹' + value; }, font: { size: 10 } }
-                        },
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                    }
-                }
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#111827',
+                padding: 12,
+                cornerRadius: 12,
+                titleFont: { size: 12 },
+                bodyFont: { size: 12 }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#f1f5f9', borderDash: [5, 5] },
+                ticks: { callback: function (value) { return '₹' + value; }, font: { size: 10 } }
+            },
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+    }
             });
         }
 
-        // 2. Order Status Chart
-        const statusCtx = document.getElementById('statusChart');
-        if (statusCtx) {
-            new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: {{ status_labels|safe|default:"[]" }},
-                    datasets: [{
-                        data: {{ status_data|safe|default:"[]" }},
-                        backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1'],
-                        borderWidth: 0,
-                        hoverOffset: 10
+    // 2. Order Status Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ status_labels| safe |default: "[]" }},
+    datasets: [{
+        data: {{ status_data| safe |default: "[]" }},
+        backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1'],
+        borderWidth: 0,
+        hoverOffset: 10
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '80%',
+    options: {
+        responsive: true,
+            maintainAspectRatio: false,
+                cutout: '80%',
                     plugins: { legend: { display: false } }
-                }
+    }
             });
         }
 
-        // 3. Repair Distribution
-        const repairCtx = document.getElementById('repairChart');
-        if (repairCtx) {
-            new Chart(repairCtx, {
-                type: 'bar',
-                data: {
-                    labels: {{ repair_labels|safe|default:"[]" }},
-                    datasets: [{
-                        data: {{ repair_counts|safe|default:"[]" }},
-                        backgroundColor: '#6366f1',
-                        borderRadius: 8,
-                        barThickness: 20
+    // 3. Repair Distribution
+    const repairCtx = document.getElementById('repairChart');
+    if (repairCtx) {
+        new Chart(repairCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ repair_labels| safe |default: "[]" }},
+    datasets: [{
+        data: {{ repair_counts| safe |default: "[]" }},
+        backgroundColor: '#6366f1',
+        borderRadius: 8,
+        barThickness: 20
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { display: false, beginAtZero: true },
-                        x: { grid: { display: false }, ticks: { font: { size: 8 } } }
-                    }
-                }
+    options: {
+        responsive: true,
+            maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+        scales: {
+            y: { display: false, beginAtZero: true },
+            x: { grid: { display: false }, ticks: { font: { size: 8 } } }
+        }
+    }
             });
         }
     });
