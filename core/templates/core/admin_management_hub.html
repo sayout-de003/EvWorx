@@ -373,11 +373,10 @@
             new Chart(salesCtx, {
                 type: 'line',
                 data: {
-                    labels: {{ sales_trend_labels| safe |default: "[]" }
-    },
-        datasets: [{
-            label: 'Revenue',
-            data: {{ sales_trend_data| safe |default: "[]" }},
+                    labels: {{ sales_trend_labels|safe|default:"[]" }},
+                    datasets: [{
+                        label: 'Revenue',
+                        data: {{ sales_trend_data|safe|default:"[]" }},
         borderColor: '#4f46e5',
         borderWidth: 4,
         pointBackgroundColor: '#ffffff',
@@ -421,9 +420,9 @@
         new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: {{ status_labels| safe |default: "[]" }},
-    datasets: [{
-        data: {{ status_data| safe |default: "[]" }},
+                labels: {{ status_labels|safe|default:"[]" }},
+                datasets: [{
+                    data: {{ status_data|safe|default:"[]" }},
         backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1'],
         borderWidth: 0,
         hoverOffset: 10
@@ -444,9 +443,9 @@
         new Chart(repairCtx, {
             type: 'bar',
             data: {
-                labels: {{ repair_labels| safe |default: "[]" }},
-    datasets: [{
-        data: {{ repair_counts| safe |default: "[]" }},
+                labels: {{ repair_labels|safe|default:"[]" }},
+                datasets: [{
+                    data: {{ repair_counts|safe|default:"[]" }},
         backgroundColor: '#6366f1',
         borderRadius: 8,
         barThickness: 20
